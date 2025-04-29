@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'appoinment_screen.dart'; // Import the AppointmentScreen
 import 'saloon_review_screen.dart'; // Import the SaloonReviewScreen
 import 'saloon_gift_card_screen.dart'; // Import the SaloonGiftCardScreen
+import 'horizontal_nav_bar.dart'; // Import the HorizontalNavBar
+import 'saloon_portfolio_screen.dart'; // Import the SaloonPortfolioScreen
+import 'saloon_detail_screen.dart'; // Import the SaloonDetailScreen
 
-class OneSaloonInsideScreen extends StatelessWidget {
+class OneSaloonInsideScreen extends StatefulWidget {
   final String saloonName;
   final String location;
   final double rating;
@@ -22,6 +25,42 @@ class OneSaloonInsideScreen extends StatelessWidget {
   });
 
   @override
+  _OneSaloonInsideScreenState createState() => _OneSaloonInsideScreenState();
+}
+
+class _OneSaloonInsideScreenState extends State<OneSaloonInsideScreen> {
+  String _activeTab = 'Services'; // Default active tab
+
+  void _onTabSelected(String tab) {
+    setState(() {
+      _activeTab = tab;
+    });
+
+    // Handle navigation based on the selected tab
+    if (tab == 'Reviews') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const SaloonReviewScreen()),
+      );
+    } else if (tab == 'Gift Cards') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const SaloonGiftCardScreen()),
+      );
+    } else if (tab == 'Portfolio') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const SaloonPortfolioScreen()),
+      );
+    } else if (tab == 'Details') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const SaloonDetailScreen()),
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: CustomScrollView(
@@ -37,10 +76,10 @@ class OneSaloonInsideScreen extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   Image.asset(
-                    imagePath,
+                    widget.imagePath,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
-                      debugPrint('Error loading $imagePath: $error');
+                      debugPrint('Error loading ${widget.imagePath}: $error');
                       return const Icon(Icons.image, size: 100, color: Colors.grey);
                     },
                   ),
@@ -71,7 +110,7 @@ class OneSaloonInsideScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            saloonName,
+                            widget.saloonName,
                             style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
@@ -83,7 +122,7 @@ class OneSaloonInsideScreen extends StatelessWidget {
                               const Icon(Icons.location_pin, color: Colors.grey, size: 16),
                               const SizedBox(width: 4),
                               Text(
-                                location,
+                                widget.location,
                                 style: const TextStyle(fontSize: 14, color: Colors.grey),
                               ),
                             ],
@@ -94,7 +133,7 @@ class OneSaloonInsideScreen extends StatelessWidget {
                               const Icon(Icons.star, color: Colors.yellow, size: 16),
                               const SizedBox(width: 4),
                               Text(
-                                '$rating ($reviews Reviews)',
+                                '${widget.rating} (${widget.reviews} Reviews)',
                                 style: const TextStyle(fontSize: 14),
                               ),
                             ],
@@ -110,7 +149,7 @@ class OneSaloonInsideScreen extends StatelessWidget {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
-                              discount,
+                              widget.discount,
                               style: const TextStyle(
                                 color: Colors.purple,
                                 fontSize: 12,
@@ -130,26 +169,11 @@ class OneSaloonInsideScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  // Tabs
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildTab(context, 'Services', true, () {}),
-                      _buildTab(context, 'Reviews', false, () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const SaloonReviewScreen()),
-                        );
-                      }),
-                      _buildTab(context, 'Portfolio', false, () {}),
-                      _buildTab(context, 'Gift Cards', false, () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const SaloonGiftCardScreen()),
-                        );
-                      }),
-                      _buildTab(context, 'Details', false, () {}),
-                    ],
+                  // Horizontal Navigation Bar
+                  HorizontalNavBar(
+                    tabs: const ['Services', 'Reviews', 'Portfolio', 'Gift Cards', 'Details'],
+                    activeTab: _activeTab,
+                    onTabSelected: _onTabSelected,
                   ),
                   const SizedBox(height: 16),
                   // Search Bar
@@ -247,31 +271,6 @@ class OneSaloonInsideScreen extends StatelessWidget {
               ),
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTab(BuildContext context, String title, bool isActive, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-              color: isActive ? Colors.black : Colors.grey,
-            ),
-          ),
-          if (isActive)
-            Container(
-              margin: const EdgeInsets.only(top: 4),
-              height: 2,
-              width: 30,
-              color: const Color(0xFF6A1B9A),
-            ),
         ],
       ),
     );

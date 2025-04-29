@@ -1,7 +1,57 @@
 import 'package:flutter/material.dart';
+import 'horizontal_nav_bar.dart'; // Import the HorizontalNavBar
+import 'one_saloon_inside_screen.dart'; // Import for navigation
+import 'saloon_review_screen.dart'; // Import for navigation
+import 'saloon_portfolio_screen.dart'; // Import for navigation
+import 'saloon_detail_screen.dart'; // Import for navigation
 
-class SaloonGiftCardScreen extends StatelessWidget {
+class SaloonGiftCardScreen extends StatefulWidget {
   const SaloonGiftCardScreen({Key? key}) : super(key: key);
+
+  @override
+  _SaloonGiftCardScreenState createState() => _SaloonGiftCardScreenState();
+}
+
+class _SaloonGiftCardScreenState extends State<SaloonGiftCardScreen> {
+  String _activeTab = 'Gift Cards'; // Default active tab
+
+  void _onTabSelected(String tab) {
+    setState(() {
+      _activeTab = tab;
+    });
+
+    // Handle navigation based on the selected tab
+    if (tab == 'Services') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const OneSaloonInsideScreen(
+            saloonName: 'Salon Niro',
+            location: '123 Main St',
+            rating: 5.0,
+            reviews: 127,
+            discount: '10% OFF',
+            imagePath: 'assets/salon_image.jpg',
+          ),
+        ),
+      );
+    } else if (tab == 'Reviews') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const SaloonReviewScreen()),
+      );
+    } else if (tab == 'Portfolio') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const SaloonPortfolioScreen()),
+      );
+    } else if (tab == 'Details') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const SaloonDetailScreen()),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,12 +72,26 @@ class SaloonGiftCardScreen extends StatelessWidget {
           ),
         ),
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16.0),
-        itemCount: 4, // Number of gift cards as per screenshot
-        itemBuilder: (context, index) {
-          return _buildGiftCard();
-        },
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            child: HorizontalNavBar(
+              tabs: const ['Services', 'Reviews', 'Portfolio', 'Gift Cards', 'Details'],
+              activeTab: _activeTab,
+              onTabSelected: _onTabSelected,
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.all(16.0),
+              itemCount: 4, // Number of gift cards as per screenshot
+              itemBuilder: (context, index) {
+                return _buildGiftCard();
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
