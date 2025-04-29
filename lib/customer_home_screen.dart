@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:touch_me/component/custom_bottom_navbar.dart';
+import 'custom_bottom_nav_bar.dart'; // Import the CustomBottomNavBar
 import 'one_saloon_inside_screen.dart'; // Import the OneSaloonInsideScreen
 import 'search_screen.dart'; // Import the SearchScreen
 import 'inside_category_screen.dart'; // Import the InsideCategoryScreen
-import 'package:touch_me/component/custom_bottom_navbar.dart'; // Import the CustomBottomNavBar
-import 'package:touch_me/component/custom_bottom_navbar.dart';
+import 'favourite_screen.dart'; // Import the FavouriteScreen
+import 'profile_screen.dart'; // Import the ProfileScreen
+
 class CustomerHomeScreen extends StatefulWidget {
   const CustomerHomeScreen({super.key});
 
@@ -15,30 +16,25 @@ class CustomerHomeScreen extends StatefulWidget {
 class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   int _selectedIndex = 0; // Track the selected bottom navigation item
 
+  // List of screens to display based on the selected index
+  final List<Widget> _screens = [
+    const CustomerHomeContent(), // Home screen content
+    const Center(child: Text('Grid Screen')), // Replace with actual GridScreen
+    const FavouriteScreen(),
+    const ProfileScreen(), // Updated to ProfileScreen
+  ];
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
-    // Handle navigation based on index
-    switch (index) {
-      case 0:
-        // Already on Home screen
-        break;
-      case 1:
-        // Navigate to Calendar screen
-        break;
-      case 2:
-        // Navigate to Favorites screen
-        break;
-      case 3:
-        // Navigate to Profile screen
-        break;
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     final customNavBar = CustomBottomNavBar(
+      currentIndex: _selectedIndex,
+      onTap: _onItemTapped,
       onSearchPressed: () {
         // Navigate to InsideCategoryScreen when the search icon is clicked
         Navigator.push(
@@ -48,6 +44,21 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
       },
     );
 
+    return Scaffold(
+      body: _screens[_selectedIndex],
+      bottomNavigationBar: customNavBar,
+      floatingActionButton: customNavBar.getFloatingActionButton(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+    );
+  }
+}
+
+// Extracted CustomerHomeScreen content into a separate widget for clarity
+class CustomerHomeContent extends StatelessWidget {
+  const CustomerHomeContent({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(120), // Height for AppBar with search bar
@@ -732,9 +743,6 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: customNavBar,
-      floatingActionButton: customNavBar.getFloatingActionButton(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 }

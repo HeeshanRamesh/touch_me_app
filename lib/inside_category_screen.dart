@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:touch_me/component/custom_bottom_navbar.dart'; // Import the CustomBottomNavBar
+import 'custom_bottom_nav_bar.dart'; // Import the CustomBottomNavBar
 import 'search_screen.dart'; // Import the SearchScreen
 import 'search_date_screen.dart'; // Import the SearchDateScreen
 
@@ -9,6 +9,15 @@ class InsideCategoryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final customNavBar = CustomBottomNavBar(
+      currentIndex: 0, // Set the current index (e.g., 0 for the first tab)
+      onTap: (index) {
+        // Handle tab selection
+        if (index == 0) {
+          Navigator.pop(context); // Navigate back to the previous screen
+        } else if (index == 1) {
+          // Add logic for other tabs if needed
+        }
+      },
       onSearchPressed: () {
         // Navigate back to the previous screen (likely CustomerHomeScreen)
         Navigator.pop(context);
