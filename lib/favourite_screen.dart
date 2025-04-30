@@ -8,14 +8,14 @@ class FavouriteScreen extends StatefulWidget {
 }
 
 class _FavouriteScreenState extends State<FavouriteScreen> {
-  // Sample list of favorite salons (you can replace this with a real data source)
+  // Sample list of favorite salons and spas
   final List<Map<String, dynamic>> _favoriteSalons = [
     {
       'name': 'Crazy & Windy',
       'rating': 5.0,
       'reviews': 127,
       'location': 'No 6/1, Main Street',
-      'imagePath': 'assets/crazy_windy.jpg',
+      'imagePath': 'assets/favourites/crazy_windy.png',
       'isFavorite': true,
     },
     {
@@ -23,7 +23,7 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
       'rating': 5.0,
       'reviews': 127,
       'location': 'No 6/1, Main Street',
-      'imagePath': 'assets/miro_miro.jpg',
+      'imagePath': 'assets/favourites/miro_miro.png',
       'isFavorite': true,
     },
     {
@@ -31,7 +31,7 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
       'rating': 5.0,
       'reviews': 127,
       'location': 'No 6/1, Main Street',
-      'imagePath': 'assets/saloon_spa_william.jpg',
+      'imagePath': 'assets/favourites/saloon_spa_william.png',
       'isFavorite': true,
     },
     {
@@ -39,7 +39,23 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
       'rating': 5.0,
       'reviews': 127,
       'location': 'No 6/1, Main Street',
-      'imagePath': 'assets/bny_saloon.jpg',
+      'imagePath': 'assets/favourites/bny_saloon.png',
+      'isFavorite': true,
+    },
+    {
+      'name': 'sny Saloon',
+      'rating': 4.5,
+      'reviews': 127,
+      'location': 'No 6/1, Main Street',
+      'imagePath': 'assets/favourites/sny_spa.png',
+      'isFavorite': true,
+    },
+    {
+      'name': 'scy Saloon',
+      'rating': 4.0,
+      'reviews': 127,
+      'location': 'No 6/1, Main Street',
+      'imagePath': 'assets/favourites/scy_spa.png',
       'isFavorite': true,
     },
     {
@@ -47,17 +63,54 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
       'rating': 5.0,
       'reviews': 127,
       'location': 'No 6/1, Main Street',
-      'imagePath': 'assets/ladies_magic.jpg',
+      'imagePath': 'assets/favourites/ladies_magic.png',
       'isFavorite': true,
     },
   ];
 
+  String _selectedFilter = 'All'; // Track the selected filter
+  List<Map<String, dynamic>> _filteredSalons = []; // Filtered list
+
+  @override
+  void initState() {
+    super.initState();
+    _filteredSalons = _favoriteSalons; // Initially show all
+  }
+
   void _toggleFavorite(int index) {
     setState(() {
-      _favoriteSalons[index]['isFavorite'] = !_favoriteSalons[index]['isFavorite'];
-      // If the salon is unfavorited, remove it from the list
-      if (!_favoriteSalons[index]['isFavorite']) {
-        _favoriteSalons.removeAt(index);
+      _filteredSalons[index]['isFavorite'] = !_filteredSalons[index]['isFavorite'];
+      if (!_filteredSalons[index]['isFavorite']) {
+        _filteredSalons.removeAt(index);
+        // Update the original list as well
+        final salonName = _filteredSalons[index]['name'];
+        final originalIndex = _favoriteSalons.indexWhere((salon) => salon['name'] == salonName);
+        if (originalIndex != -1) {
+          _favoriteSalons[originalIndex]['isFavorite'] = false;
+        }
+      }
+      // Reapply the filter after toggling favorite
+      _applyFilter(_selectedFilter);
+    });
+  }
+
+  void _applyFilter(String filter) {
+    setState(() {
+      _selectedFilter = filter;
+      if (filter == 'All') {
+        _filteredSalons = _favoriteSalons.where((salon) => salon['isFavorite']).toList();
+      } else if (filter == 'Salons') {
+        _filteredSalons = _favoriteSalons
+            .where((salon) =>
+                salon['isFavorite'] &&
+                (salon['name'].toString().toLowerCase().contains('saloon') ||
+                    salon['name'].toString().toLowerCase().contains('salon')))
+            .toList();
+      } else if (filter == 'Spas') {
+        _filteredSalons = _favoriteSalons
+            .where((salon) =>
+                salon['isFavorite'] && salon['name'].toString().toLowerCase().contains('spa'))
+            .toList();
       }
     });
   }
@@ -81,29 +134,69 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
           ),
         ),
       ),
-      body: _favoriteSalons.isEmpty
-          ? const Center(
-              child: Text(
-                'No favorite salons yet.',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              ),
-            )
-          : ListView.builder(
-              padding: const EdgeInsets.all(16.0),
-              itemCount: _favoriteSalons.length,
-              itemBuilder: (context, index) {
-                final salon = _favoriteSalons[index];
-                return _buildSalonCard(
-                  salon['name'],
-                  salon['rating'],
-                  salon['reviews'],
-                  salon['location'],
-                  salon['imagePath'],
-                  salon['isFavorite'],
-                  index,
-                );
-              },
+      body: Column(
+        children: [
+          // Filter Buttons
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildFilterButton('All', _selectedFilter == 'All'),
+                _buildFilterButton('Salons', _selectedFilter == 'Salons'),
+                _buildFilterButton('Spas', _selectedFilter == 'Spas'),
+              ],
             ),
+          ),
+          // Salon/Spa List
+          Expanded(
+            child: _filteredSalons.isEmpty
+                ? const Center(
+                    child: Text(
+                      'No favorite salons or spas yet.',
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(16.0),
+                    itemCount: _filteredSalons.length,
+                    itemBuilder: (context, index) {
+                      final salon = _filteredSalons[index];
+                      return _buildSalonCard(
+                        salon['name'],
+                        salon['rating'],
+                        salon['reviews'],
+                        salon['location'],
+                        salon['imagePath'],
+                        salon['isFavorite'],
+                        index,
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterButton(String label, bool isSelected) {
+    return ElevatedButton(
+      onPressed: () => _applyFilter(label),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: isSelected ? Colors.purple : Colors.grey[300],
+        foregroundColor: isSelected ? Colors.white : Colors.black,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        ),
+      ),
     );
   }
 
@@ -140,9 +233,7 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
                 },
               ),
             ),
-            child: imagePath == null
-                ? const Icon(Icons.image, color: Colors.grey, size: 50)
-                : null,
+            child: null,
           ),
           // Details
           Expanded(

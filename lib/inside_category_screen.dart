@@ -19,8 +19,17 @@ class InsideCategoryScreen extends StatelessWidget {
         }
       },
       onSearchPressed: () {
-        // Navigate back to the previous screen (likely CustomerHomeScreen)
-        Navigator.pop(context);
+        // Check if the current route is already InsideCategoryScreen
+        if (ModalRoute.of(context)?.settings.name != '/inside_category') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const InsideCategoryScreen(),
+              settings: const RouteSettings(name: '/inside_category'),
+            ),
+          );
+        }
+        // If already on InsideCategoryScreen, do nothing (or optionally refresh)
       },
     );
 
@@ -161,77 +170,14 @@ class InsideCategoryScreen extends StatelessWidget {
               height: 220,
               child: ListView(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                children: [
-                  _buildSpecialOfferCard(
-                    'Crazy Cuts by Windy',
-                    '121/A, Kesbewa, Piliyandala',
-                    5.0,
-                    25,
-                    'Save Up To 10%',
-                    'assets/salon1.jpg',
-                  ),
-                  _buildSpecialOfferCard(
-                    'Salon & Spa by Wendy',
-                    '221/B, Kesbewa, Piliyandala',
-                    5.0,
-                    20,
-                    'Save Up To 15%',
-                    'assets/salon2.jpg',
-                  ),
-                ],
-              ),
-            ),
-            
-            // Hair Salon Category Header
-            Container(
-              margin: const EdgeInsets.only(top: 16, bottom: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  Text(
-                    'Hair Salon (38,749)',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.purple[900],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            
-            // Subcategory Filter Chips
-            Container(
-              padding: const EdgeInsets.only(bottom: 12),
-              height: 40,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                children: [
-                  _buildSubcategoryChip('Female Haircut', true),
-                  _buildSubcategoryChip('Kids Haircut', false),
-                  _buildSubcategoryChip('Hair Care', false),
-                  _buildSubcategoryChip('Gender Neutral', false),
-                ],
-              ),
-            ),
-            
-            // Salon Grid View
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              childAspectRatio: 0.75,
               padding: const EdgeInsets.symmetric(horizontal: 12),
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
-              children: [
-                _buildSalonGridItem('assets/salon3.jpg'),
-                _buildSalonGridItem('assets/salon4.jpg'),
-                _buildSalonGridItem('assets/salon5.jpg'),
-                _buildSalonGridItem('assets/salon6.jpg'),
-              ],
+                children: [
+                  _buildSalonGridItem('assets/salon3.jpg'),
+                  _buildSalonGridItem('assets/salon4.jpg'),
+                  _buildSalonGridItem('assets/salon5.jpg'),
+                  _buildSalonGridItem('assets/salon6.jpg'),
+                ],
+              ),
             ),
             
             const SizedBox(height: 16),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'profile_personal_details_screen.dart'; // Import the new screen
+import 'profile_personal_details_screen.dart';
+import 'payment_method_screen.dart'; // Import the new screen
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -40,7 +41,6 @@ class ProfileScreen extends StatelessWidget {
               title: const Text('Personal Details'),
               trailing: const Icon(Icons.chevron_right, color: Colors.grey),
               onTap: () {
-                // Navigate to ProfilePersonalDetailsScreen
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const ProfilePersonalDetailsScreen()),
@@ -52,8 +52,10 @@ class ProfileScreen extends StatelessWidget {
               title: const Text('Payment Method'),
               trailing: const Icon(Icons.chevron_right, color: Colors.grey),
               onTap: () {
-                // Navigate to Payment Method screen (placeholder)
-                print('Navigate to Payment Method');
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const PaymentMethodScreen()),
+                );
               },
             ),
             ListTile(
