@@ -1,7 +1,61 @@
 import 'package:flutter/material.dart';
 
-class ProfilePersonalDetailsScreen extends StatelessWidget {
+class ProfilePersonalDetailsScreen extends StatefulWidget {
   const ProfilePersonalDetailsScreen({Key? key}) : super(key: key);
+
+  @override
+  _ProfilePersonalDetailsScreenState createState() => _ProfilePersonalDetailsScreenState();
+}
+
+class _ProfilePersonalDetailsScreenState extends State<ProfilePersonalDetailsScreen> {
+  bool _isEditing = false; // Track editing state
+  late TextEditingController _nameController;
+  late TextEditingController _emailController;
+  late TextEditingController _phoneController;
+  late TextEditingController _locationController;
+  late TextEditingController _genderController;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize controllers with default values
+    _nameController = TextEditingController(text: 'Dinuka Sandeep');
+    _emailController = TextEditingController(text: 'Dinuka.Sandeep425@gmail.com');
+    _phoneController = TextEditingController(text: '308 65 123564789');
+    _locationController = TextEditingController(text: 'Kesbewa, Colombo');
+    _genderController = TextEditingController(text: 'Male');
+  }
+
+  @override
+  void dispose() {
+    // Dispose controllers to free resources
+    _nameController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    _locationController.dispose();
+    _genderController.dispose();
+    super.dispose();
+  }
+
+  void _toggleEditMode() {
+    setState(() {
+      _isEditing = !_isEditing;
+    });
+  }
+
+  void _saveChanges() {
+    setState(() {
+      _isEditing = false; // Exit edit mode
+    });
+    // Show success notification
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Edit Successful'),
+        duration: Duration(seconds: 2),
+        backgroundColor: Colors.green,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,6 +76,12 @@ class ProfilePersonalDetailsScreen extends StatelessWidget {
           ),
         ),
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit, color: Colors.black),
+            onPressed: _toggleEditMode,
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -55,10 +115,19 @@ class ProfilePersonalDetailsScreen extends StatelessWidget {
                   color: const Color(0xFFF8E8EE), // Light pink background
                   borderRadius: BorderRadius.circular(8.0),
                 ),
-                child: const Text(
-                  'Dinuka Sandeep',
-                  style: TextStyle(fontSize: 16, color: Colors.black),
-                ),
+                child: _isEditing
+                    ? TextField(
+                        controller: _nameController,
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                        style: const TextStyle(fontSize: 16, color: Colors.black),
+                      )
+                    : Text(
+                        _nameController.text,
+                        style: const TextStyle(fontSize: 16, color: Colors.black),
+                      ),
               ),
               const SizedBox(height: 20),
               // Email
@@ -78,10 +147,19 @@ class ProfilePersonalDetailsScreen extends StatelessWidget {
                   color: const Color(0xFFF8E8EE),
                   borderRadius: BorderRadius.circular(8.0),
                 ),
-                child: const Text(
-                  'Dinuka.Sandeep425@gmail.com',
-                  style: TextStyle(fontSize: 16, color: Colors.black),
-                ),
+                child: _isEditing
+                    ? TextField(
+                        controller: _emailController,
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                        style: const TextStyle(fontSize: 16, color: Colors.black),
+                      )
+                    : Text(
+                        _emailController.text,
+                        style: const TextStyle(fontSize: 16, color: Colors.black),
+                      ),
               ),
               const SizedBox(height: 20),
               // Phone
@@ -101,10 +179,19 @@ class ProfilePersonalDetailsScreen extends StatelessWidget {
                   color: const Color(0xFFF8E8EE),
                   borderRadius: BorderRadius.circular(8.0),
                 ),
-                child: const Text(
-                  '308 65 123564789',
-                  style: TextStyle(fontSize: 16, color: Colors.black),
-                ),
+                child: _isEditing
+                    ? TextField(
+                        controller: _phoneController,
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                        style: const TextStyle(fontSize: 16, color: Colors.black),
+                      )
+                    : Text(
+                        _phoneController.text,
+                        style: const TextStyle(fontSize: 16, color: Colors.black),
+                      ),
               ),
               const SizedBox(height: 20),
               // Location
@@ -124,10 +211,19 @@ class ProfilePersonalDetailsScreen extends StatelessWidget {
                   color: const Color(0xFFF8E8EE),
                   borderRadius: BorderRadius.circular(8.0),
                 ),
-                child: const Text(
-                  'Kesbewa, Colombo',
-                  style: TextStyle(fontSize: 16, color: Colors.black),
-                ),
+                child: _isEditing
+                    ? TextField(
+                        controller: _locationController,
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                        style: const TextStyle(fontSize: 16, color: Colors.black),
+                      )
+                    : Text(
+                        _locationController.text,
+                        style: const TextStyle(fontSize: 16, color: Colors.black),
+                      ),
               ),
               const SizedBox(height: 20),
               // Gender
@@ -147,19 +243,25 @@ class ProfilePersonalDetailsScreen extends StatelessWidget {
                   color: const Color(0xFFF8E8EE),
                   borderRadius: BorderRadius.circular(8.0),
                 ),
-                child: const Text(
-                  'Male',
-                  style: TextStyle(fontSize: 16, color: Colors.black),
-                ),
+                child: _isEditing
+                    ? TextField(
+                        controller: _genderController,
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                        style: const TextStyle(fontSize: 16, color: Colors.black),
+                      )
+                    : Text(
+                        _genderController.text,
+                        style: const TextStyle(fontSize: 16, color: Colors.black),
+                      ),
               ),
               const SizedBox(height: 40),
-              // Edit Profile Button
+              // Edit Profile / Save Changes Button
               Center(
                 child: ElevatedButton(
-                  onPressed: () {
-                    // Navigate to Edit Profile screen (placeholder)
-                    print('Navigate to Edit Profile');
-                  },
+                  onPressed: _isEditing ? _saveChanges : _toggleEditMode,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF6A1B9A), // Purple background
                     padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
@@ -167,9 +269,9 @@ class ProfilePersonalDetailsScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8.0),
                     ),
                   ),
-                  child: const Text(
-                    'Edit Profile',
-                    style: TextStyle(
+                  child: Text(
+                    _isEditing ? 'Save Changes' : 'Edit Profile',
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,
                       fontWeight: FontWeight.bold,

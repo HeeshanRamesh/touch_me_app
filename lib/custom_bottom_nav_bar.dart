@@ -3,135 +3,119 @@ import 'package:flutter/material.dart';
 class CustomBottomNavBar extends StatelessWidget {
   final int currentIndex;
   final Function(int) onTap;
-  final VoidCallback? onSearchPressed;
+  final VoidCallback onSearchPressed;
 
   const CustomBottomNavBar({
     Key? key,
     required this.currentIndex,
     required this.onTap,
-    this.onSearchPressed,
+    required this.onSearchPressed,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return BottomAppBar(
       shape: const CircularNotchedRectangle(),
-      color: Colors.white,
-      child: SizedBox(
-        height: 70, // Increased height to accommodate labels
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            // Home Icon with Label
-            Column(
+      notchMargin: 8.0,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          // Home
+          InkWell(
+            onTap: () => onTap(0),
+            child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                IconButton(
-                  icon: Icon(
-                    Icons.home,
-                    color: currentIndex == 0 ? const Color(0xFF6A1B9A) : Colors.grey,
-                  ),
-                  onPressed: () => onTap(0),
+                Icon(
+                  Icons.home,
+                  size: 20,
+                  color: currentIndex == 0 ? const Color(0xFF6A1B9A) : Colors.grey,
                 ),
                 Text(
                   'Home',
                   style: TextStyle(
-                    color: currentIndex == 0 ? const Color(0xFF6A1B9A) : Colors.black,
-                    fontSize: 12,
+                    color: currentIndex == 0 ? const Color(0xFF6A1B9A) : Colors.grey,
+                    fontSize: 10,
                   ),
                 ),
               ],
             ),
-            // Grid Icon with Label
-            Column(
+          ),
+          // Appointments
+          InkWell(
+            onTap: () => onTap(1),
+            child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                IconButton(
-                  icon: Icon(
-                    Icons.grid_view,
-                    color: currentIndex == 1 ? const Color(0xFF6A1B9A) : Colors.black,
-                  ),
-                  onPressed: () => onTap(1),
+                Icon(
+                  Icons.calendar_today,
+                  size: 20,
+                  color: currentIndex == 1 ? const Color(0xFF6A1B9A) : Colors.grey,
                 ),
                 Text(
-                  'Appoinmets',
+                  'Appointments', // Fixed typo
                   style: TextStyle(
                     color: currentIndex == 1 ? const Color(0xFF6A1B9A) : Colors.grey,
-                    fontSize: 12,
+                    fontSize: 10,
                   ),
                 ),
               ],
             ),
-            const SizedBox(width: 20), // Space for the FAB (Search)
-            // Favorites Icon with Notification Badge and Label
-            Column(
+          ),
+          const SizedBox(width: 48), // Space for the FAB
+          // Favourites
+          InkWell(
+            onTap: () => onTap(2),
+            child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    IconButton(
-                      icon: Icon(
-                        currentIndex == 2 ? Icons.favorite : Icons.favorite_border,
-                        color: currentIndex == 2 ? const Color(0xFF6A1B9A) : Colors.grey,
-                      ),
-                      onPressed: () => onTap(2),
-                    ),
-                    Positioned(
-                      right: 5,
-                      top: 5,
-                      child: Container(
-                        width: 10,
-                        height: 10,
-                        decoration: const BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ),
-                  ],
+                Icon(
+                  Icons.favorite,
+                  size: 20,
+                  color: currentIndex == 2 ? const Color(0xFF6A1B9A) : Colors.grey,
                 ),
                 Text(
-                  'Favorites',
+                  'Favourites',
                   style: TextStyle(
-                    color: currentIndex == 2 ? const Color(0xFF6A1B9A) : Colors.black,
-                    fontSize: 12,
+                    color: currentIndex == 2 ? const Color(0xFF6A1B9A) : Colors.grey,
+                    fontSize: 10,
                   ),
                 ),
               ],
             ),
-            // Profile Icon with Label
-            Column(
+          ),
+          // Profile
+          InkWell(
+            onTap: () => onTap(3),
+            child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                IconButton(
-                  icon: Icon(
-                    Icons.person_outline,
-                    color: currentIndex == 3 ? const Color(0xFF6A1B9A) : Colors.grey,
-                  ),
-                  onPressed: () => onTap(3),
+                Icon(
+                  Icons.person,
+                  size: 20,
+                  color: currentIndex == 3 ? const Color(0xFF6A1B9A) : Colors.grey,
                 ),
                 Text(
                   'Profile',
                   style: TextStyle(
-                    color: currentIndex == 3 ? const Color(0xFF6A1B9A) : Colors.black,
-                    fontSize: 12,
+                    color: currentIndex == 3 ? const Color(0xFF6A1B9A) : Colors.grey,
+                    fontSize: 10,
                   ),
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget getFloatingActionButton() {
+  FloatingActionButton getFloatingActionButton() {
     return FloatingActionButton(
-      backgroundColor: const Color(0xFF6A1B9A), // Purple background
+      backgroundColor: const Color(0xFF6A1B9A),
       child: const Icon(
         Icons.search,
-        color: Colors.white, // White search icon
+        color: Colors.white,
       ),
       onPressed: onSearchPressed,
     );
