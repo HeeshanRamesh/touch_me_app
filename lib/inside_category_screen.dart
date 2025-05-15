@@ -4,7 +4,7 @@ import 'search_screen.dart'; // Import the SearchScreen
 import 'search_date_screen.dart'; // Import the SearchDateScreen
 
 class InsideCategoryScreen extends StatelessWidget {
-  const InsideCategoryScreen({Key? key}) : super(key: key);
+  const InsideCategoryScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

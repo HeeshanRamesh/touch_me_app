@@ -10,7 +10,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
       home: SplashScreen(),
     );
@@ -24,10 +24,9 @@ class SplashScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        // Set the background image
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/backgroundpotrait.png'), // Background image path
+            image: AssetImage('assets/backgroundpotrait.png'),
             fit: BoxFit.cover,
           ),
         ),
@@ -35,29 +34,26 @@ class SplashScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Logo container with white background and rounded corners
               GestureDetector(
                 onTap: () {
-                  // Navigate to Onboarding1Page when the logo is clicked
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const Onboarding1Page()),
+                  Navigator.of(context).push(
+                    PageRouteBuilder(
+                      pageBuilder: (_, __, ___) => const Onboarding1Page(),
+                      transitionsBuilder: (_, animation, __, child) {
+                        return FadeTransition(opacity: animation, child: child);
+                      },
+                    ),
                   );
                 },
                 child: Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Image.asset(
-                    'assets/app_icon.png', // Logo image path
-                    height: 250, // Adjust size as needed
-                  ),
+                  child: Image.asset('assets/app_icon.png', height: 250),
                 ),
               ),
               const SizedBox(height: 20),
-              // Tagline text
               const Text(
                 'YOUR NEXT LOOK. ONE CLICK AWAY',
                 style: TextStyle(
@@ -67,7 +63,6 @@ class SplashScreen extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              // Footer text with bold style
               const Padding(
                 padding: EdgeInsets.only(bottom: 20),
                 child: Text(
@@ -75,7 +70,7 @@ class SplashScreen extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.black54,
-                    fontWeight: FontWeight.bold, // Make the text bold
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),

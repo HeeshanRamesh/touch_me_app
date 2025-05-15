@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'appoinment_screen.dart'; // Import the AppointmentScreen
-import 'saloon_review_screen.dart'; // Import the SaloonReviewScreen
-import 'saloon_gift_card_screen.dart'; // Import the SaloonGiftCardScreen
-import 'horizontal_nav_bar.dart'; // Import the HorizontalNavBar
-import 'saloon_portfolio_screen.dart'; // Import the SaloonPortfolioScreen
-import 'saloon_detail_screen.dart'; // Import the SaloonDetailScreen
+import 'appoinment_screen.dart';
+import 'saloon_review_screen.dart';
+import 'saloon_gift_card_screen.dart';
+import 'horizontal_nav_bar.dart';
+import 'saloon_portfolio_screen.dart';
+import 'saloon_detail_screen.dart';
 
 class OneSaloonInsideScreen extends StatefulWidget {
   final String saloonName;
@@ -29,34 +29,36 @@ class OneSaloonInsideScreen extends StatefulWidget {
 }
 
 class _OneSaloonInsideScreenState extends State<OneSaloonInsideScreen> {
-  String _activeTab = 'Services'; // Default active tab
+  String _activeTab = 'Services';
 
   void _onTabSelected(String tab) {
-    setState(() {
-      _activeTab = tab;
-    });
+    setState(() => _activeTab = tab);
 
-    // Handle navigation based on the selected tab
-    if (tab == 'Reviews') {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const SaloonReviewScreen()),
-      );
-    } else if (tab == 'Gift Cards') {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const SaloonGiftCardScreen()),
-      );
-    } else if (tab == 'Portfolio') {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const SaloonPortfolioScreen()),
-      );
-    } else if (tab == 'Details') {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const SaloonDetailScreen()),
-      );
+    switch (tab) {
+      case 'Reviews':
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const SaloonReviewScreen()),
+        );
+        break;
+      case 'Gift Cards':
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const SaloonGiftCardScreen()),
+        );
+        break;
+      case 'Portfolio':
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const SaloonPortfolioScreen()),
+        );
+        break;
+      case 'Details':
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const SaloonDetailScreen()),
+        );
+        break;
     }
   }
 
@@ -65,12 +67,10 @@ class _OneSaloonInsideScreenState extends State<OneSaloonInsideScreen> {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          // SliverAppBar for the header with image
           SliverAppBar(
-            expandedHeight: 200.0,
-            floating: false,
+            expandedHeight: 200,
             pinned: true,
-            backgroundColor: const Color(0xFF6A1B9A), // Purple color
+            backgroundColor: const Color(0xFF6A1B9A),
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(
                 fit: StackFit.expand,
@@ -78,10 +78,9 @@ class _OneSaloonInsideScreenState extends State<OneSaloonInsideScreen> {
                   Image.asset(
                     widget.imagePath,
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      debugPrint('Error loading ${widget.imagePath}: $error');
-                      return const Icon(Icons.image, size: 100, color: Colors.grey);
-                    },
+                    errorBuilder:
+                        (context, error, stackTrace) =>
+                            const Icon(Icons.image, size: 100),
                   ),
                   Positioned(
                     top: 40,
@@ -95,55 +94,71 @@ class _OneSaloonInsideScreenState extends State<OneSaloonInsideScreen> {
               ),
             ),
           ),
-          // SliverToBoxAdapter for the rest of the content
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Salon Info
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.saloonName,
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.saloonName,
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              const Icon(Icons.location_pin, color: Colors.grey, size: 16),
-                              const SizedBox(width: 4),
-                              Text(
-                                widget.location,
-                                style: const TextStyle(fontSize: 14, color: Colors.grey),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              const Icon(Icons.star, color: Colors.yellow, size: 16),
-                              const SizedBox(width: 4),
-                              Text(
-                                '${widget.rating} (${widget.reviews} Reviews)',
-                                style: const TextStyle(fontSize: 14),
-                              ),
-                            ],
-                          ),
-                        ],
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.location_pin,
+                                  size: 16,
+                                  color: Colors.grey,
+                                ),
+                                const SizedBox(width: 4),
+                                Flexible(
+                                  child: Text(
+                                    widget.location,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.star,
+                                  color: Colors.yellow,
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '${widget.rating} (${widget.reviews} Reviews)',
+                                  style: const TextStyle(fontSize: 14),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                       Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.purple.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(12),
@@ -157,122 +172,90 @@ class _OneSaloonInsideScreenState extends State<OneSaloonInsideScreen> {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 8),
                           IconButton(
-                            icon: const Icon(Icons.favorite_border, color: Colors.purple),
-                            onPressed: () {
-                              // Handle favorite action
-                            },
+                            icon: const Icon(
+                              Icons.favorite_border,
+                              color: Colors.purple,
+                            ),
+                            onPressed: () {},
                           ),
                         ],
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
-                  // Horizontal Navigation Bar
                   HorizontalNavBar(
-                    tabs: const ['Services', 'Reviews', 'Portfolio', 'Gift Cards', 'Details'],
+                    tabs: const [
+                      'Services',
+                      'Reviews',
+                      'Portfolio',
+                      'Gift Cards',
+                      'Details',
+                    ],
                     activeTab: _activeTab,
                     onTabSelected: _onTabSelected,
                   ),
                   const SizedBox(height: 16),
-                  // Search Bar
                   TextField(
                     decoration: InputDecoration(
                       hintText: 'Search for Service',
                       prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30),
-                        borderSide: const BorderSide(color: Colors.grey),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30),
-                        borderSide: const BorderSide(color: Colors.grey),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30),
-                        borderSide: const BorderSide(color: Color(0xFF6A1B9A)),
-                      ),
                       filled: true,
                       fillColor: Colors.grey.withOpacity(0.1),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: BorderSide.none,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
-                  // Popular Services Section with ExpansionTile
-                  ExpansionTile(
-                    title: const Text(
-                      'Popular Services',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    initiallyExpanded: true, // Open by default
-                    children: [
-                      _buildServiceCard(
-                        context,
-                        'Haircut & Beard',
-                        'A haircut trims and styles hair, enhancing appearance, reflecting personality, and maintaining grooming.',
-                        40.00,
-                        '30m',
-                        'Save Up To 10%',
-                      ),
-                      _buildServiceCard(
-                        context,
-                        'Haircut & Beard',
-                        'A haircut trims and styles hair, enhancing appearance, reflecting personality, and maintaining grooming.',
-                        50.00,
-                        '55m',
-                        'Save Up To 10%',
-                      ),
-                      _buildServiceCard(
-                        context,
-                        'Edge Up',
-                        'A haircut trims and styles hair, enhancing appearance, reflecting personality, and maintaining grooming.',
-                        30.00,
-                        '25m',
-                        'Save Up To 10%',
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  // Other Services Section with ExpansionTile
-                  ExpansionTile(
-                    title: const Text(
-                      'Other Services',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    initiallyExpanded: false, // Closed by default
-                    children: [
-                      _buildServiceCard(
-                        context,
-                        'Kidscut',
-                        'A haircut trims and styles hair, enhancing appearance, reflecting personality, and maintaining grooming.',
-                        40.00,
-                        '45m',
-                        'Save Up To 10%',
-                      ),
-                      _buildServiceCard(
-                        context,
-                        'Beard',
-                        'A haircut trims and styles hair, enhancing appearance, reflecting personality, and maintaining grooming.',
-                        25.00,
-                        '20m',
-                        'Save Up To 10%',
-                      ),
-                      _buildServiceCard(
-                        context,
-                        'Haircut & Beard',
-                        'A haircut trims and styles hair, enhancing appearance, reflecting personality, and maintaining grooming.',
-                        50.00,
-                        '55m',
-                        'Save Up To 15%',
-                      ),
-                    ],
-                  ),
+                  _buildServiceExpansion('Popular Services', true),
+                  const SizedBox(height: 12),
+                  _buildServiceExpansion('Other Services', false),
                 ],
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildServiceExpansion(String title, bool initiallyExpanded) {
+    final List<Map<String, dynamic>> services = [
+      {
+        'title': 'Haircut & Beard',
+        'desc': 'Trims and styles hair for grooming and personality.',
+        'price': 40.0,
+        'duration': '30m',
+        'discount': 'Save Up To 10%',
+      },
+      {
+        'title': 'Edge Up',
+        'desc': 'Sharp clean haircut edges and styling.',
+        'price': 30.0,
+        'duration': '25m',
+        'discount': 'Save Up To 10%',
+      },
+    ];
+
+    return ExpansionTile(
+      title: Text(
+        title,
+        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      ),
+      initiallyExpanded: initiallyExpanded,
+      children:
+          services.map((service) {
+            return _buildServiceCard(
+              context,
+              service['title'],
+              service['desc'],
+              service['price'],
+              service['duration'],
+              service['discount'],
+            );
+          }).toList(),
     );
   }
 
@@ -284,96 +267,103 @@ class _OneSaloonInsideScreenState extends State<OneSaloonInsideScreen> {
     String duration,
     String discount,
   ) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          title,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.purple.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          discount,
-                          style: const TextStyle(
-                            color: Colors.purple,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    description,
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Text(
-                        '\$${price.toStringAsFixed(2)}',
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Card(
+          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
                         style: const TextStyle(
-                          fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black,
+                          fontSize: 16,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      Text(
-                        duration,
-                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
                       ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 16),
-            ElevatedButton(
-              onPressed: () {
-                // Navigate to AppointmentScreen
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const AppointmentScreen()),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF6A1B9A),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
+                      decoration: BoxDecoration(
+                        color: Colors.purple.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        discount,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                          color: Colors.purple,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              child: const Text(
-                'Book',
-                style: TextStyle(color: Colors.white, fontSize: 14),
-              ),
+                const SizedBox(height: 6),
+                Text(
+                  description,
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  maxLines: 2,
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          '\$${price.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          duration,
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const AppointmentScreen(),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF6A1B9A),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      child: const Text(
+                        'Book',
+                        style: TextStyle(color: Colors.white, fontSize: 14),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
