@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:touch_me/inside_appointment_review_screen.dart';
 
 class CompletedAppointmentScreen extends StatelessWidget {
   const CompletedAppointmentScreen({Key? key}) : super(key: key);
@@ -19,48 +20,48 @@ class CompletedAppointmentsTab extends StatefulWidget {
 }
 
 class _CompletedAppointmentsTabState extends State<CompletedAppointmentsTab> {
-  // List of completed appointments
+  // Updated list of completed appointments to match the edited image
   final List<Map<String, dynamic>> _completedAppointments = [
     {
-      'title': 'Haircut',
+      'title': 'HAIRCUT',
       'date': '16/01/2025',
       'price': '15,000 LKR',
-      'saloon': 'Kamal Dunusinghe',
+      'saloon': 'KOMAL DUNUSINGHE',
       'imagePath': 'assets/appointments/haircut_image.png',
     },
     {
-      'title': 'Bridal Dressing',
+      'title': 'BRIDAL DRESING',
       'date': '16/01/2025',
       'price': '95,000 LKR',
-      'saloon': 'Ayeshma K Flo',
+      'saloon': 'AYESHMA K. FLO',
       'imagePath': 'assets/appointments/bridal_dressing_image.png',
     },
     {
-      'title': 'Makeup',
+      'title': 'MAKEUP',
       'date': '16/01/2025',
       'price': '5,000 LKR',
-      'saloon': 'Nathasha Perera',
+      'saloon': 'NATHASHA PERERA',
       'imagePath': 'assets/appointments/makeup_image.png',
     },
     {
-      'title': 'Facial',
+      'title': 'FACIAL',
       'date': '16/01/2025',
       'price': '15,000 LKR',
-      'saloon': 'Nethmi Kavya',
+      'saloon': 'NETHMI KAVYA',
       'imagePath': 'assets/appointments/facial_image.png',
     },
     {
-      'title': 'Eyebrows Making',
+      'title': 'EYEBROWS MAKING',
       'date': '16/01/2025',
       'price': '25,000 LKR',
-      'saloon': 'Tharushi Sangeewani',
+      'saloon': 'THARUSHI SANJEEWANI',
       'imagePath': 'assets/appointments/eyebrows_image.png',
     },
     {
-      'title': 'Haircut',
+      'title': 'HAIRCUT',
       'date': '16/01/2025',
       'price': '15,000 LKR',
-      'saloon': 'Neel Dunusinghe',
+      'saloon': 'NEEL DUNUSINGHE',
       'imagePath': 'assets/appointments/haircut_image_2.png',
     },
   ];
@@ -170,8 +171,10 @@ class _CompletedAppointmentsTabState extends State<CompletedAppointmentsTab> {
                         children: [
                           ElevatedButton(
                             onPressed: () {
-                              // Handle review action (placeholder for now)
-                              print('Review button tapped for ${appointment['title']}');
+                                Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const InsideAppointmentReviewScreen()),
+                        );
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF6A1B9A), // Purple background

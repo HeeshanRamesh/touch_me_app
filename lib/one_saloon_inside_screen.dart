@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:touch_me/book_appointment_screen.dart';
 
 import 'saloon_review_screen.dart'; // Import the SaloonReviewScreen
 import 'saloon_gift_card_screen.dart'; // Import the SaloonGiftCardScreen
@@ -354,6 +355,10 @@ class _OneSaloonInsideScreenState extends State<OneSaloonInsideScreen> {
             const SizedBox(width: 16),
             ElevatedButton(
               onPressed: () {
+                 Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const BookAppointmentScreen()),
+                        );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF6A1B9A),
