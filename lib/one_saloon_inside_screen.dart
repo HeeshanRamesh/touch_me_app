@@ -267,96 +267,92 @@ class _OneSaloonInsideScreenState extends State<OneSaloonInsideScreen> {
     String duration,
     String discount,
   ) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return Card(
-          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-          child: Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.purple.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    discount,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                      color: Colors.purple,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              description,
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
+              maxLines: 2,
+            ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Expanded(
-                      child: Text(
-                        title,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
+                    Text(
+                      '\$${price.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.purple.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        discount,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                          color: Colors.purple,
-                        ),
-                      ),
+                    const SizedBox(width: 8),
+                    Text(
+                      duration,
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                   ],
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  description,
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
-                  maxLines: 2,
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          '\$${price.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AppointmentScreen(),
                       ),
-                      const SizedBox(width: 8),
-                      Text(
-                        duration,
-                        style: const TextStyle(fontSize: 12, color: Colors.grey),
-                      ),
-                    ],
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF6A1B9A),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 16),
-            ElevatedButton(
-              onPressed: () {
-                // Navigate to AppointmentScreen
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const AppointmentScreen()),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF6A1B9A),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
+                  child: const Text(
+                    'Book',
+                    style: TextStyle(color: Colors.white, fontSize: 14),
+                  ),
                 ),
-              ),
-              child: const Text(
-                'Book',
-                style: TextStyle(color: Colors.white, fontSize: 14),
-              ),
+              ],
             ),
           ],
         ),
