@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'appoinment_screen.dart';
-import 'saloon_review_screen.dart';
-import 'saloon_gift_card_screen.dart';
-import 'horizontal_nav_bar.dart';
-import 'saloon_portfolio_screen.dart';
-import 'saloon_detail_screen.dart';
+import 'appoinment_screen.dart'; // Import the AppointmentScreen
+import 'saloon_review_screen.dart'; // Import the SaloonReviewScreen
+import 'saloon_gift_card_screen.dart'; // Import the SaloonGiftCardScreen
+import 'horizontal_nav_bar.dart'; // Import the HorizontalNavBar
+import 'saloon_portfolio_screen.dart'; // Import the SaloonPortfolioScreen
+import 'saloon_detail_screen.dart'; // Import the SaloonDetailScreen
 
 class OneSaloonInsideScreen extends StatefulWidget {
   final String saloonName;
@@ -327,43 +327,40 @@ class _OneSaloonInsideScreenState extends State<OneSaloonInsideScreen> {
                             fontSize: 16,
                           ),
                         ),
-                        const SizedBox(width: 10),
-                        Text(
-                          duration,
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const AppointmentScreen(),
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6A1B9A),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
                       ),
-                      child: const Text(
-                        'Book',
-                        style: TextStyle(color: Colors.white, fontSize: 14),
+                      const SizedBox(width: 8),
+                      Text(
+                        duration,
+                        style: const TextStyle(fontSize: 12, color: Colors.grey),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        );
-      },
+            const SizedBox(width: 16),
+            ElevatedButton(
+              onPressed: () {
+                // Navigate to AppointmentScreen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AppointmentScreen()),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF6A1B9A),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              child: const Text(
+                'Book',
+                style: TextStyle(color: Colors.white, fontSize: 14),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

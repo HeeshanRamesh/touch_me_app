@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 class CustomBottomNavBar extends StatelessWidget {
   final int currentIndex;
   final Function(int) onTap;
-  final VoidCallback? onSearchPressed;
+  final VoidCallback onSearchPressed;
 
   const CustomBottomNavBar({
     super.key,
     required this.currentIndex,
     required this.onTap,
     this.onSearchPressed,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -18,146 +18,107 @@ class CustomBottomNavBar extends StatelessWidget {
       shape: const CircularNotchedRectangle(),
       color: Colors.white,
       child: SizedBox(
-        height: 70,
+        height: 70, // Increased height to accommodate labels
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            // Home
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  IconButton(
-                    icon: Icon(
-                      Icons.home,
-                      color:
-                          currentIndex == 0
-                              ? const Color(0xFF6A1B9A)
-                              : Colors.grey,
-                    ),
-                    onPressed: () => onTap(0),
+            // Home Icon with Label
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: Icon(
+                    Icons.home,
+                    color: currentIndex == 0 ? const Color(0xFF6A1B9A) : Colors.grey,
                   ),
-                  Text(
-                    'Home',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color:
-                          currentIndex == 0
-                              ? const Color(0xFF6A1B9A)
-                              : Colors.black,
-                    ),
+                  onPressed: () => onTap(0),
+                ),
+                Text(
+                  'Home',
+                  style: TextStyle(
+                    color: currentIndex == 0 ? const Color(0xFF6A1B9A) : Colors.black,
+                    fontSize: 12,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-
-            // Appointments
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  IconButton(
-                    icon: Icon(
-                      Icons.grid_view,
-                      color:
-                          currentIndex == 1
-                              ? const Color(0xFF6A1B9A)
-                              : Colors.grey,
-                    ),
-                    onPressed: () => onTap(1),
+            // Grid Icon with Label
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: Icon(
+                    Icons.grid_view,
+                    color: currentIndex == 1 ? const Color(0xFF6A1B9A) : Colors.black,
                   ),
-                  Text(
-                    'Appointments',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color:
-                          currentIndex == 1
-                              ? const Color(0xFF6A1B9A)
-                              : Colors.grey,
-                    ),
+                  onPressed: () => onTap(1),
+                ),
+                Text(
+                  'Appoinmets',
+                  style: TextStyle(
+                    color: currentIndex == 1 ? const Color(0xFF6A1B9A) : Colors.grey,
+                    fontSize: 12,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-
-            // Spacer for FAB
-            const SizedBox(width: 40),
-
-            // Favorites
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      IconButton(
-                        icon: Icon(
-                          currentIndex == 2
-                              ? Icons.favorite
-                              : Icons.favorite_border,
-                          color:
-                              currentIndex == 2
-                                  ? const Color(0xFF6A1B9A)
-                                  : Colors.grey,
-                        ),
-                        onPressed: () => onTap(2),
+            const SizedBox(width: 20), // Space for the FAB (Search)
+            // Favorites Icon with Notification Badge and Label
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    IconButton(
+                      icon: Icon(
+                        currentIndex == 2 ? Icons.favorite : Icons.favorite_border,
+                        color: currentIndex == 2 ? const Color(0xFF6A1B9A) : Colors.grey,
                       ),
-                      Positioned(
-                        right: 8,
-                        top: 8,
-                        child: Container(
-                          width: 8,
-                          height: 8,
-                          decoration: const BoxDecoration(
-                            color: Colors.red,
-                            shape: BoxShape.circle,
-                          ),
+                      onPressed: () => onTap(2),
+                    ),
+                    Positioned(
+                      right: 5,
+                      top: 5,
+                      child: Container(
+                        width: 10,
+                        height: 10,
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
                         ),
                       ),
-                    ],
-                  ),
-                  Text(
-                    'Favorites',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color:
-                          currentIndex == 2
-                              ? const Color(0xFF6A1B9A)
-                              : Colors.black,
                     ),
+                  ],
+                ),
+                Text(
+                  'Favorites',
+                  style: TextStyle(
+                    color: currentIndex == 2 ? const Color(0xFF6A1B9A) : Colors.black,
+                    fontSize: 12,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-
-            // Profile
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  IconButton(
-                    icon: Icon(
-                      Icons.person_outline,
-                      color:
-                          currentIndex == 3
-                              ? const Color(0xFF6A1B9A)
-                              : Colors.grey,
-                    ),
-                    onPressed: () => onTap(3),
+            // Profile Icon with Label
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: Icon(
+                    Icons.person_outline,
+                    color: currentIndex == 3 ? const Color(0xFF6A1B9A) : Colors.grey,
                   ),
-                  Text(
-                    'Profile',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color:
-                          currentIndex == 3
-                              ? const Color(0xFF6A1B9A)
-                              : Colors.black,
-                    ),
+                  onPressed: () => onTap(3),
+                ),
+                Text(
+                  'Profile',
+                  style: TextStyle(
+                    color: currentIndex == 3 ? const Color(0xFF6A1B9A) : Colors.black,
+                    fontSize: 12,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ],
         ),
@@ -165,10 +126,13 @@ class CustomBottomNavBar extends StatelessWidget {
     );
   }
 
-  // Floating action button for search
   Widget getFloatingActionButton() {
     return FloatingActionButton(
-      backgroundColor: const Color(0xFF6A1B9A),
+      backgroundColor: const Color(0xFF6A1B9A), // Purple background
+      child: const Icon(
+        Icons.search,
+        color: Colors.white, // White search icon
+      ),
       onPressed: onSearchPressed,
       child: const Icon(Icons.search, color: Colors.white),
     );

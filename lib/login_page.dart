@@ -124,7 +124,10 @@ class _LoginPageState extends State<LoginPage> {
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: Colors.grey.shade300),
                 ),
-                child: Image.asset('assets/app_icon.png', height: 80),
+                child: Image.asset(
+                  'assets/app_icon.png', // Replace with your logo image path
+                  height: 80, // Adjust size as needed
+                ),
               ),
               const SizedBox(height: 20),
               // Title
@@ -133,18 +136,18 @@ class _LoginPageState extends State<LoginPage> {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Color.fromARGB(255, 127, 9, 143),
+                  color: Color.fromARGB(255, 127, 9, 143), // Purple color
                 ),
               ),
               const SizedBox(height: 30),
               // Username or Email field
               TextField(
-                controller: _usernameController,
                 decoration: InputDecoration(
                   prefixIcon: const Icon(Icons.person, color: Colors.grey),
                   hintText: 'Username or Email',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
+                    borderSide: const BorderSide(color: Colors.grey),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
@@ -159,16 +162,13 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 15),
               // Password field
               TextField(
-                controller: _passwordController,
                 obscureText: _obscurePassword,
                 decoration: InputDecoration(
                   prefixIcon: const Icon(Icons.lock, color: Colors.grey),
                   hintText: 'Password',
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _obscurePassword
-                          ? Icons.visibility_off
-                          : Icons.visibility,
+                      _obscurePassword ? Icons.visibility_off : Icons.visibility,
                       color: Colors.grey,
                     ),
                     onPressed: () {
@@ -179,6 +179,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
+                    borderSide: const BorderSide(color: Colors.grey),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
@@ -190,29 +191,13 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
-              if (_errorMessage != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: Text(
-                    _errorMessage!,
-                    style: const TextStyle(color: Colors.red),
-                  ),
-                ),
               const SizedBox(height: 10),
               // Forgot Password link
               Align(
                 alignment: Alignment.centerRight,
                 child: GestureDetector(
                   onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Password reset link has been sent to your email.',
-                        ),
-                        backgroundColor: Colors.blue,
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
+                    // Navigate to forgot password page
                   },
                   child: const Text(
                     'Forgot Password?',
@@ -226,34 +211,103 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 20),
               // Login button
               ElevatedButton(
-                onPressed: _isLoading ? null : _login,
+                onPressed: () {
+                  // Navigate to LocationDetectorPage after login
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LocationDetectorPage()),
+                  );
+                },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF6A1B9A),
+                  backgroundColor: const Color(0xFF6A1B9A), // Purple color
                   minimumSize: const Size(double.infinity, 50),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(25),
                   ),
                 ),
-                child:
-                    _isLoading
-                        ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                        : const Text(
-                          'Login',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                child: const Text(
+                  'Login',
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
-              // ... rest of the login page remains the same ...
+              const SizedBox(height: 20),
+              // Or Continue separator
+              Row(
+                children: [
+                  Expanded(child: Divider(color: Colors.grey.shade400)),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 10),
+                    child: Text(
+                      'Or Continue',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ),
+                  Expanded(child: Divider(color: Colors.grey.shade400)),
+                ],
+              ),
+              const SizedBox(height: 20),
+              // With Google button
+              OutlinedButton(
+                onPressed: () {
+                  // Handle Google sign-in logic
+                },
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                  side: const BorderSide(color: Colors.grey),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.network(
+                      'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/512px-Google_%22G%22_Logo.svg.png',
+                      height: 24,
+                      width: 24,
+                    ),
+                    const SizedBox(width: 10),
+                    const Text(
+                      'With Google',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              // Sign Up link
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    'Create An Account ',
+                    style: TextStyle(color: Colors.black),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      // Navigate to SignUpPage
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const SignUpPage()),
+                      );
+                    },
+                    child: const Text(
+                      'Sign Up',
+                      style: TextStyle(
+                        color: Color(0xFF6A1B9A),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),

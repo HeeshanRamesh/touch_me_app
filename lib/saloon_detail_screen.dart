@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
-import 'horizontal_nav_bar.dart';
-import 'one_saloon_inside_screen.dart';
-import 'saloon_review_screen.dart';
-import 'saloon_gift_card_screen.dart';
-import 'saloon_portfolio_screen.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart'; // Import Google Maps
+import 'horizontal_nav_bar.dart'; // Import the HorizontalNavBar
+import 'package:flutter/foundation.dart'; // Import for Factory class
+import 'one_saloon_inside_screen.dart'; // Import for navigation
+import 'saloon_review_screen.dart'; // Import for navigation
+import 'saloon_gift_card_screen.dart'; // Import for navigation
+import 'saloon_portfolio_screen.dart'; // Import for navigation
+import 'map_screen.dart'; // Import the MapScreen
 
 class SaloonDetailScreen extends StatefulWidget {
   const SaloonDetailScreen({super.key});
@@ -13,7 +16,24 @@ class SaloonDetailScreen extends StatefulWidget {
 }
 
 class _SaloonDetailScreenState extends State<SaloonDetailScreen> {
-  String _activeTab = 'Details';
+  String _activeTab = 'Details'; // Default active tab
+
+  // Define the initial position for the map (example coordinates for Colombo, Sri Lanka)
+  static const LatLng _salonLocation = LatLng(6.9271, 79.8612); // Example coordinates for Salon Niro
+  final Set<Marker> _markers = {};
+
+  @override
+  void initState() {
+    super.initState();
+    // Add a marker for Salon Niro
+    _markers.add(
+      const Marker(
+        markerId: MarkerId('salon_niro'),
+        position: _salonLocation,
+        infoWindow: InfoWindow(title: 'Salon Niro'),
+      ),
+    );
+  }
 
   void _onTabSelected(String tab) {
     setState(() {
@@ -102,8 +122,56 @@ class _SaloonDetailScreenState extends State<SaloonDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // About Us Section
-                    _buildSectionTitle('About Us'),
+                    // Google Map with GestureDetector for navigation
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const MapScreen(
+                              salonLocation: _salonLocation,
+                              salonName: 'Salon Niro',
+                            ),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        height: 150,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey.shade300),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: GoogleMap(
+                            initialCameraPosition: const CameraPosition(
+                              target: _salonLocation,
+                              zoom: 15,
+                            ),
+                            markers: _markers,
+                            myLocationEnabled: true,
+                            myLocationButtonEnabled: true,
+                            zoomControlsEnabled: true,
+                            // Disable interaction on this map since it's just a preview
+                            gestureRecognizers: const <Factory<OneSequenceGestureRecognizer>>{},
+                            zoomGesturesEnabled: false,
+                            scrollGesturesEnabled: false,
+                            tiltGesturesEnabled: false,
+                            rotateGesturesEnabled: false,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // About Us
+                    const Text(
+                      'About Us',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const SizedBox(height: 8),
                     Text(
                       'We are dedicated to providing a personalized beauty experience...',
