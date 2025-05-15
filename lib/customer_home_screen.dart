@@ -1,16 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:geocoding/geocoding.dart';
-import 'package:touch_me/barbershop_service_screen.dart';
-import 'package:touch_me/hair_services_screen.dart';
-import 'package:touch_me/location_select_screen.dart';
-import 'package:touch_me/massage_service_screen.dart';
-import 'package:touch_me/search_screen.dart';
-import 'package:touch_me/custom_bottom_nav_bar.dart';
-import 'package:touch_me/inside_category_screen.dart';
-import 'package:touch_me/favourite_screen.dart';
-import 'package:touch_me/profile_screen.dart';
-import 'package:touch_me/one_saloon_inside_screen.dart';
+import 'custom_bottom_nav_bar.dart'; // Import the CustomBottomNavBar
+import 'one_saloon_inside_screen.dart'; // Import the OneSaloonInsideScreen
+import 'search_screen.dart'; // Import the SearchScreen
+import 'inside_category_screen.dart'; // Import the InsideCategoryScreen
+import 'favourite_screen.dart'; // Import the FavouriteScreen
+import 'profile_screen.dart'; // Import the ProfileScreen
 
 class CustomerHomeScreen extends StatefulWidget {
   const CustomerHomeScreen({super.key});
@@ -20,11 +14,12 @@ class CustomerHomeScreen extends StatefulWidget {
 }
 
 class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
-  int _selectedIndex = 0;
+  int _selectedIndex = 0; // Track the selected bottom navigation item
 
+  // List of screens to display based on the selected index
   final List<Widget> _screens = [
-    const CustomerHomeContent(),
-    const Center(child: Text('Grid Screen')),
+    const CustomerHomeContent(), // Home screen content
+    const Center(child: Text('Grid Screen')), // Replace with actual GridScreen
     const FavouriteScreen(),
     const ProfileScreen(),
   ];
@@ -57,157 +52,173 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   }
 }
 
-class CustomerHomeContent extends StatefulWidget {
-  const CustomerHomeContent({super.key});
-
-  @override
-  State<CustomerHomeContent> createState() => _CustomerHomeContentState();
-}
-
-class _CustomerHomeContentState extends State<CustomerHomeContent> {
-  String _selectedLocationText = 'Kesbewa';
-
-  Future<void> _openLocationSelector() async {
-    final LatLng? selectedLatLng = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const LocationSelectScreen()),
-    );
-    if (selectedLatLng != null && mounted) {
-      try {
-        final placemarks = await placemarkFromCoordinates(
-          selectedLatLng.latitude,
-          selectedLatLng.longitude,
-        );
-        if (placemarks.isNotEmpty) {
-          final place = placemarks.first;
-          setState(() {
-            _selectedLocationText = [
-              place.locality,
-              place.subAdministrativeArea,
-              place.administrativeArea,
-            ].where((e) => e != null && e.trim().isNotEmpty).join(', ');
-          });
-        }
-      } catch (_) {
-        setState(() => _selectedLocationText = 'Location not found');
-      }
-    }
-  }
+// Extracted CustomerHomeScreen content into a separate widget for clarity
+class CustomerHomeContent extends StatelessWidget {
+  const CustomerHomeContent({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(120), // Height for AppBar with search bar
+        child: AppBar(
+          backgroundColor: const Color(0xFF6A1B9A), // Purple color
+          leading: Builder(
+            builder: (context) => IconButton(
+              icon: const Icon(Icons.menu, color: Colors.white),
+              onPressed: () => Scaffold.of(context).openDrawer(),
+            ),
+          ),
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Good Morning',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Arshan Sayed',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 16.0),
+              child: TextButton(
+                onPressed: () {
+                  // Handle location tracker action
+                },
+                style: TextButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.location_pin,
+                      color: Color(0xFF6A1B9A),
+                      size: 16,
+                    ),
+                    const SizedBox(width: 4),
+                    const Text(
+                      'Kesbewa',
+                      style: TextStyle(
+                        color: Color(0xFF6A1B9A),
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(60),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: TextField(
+                readOnly: true, // Prevent keyboard from appearing
+                onTap: () {
+                  // Navigate to SearchScreen when the search bar is tapped
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SearchScreen()),
+                  );
+                },
+                decoration: InputDecoration(
+                  hintText: 'Search your service',
+                  prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: const BorderSide(color: Colors.grey),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: const BorderSide(color: Colors.grey),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: const BorderSide(color: Color(0xFF6A1B9A)),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(
+                color: Color(0xFF6A1B9A),
+              ),
+              child: Text(
+                'Menu',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.home),
+              title: const Text('Home'),
+              onTap: () {},
+            ),
+            ListTile(
+              leading: const Icon(Icons.message),
+              title: const Text('Messages'),
+              onTap: () {},
+            ),
+            ListTile(
+              leading: const Icon(Icons.category),
+              title: const Text('Categories'),
+              onTap: () {},
+            ),
+            ListTile(
+              leading: const Icon(Icons.bookmark),
+              title: const Text('Saved'),
+              onTap: () {},
+            ),
+            ListTile(
+              leading: const Icon(Icons.account_circle),
+              title: const Text('Profile'),
+              onTap: () {},
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Settings'),
+              onTap: () {},
+            ),
+            ListTile(
+              leading: const Icon(Icons.logout),
+              title: const Text('Logout'),
+              onTap: () {},
+            ),
+          ],
+        ),
+      ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Stack(
-              children: [
-                Container(
-                  height: 200,
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Color(0xFF6A1B9A), Color(0xFFB71C9B)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(24),
-                      bottomRight: Radius.circular(24),
-                    ),
-                  ),
-                  padding: const EdgeInsets.only(
-                    left: 16,
-                    right: 16,
-                    top: 32,
-                    bottom: 50,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text(
-                            'Good Morning',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            'Arshan Sayed',
-                            style: TextStyle(color: Colors.white, fontSize: 14),
-                          ),
-                        ],
-                      ),
-                      TextButton.icon(
-                        onPressed: _openLocationSelector,
-                        icon: const Icon(
-                          Icons.location_pin,
-                          size: 16,
-                          color: Color(0xFF6A1B9A),
-                        ),
-                        label: Text(
-                          _selectedLocationText,
-                          style: const TextStyle(
-                            color: Color(0xFF6A1B9A),
-                            fontSize: 13,
-                          ),
-                        ),
-                        style: TextButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Positioned(
-                  top: 130,
-                  left: 20,
-                  right: 20,
-                  child: Material(
-                    elevation: 4,
-                    borderRadius: BorderRadius.circular(30),
-                    child: TextField(
-                      readOnly: true,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const SearchScreen(),
-                          ),
-                        );
-                      },
-                      decoration: InputDecoration(
-                        hintText: 'Search Your Service',
-                        prefixIcon: const Icon(
-                          Icons.search,
-                          color: Colors.grey,
-                        ),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(30),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 40),
-            // Services Section
+            // Services Section (Horizontal list of circular items)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: Row(
@@ -237,102 +248,78 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
               ),
             ),
             SizedBox(
-  height: 90,
-  child: ListView.builder(
-    scrollDirection: Axis.horizontal,
-    itemCount: 9,
-    itemBuilder: (context, index) {
-      final List<Map<String, dynamic>> services = [
-        {
-          'name': 'Hair Salon',
-          'image': 'assets/services/Ellipse 326.png',
-        },
-        {
-          'name': 'Barbershop',
-          'image': 'assets/services/Ellipse 325.png',
-        },
-        {
-          'name': 'Massage',
-          'image': 'assets/services/Ellipse 327.png',
-        },
-        {
-          'name': 'Skin Care',
-          'image': 'assets/services/Ellipse 328.png',
-        },
-        {
-          'name': 'Hair Removal',
-          'image': 'assets/services/hair_removal_image.png',
-        },
-        {
-          'name': 'Nail Salon',
-          'image': 'assets/services/nail_salon_image.png',
-        },
-        {
-          'name': 'Brows & Lashes',
-          'image': 'assets/services/brows_lashes_image.png',
-        },
-        {
-          'name': 'Piercing',
-          'image': 'assets/services/piercing_image.png',
-        },
-        {
-          'name': 'Makeup',
-          'image': 'assets/services/makeup_image.png',
-        },
-      ];
-      final service = services[index];
-
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-        child: GestureDetector(
-          onTap: () {
-            if (service['name'] == 'Hair Salon') {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const HairServiceScreen(),
-                ),
-              );
-            } else if (service['name'] == 'Barbershop') {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const BarberServiceScreen(),
-                ),
-              );
-            } else if (service['name'] == 'Massage') {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const MassageServiceScreen(),
-                ),
-              );
-            }
-          },
-          child: Column(
-            children: [
-              CircleAvatar(
-                radius: 30,
-                backgroundImage: AssetImage(service['image']),
+              height: 90, // Adjusted height for CircleAvatar (radius: 30) + Text
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: 9,
+                itemBuilder: (context, index) {
+                  final List<Map<String, dynamic>> services = [
+                    {
+                      'name': 'Wellness & Spa',
+                      'image': 'assets/services/wellness_spa_image.png',
+                    },
+                    {
+                      'name': 'Braids & Locs',
+                      'image': 'assets/services/braids_locs_image.png',
+                    },
+                    {
+                      'name': 'Tattoo',
+                      'image': 'assets/services/tattoo_image.png',
+                    },
+                    {
+                      'name': 'Aesthetic Medicine',
+                      'image': 'assets/services/aesthetic_medicine_image.png',
+                    },
+                    {
+                      'name': 'Hair Removal',
+                      'image': 'assets/services/hair_removal_image.png',
+                    },
+                    {
+                      'name': 'Nail Salon',
+                      'image': 'assets/services/nail_salon_image.png',
+                    },
+                    {
+                      'name': 'Brows & Lashes',
+                      'image': 'assets/services/brows_lashes_image.png',
+                    },
+                    {
+                      'name': 'Piercing',
+                      'image': 'assets/services/piercing_image.png',
+                    },
+                    {
+                      'name': 'Makeup',
+                      'image': 'assets/services/makeup_image.png',
+                    },
+                  ];
+                  final service = services[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Column(
+                      children: [
+                        CircleAvatar(
+                          radius: 30,
+                          backgroundImage: AssetImage(service['image']),
+                          onBackgroundImageError: (error, stackTrace) {
+                            debugPrint('Error loading ${service['image']}: $error');
+                          },
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          service['name'],
+                          style: const TextStyle(fontSize: 12),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
-              const SizedBox(height: 4),
-              Text(
-                service['name'],
-                style: const TextStyle(fontSize: 12),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      );
-    },
-  ),
-),
-
+            ),
+            // Special Offers Section (Horizontal list of cards)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: const Text(
-                'Saloons',
+                'Special Offers',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -340,7 +327,7 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
               ),
             ),
             SizedBox(
-              height: 220,
+              height: 220, // Height to accommodate card content without overflow
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: 4,
@@ -384,6 +371,7 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: GestureDetector(
                       onTap: () {
+                        // Navigate to OneSaloonInsideScreen
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -418,6 +406,10 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
                                   height: 100,
                                   width: double.infinity,
                                   fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    debugPrint('Error loading ${offer['imagePath']}: $error');
+                                    return const Icon(Icons.image, size: 100, color: Colors.grey);
+                                  },
                                 ),
                               ),
                               Padding(
@@ -484,7 +476,7 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
                 },
               ),
             ),
-            // Recommended Section
+            // Recommended Section (Horizontal list of cards)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: const Text(
@@ -496,7 +488,7 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
               ),
             ),
             SizedBox(
-              height: 220,
+              height: 220, // Height to accommodate card content without overflow
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: 4,
@@ -558,6 +550,10 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
                                 height: 100,
                                 width: double.infinity,
                                 fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  debugPrint('Error loading ${item['imagePath']}: $error');
+                                  return const Icon(Icons.image, size: 100, color: Colors.grey);
+                                },
                               ),
                             ),
                             Padding(
@@ -623,7 +619,7 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
                 },
               ),
             ),
-            // Nearest Saloon Section
+            // Nearest Saloon Section (Vertical list of cards)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: Row(
@@ -684,6 +680,9 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
                     leading: CircleAvatar(
                       radius: 30,
                       backgroundImage: AssetImage(saloon['imagePath']),
+                      onBackgroundImageError: (error, stackTrace) {
+                        debugPrint('Error loading ${saloon['imagePath']}: $error');
+                      },
                     ),
                     title: Text(
                       saloon['title'],
