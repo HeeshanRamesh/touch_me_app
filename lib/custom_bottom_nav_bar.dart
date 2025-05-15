@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 class CustomBottomNavBar extends StatelessWidget {
   final int currentIndex;
   final Function(int) onTap;
-  final VoidCallback onSearchPressed;
+  final VoidCallback? onSearchPressed;
 
   const CustomBottomNavBar({
-    super.key,
+    Key? key,
     required this.currentIndex,
     required this.onTap,
     this.onSearchPressed,
@@ -23,47 +23,21 @@ class CustomBottomNavBar extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             // Home Icon with Label
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: Icon(
-                    Icons.home,
-                    color: currentIndex == 0 ? const Color(0xFF6A1B9A) : Colors.grey,
-                  ),
-                  onPressed: () => onTap(0),
-                ),
-                Text(
-                  'Home',
-                  style: TextStyle(
-                    color: currentIndex == 0 ? const Color(0xFF6A1B9A) : Colors.black,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
+            _buildNavItem(
+              icon: Icons.home,
+              label: 'Home',
+              index: 0,
+              isSelected: currentIndex == 0,
             ),
-            // Grid Icon with Label
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: Icon(
-                    Icons.grid_view,
-                    color: currentIndex == 1 ? const Color(0xFF6A1B9A) : Colors.black,
-                  ),
-                  onPressed: () => onTap(1),
-                ),
-                Text(
-                  'Appoinmets',
-                  style: TextStyle(
-                    color: currentIndex == 1 ? const Color(0xFF6A1B9A) : Colors.grey,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
+            // Appointments Icon with Label
+            _buildNavItem(
+              icon: Icons.grid_view,
+              label: 'Appointments',
+              index: 1,
+              isSelected: currentIndex == 1,
             ),
-            const SizedBox(width: 20), // Space for the FAB (Search)
-            // Favorites Icon with Notification Badge and Label
+            const SizedBox(width: 20), // Space for FAB
+            // Favorites Icon with Badge
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -72,11 +46,17 @@ class CustomBottomNavBar extends StatelessWidget {
                   children: [
                     IconButton(
                       icon: Icon(
-                        currentIndex == 2 ? Icons.favorite : Icons.favorite_border,
-                        color: currentIndex == 2 ? const Color(0xFF6A1B9A) : Colors.grey,
+                        currentIndex == 2
+                            ? Icons.favorite
+                            : Icons.favorite_border,
+                        color:
+                            currentIndex == 2
+                                ? const Color(0xFF6A1B9A)
+                                : Colors.grey,
                       ),
                       onPressed: () => onTap(2),
                     ),
+                    // Badge
                     Positioned(
                       right: 5,
                       top: 5,
@@ -94,31 +74,21 @@ class CustomBottomNavBar extends StatelessWidget {
                 Text(
                   'Favorites',
                   style: TextStyle(
-                    color: currentIndex == 2 ? const Color(0xFF6A1B9A) : Colors.black,
+                    color:
+                        currentIndex == 2
+                            ? const Color(0xFF6A1B9A)
+                            : Colors.black,
                     fontSize: 12,
                   ),
                 ),
               ],
             ),
             // Profile Icon with Label
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: Icon(
-                    Icons.person_outline,
-                    color: currentIndex == 3 ? const Color(0xFF6A1B9A) : Colors.grey,
-                  ),
-                  onPressed: () => onTap(3),
-                ),
-                Text(
-                  'Profile',
-                  style: TextStyle(
-                    color: currentIndex == 3 ? const Color(0xFF6A1B9A) : Colors.black,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
+            _buildNavItem(
+              icon: Icons.person_outline,
+              label: 'Profile',
+              index: 3,
+              isSelected: currentIndex == 3,
             ),
           ],
         ),
@@ -126,14 +96,37 @@ class CustomBottomNavBar extends StatelessWidget {
     );
   }
 
+  Widget _buildNavItem({
+    required IconData icon,
+    required String label,
+    required int index,
+    required bool isSelected,
+  }) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          icon: Icon(
+            icon,
+            color: isSelected ? const Color(0xFF6A1B9A) : Colors.grey,
+          ),
+          onPressed: () => onTap(index),
+        ),
+        Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? const Color(0xFF6A1B9A) : Colors.black,
+            fontSize: 12,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget getFloatingActionButton() {
     return FloatingActionButton(
-      backgroundColor: const Color(0xFF6A1B9A), // Purple background
-      child: const Icon(
-        Icons.search,
-        color: Colors.white, // White search icon
-      ),
-      onPressed: onSearchPressed,
+      backgroundColor: const Color(0xFF6A1B9A),
+      onPressed: onSearchPressed ?? () {},
       child: const Icon(Icons.search, color: Colors.white),
     );
   }
