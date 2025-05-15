@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'profile_personal_details_screen.dart'; // Import the new screen
 
 class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({Key? key}) : super(key: key);
+  const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

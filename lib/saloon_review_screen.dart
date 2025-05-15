@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:touch_me/completed_appointments_screen.dart';
 import 'horizontal_nav_bar.dart'; // Import the HorizontalNavBar
 import 'one_saloon_inside_screen.dart'; // Import for navigation
 import 'saloon_gift_card_screen.dart'; // Import for navigation
@@ -6,7 +7,7 @@ import 'saloon_portfolio_screen.dart'; // Import for navigation
 import 'saloon_detail_screen.dart'; // Import for navigation
 
 class SaloonReviewScreen extends StatefulWidget {
-  const SaloonReviewScreen({Key? key}) : super(key: key);
+  const SaloonReviewScreen({super.key});
 
   @override
   _SaloonReviewScreenState createState() => _SaloonReviewScreenState();
@@ -25,14 +26,15 @@ class _SaloonReviewScreenState extends State<SaloonReviewScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => const OneSaloonInsideScreen(
-            saloonName: 'Salon Niro',
-            location: '123 Main St',
-            rating: 5.0,
-            reviews: 127,
-            discount: '10% OFF',
-            imagePath: 'assets/salon_image.jpg',
-          ),
+          builder:
+              (context) => const OneSaloonInsideScreen(
+                saloonName: 'Salon Niro',
+                location: '123 Main St',
+                rating: 5.0,
+                reviews: 127,
+                discount: '10% OFF',
+                imagePath: 'assets/barberservice.jpg',
+              ),
         ),
       );
     } else if (tab == 'Gift Cards') {
@@ -53,11 +55,31 @@ class _SaloonReviewScreenState extends State<SaloonReviewScreen> {
     }
   }
 
+  void _showSuccessDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Appointment Confirmed!"),
+          content: const Text("Your appointment has been booked successfully."),
+          actions: [
+            TextButton(
+              child: const Text("OK"),
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 244, 244, 245), // Light grey color
+        backgroundColor: const Color.fromARGB(255, 244, 244, 245),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
@@ -66,10 +88,7 @@ class _SaloonReviewScreenState extends State<SaloonReviewScreen> {
         ),
         title: const Text(
           'Salon Niro',
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
       ),
       body: Column(
@@ -77,7 +96,13 @@ class _SaloonReviewScreenState extends State<SaloonReviewScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 16.0),
             child: HorizontalNavBar(
-              tabs: const ['Services', 'Reviews', 'Portfolio', 'Gift Cards', 'Details'],
+              tabs: const [
+                'Services',
+                'Reviews',
+                'Portfolio',
+                'Gift Cards',
+                'Details',
+              ],
               activeTab: _activeTab,
               onTabSelected: _onTabSelected,
             ),
@@ -105,7 +130,7 @@ class _SaloonReviewScreenState extends State<SaloonReviewScreen> {
                             5,
                             (index) => const Icon(
                               Icons.star,
-                              color: Colors.yellow,
+                              color: Color.fromARGB(255, 230, 208, 18),
                               size: 20,
                             ),
                           ),
@@ -113,10 +138,7 @@ class _SaloonReviewScreenState extends State<SaloonReviewScreen> {
                         const SizedBox(width: 8),
                         const Text(
                           '127 Reviews',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey,
-                          ),
+                          style: TextStyle(fontSize: 14, color: Colors.grey),
                         ),
                       ],
                     ),
@@ -135,10 +157,7 @@ class _SaloonReviewScreenState extends State<SaloonReviewScreen> {
                     // Note
                     Text(
                       'Note: you can explore honest, first-hand feedback from customers who have experienced top-notch services at our partner salon.',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                      ),
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                     ),
                     const SizedBox(height: 16),
                     // Reviews List
@@ -147,66 +166,130 @@ class _SaloonReviewScreenState extends State<SaloonReviewScreen> {
                       date: '29 Dec 2024',
                       service: 'Hair Cut, Facial',
                       reviewText:
-                          'I visited Salon Niro for a haircut, and I couldn’t be more pleased with the experience. From the moment I walked in, the atmosphere was welcoming and relaxing. The staff were incredibly professional, and my style took the...',
+                          'I visited Salon Niro for a haircut, and I couldn\'t be more pleased with the experience. From the moment I walked in, the atmosphere was welcoming and relaxing. The staff were incredibly professional, and my style took the...',
                     ),
                     _buildReviewCard(
                       userName: 'Ruwini Fernando',
                       date: '29 Dec 2024',
                       service: 'Hair Cut, Facial',
                       reviewText:
-                          'I visited Salon Niro for a haircut, and I couldn’t be more pleased with the experience. From the moment I walked in, the atmosphere was welcoming and relaxing. The staff were incredibly professional, and my style took the...',
+                          'I visited Salon Niro for a haircut, and I couldn\'t be more pleased with the experience. From the moment I walked in, the atmosphere was welcoming and relaxing. The staff were incredibly professional, and my style took the...',
                     ),
                     _buildReviewCard(
                       userName: 'Ruwini Fernando',
                       date: '29 Dec 2024',
                       service: 'Hair Cut, Facial',
                       reviewText:
-                          'I visited Salon Niro for a haircut, and I couldn’t be more pleased with the experience. From the moment I walked in, the atmosphere was welcoming and relaxing. The staff were incredibly professional, and my style took the...',
+                          'I visited Salon Niro for a haircut, and I couldn\'t be more pleased with the experience. From the moment I walked in, the atmosphere was welcoming and relaxing. The staff were incredibly professional, and my style took the...',
                     ),
                     _buildReviewCard(
                       userName: 'Ruwini Fernando',
                       date: '29 Dec 2024',
                       service: 'Hair Cut, Facial',
                       reviewText:
-                          'I visited Salon Niro for a haircut, and I couldn’t be more pleased with the experience. From the moment I walked in, the atmosphere was welcoming and relaxing. The staff were incredibly professional, and my style took the...',
+                          'I visited Salon Niro for a haircut, and I couldn\'t be more pleased with the experience. From the moment I walked in, the atmosphere was welcoming and relaxing. The staff were incredibly professional, and my style took the...',
                     ),
                   ],
                 ),
               ),
             ),
           ),
+          // Confirmation Button
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.2),
+                  spreadRadius: 1,
+                  blurRadius: 5,
+                  offset: const Offset(0, -2),
+                ),
+              ],
+            ),
+            child: SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text("Appointment Confirmed!"),
+                        content: const Text(
+                          "Your appointment has been booked successfully.",
+                        ),
+                        actions: [
+                          TextButton(
+                            child: const Text("OK"),
+                            onPressed: () {
+                              Navigator.of(context).pop(); // Close dialog
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) =>
+                                          const CompletedAppointmentsScreen(),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF6A1B9A),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text(
+                  'Confirm Appointment',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
         ],
       ),
     );
   }
 
   Widget _buildStarRow(int stars, int count) {
-    return Row(
-      children: [
-        Text(
-          '$stars',
-          style: const TextStyle(fontSize: 14, color: Colors.grey),
-        ),
-        const SizedBox(width: 4),
-        const Icon(
-          Icons.star,
-          color: Colors.yellow,
-          size: 16,
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: LinearProgressIndicator(
-            value: count / 127, // Assuming 127 is the total number of reviews
-            backgroundColor: Colors.grey[300],
-            valueColor: const AlwaysStoppedAnimation<Color>(Colors.yellow),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Text(
+            '$stars',
+            style: const TextStyle(fontSize: 14, color: Colors.grey),
           ),
-        ),
-        const SizedBox(width: 8),
-        Text(
-          '$count',
-          style: const TextStyle(fontSize: 14, color: Colors.grey),
-        ),
-      ],
+          const SizedBox(width: 4),
+          const Icon(Icons.star, color: Colors.yellow, size: 16),
+          const SizedBox(width: 8),
+          Expanded(
+            child: LinearProgressIndicator(
+              value: count / 127,
+              backgroundColor: Colors.grey[300],
+              valueColor: const AlwaysStoppedAnimation<Color>(Colors.yellow),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            '$count',
+            style: const TextStyle(fontSize: 14, color: Colors.grey),
+          ),
+        ],
+      ),
     );
   }
 
@@ -243,10 +326,7 @@ class _SaloonReviewScreenState extends State<SaloonReviewScreen> {
                     ),
                     Text(
                       date,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                      ),
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                     ),
                   ],
                 ),
@@ -255,30 +335,19 @@ class _SaloonReviewScreenState extends State<SaloonReviewScreen> {
             const SizedBox(height: 8),
             Text(
               service,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
               reviewText,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
             ),
             const SizedBox(height: 8),
             TextButton(
-              onPressed: () {
-                // Handle "Show More" action (not implemented)
-              },
+              onPressed: () {},
               child: const Text(
                 'Show More',
-                style: TextStyle(
-                  color: Colors.blue,
-                  fontSize: 14,
-                ),
+                style: TextStyle(color: Colors.blue, fontSize: 14),
               ),
             ),
           ],

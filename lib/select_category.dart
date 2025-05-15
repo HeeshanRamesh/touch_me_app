@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:touch_me/spa_owner_login_screen.dart';
 import 'signup_page.dart'; // Import SignUpPage
+import 'merchant_signup_main.dart'; // Import the actual Saloon signup page
 
 class SelectCategoryPage extends StatefulWidget {
   const SelectCategoryPage({super.key});
@@ -9,15 +11,11 @@ class SelectCategoryPage extends StatefulWidget {
 }
 
 class _SelectCategoryPageState extends State<SelectCategoryPage> {
-  String? _selectedCategory; // Variable to store the selected category
+  String? _selectedCategory;
 
   @override
   Widget build(BuildContext context) {
-    // Get screen height for responsive sizing
     final double screenHeight = MediaQuery.of(context).size.height;
-
-    // Debug print to confirm image path
-    debugPrint('Attempting to load beauty_tools.png from assets/beauty_tools.png');
 
     return Scaffold(
       body: SafeArea(
@@ -26,36 +24,31 @@ class _SelectCategoryPageState extends State<SelectCategoryPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Title
               Text(
                 'Create Account',
                 style: TextStyle(
-                  fontSize: screenHeight * 0.035, // Responsive font size (~24 on a 720p screen)
+                  fontSize: screenHeight * 0.035,
                   fontWeight: FontWeight.bold,
                   color: const Color.fromARGB(255, 58, 7, 78),
                 ),
               ),
               const SizedBox(height: 5),
-              // Subtitle
               Text(
                 'Welcome to the kingdom of Beauty',
                 style: TextStyle(
-                  fontSize: screenHeight * 0.022, // Responsive font size (~16 on a 720p screen)
+                  fontSize: screenHeight * 0.022,
                   color: Colors.black,
                 ),
               ),
-              SizedBox(height: screenHeight * 0.03), // Responsive spacing
-              // Beauty tools image with placeholder and error handling
+              SizedBox(height: screenHeight * 0.03),
               Center(
-                child: Container(
-                  height: screenHeight * 0.2, // Responsive image height (~150 on a 720p screen)
-                  width: screenHeight * 0.2, // Square aspect ratio for debugging
+                child: SizedBox(
+                  height: screenHeight * 0.2,
+                  width: screenHeight * 0.2,
                   child: Image.asset(
-                    'assets/beauty_tools.png', // Replace with your image path
+                    'assets/beauty_tools.png',
                     fit: BoxFit.contain,
                     errorBuilder: (context, error, stackTrace) {
-                      // If the image fails to load, show a placeholder
-                      debugPrint('Error loading beauty_tools.png: $error');
                       return Container(
                         color: Colors.grey.shade200,
                         child: const Center(
@@ -70,31 +63,35 @@ class _SelectCategoryPageState extends State<SelectCategoryPage> {
                 ),
               ),
               SizedBox(height: screenHeight * 0.015),
-              // Select Category section
               Text(
                 'Select Category',
                 style: TextStyle(
-                  fontSize: screenHeight * 0.025, // Responsive font size (~18 on a 720p screen)
+                  fontSize: screenHeight * 0.025,
                   fontWeight: FontWeight.bold,
                   color: Colors.black,
                 ),
               ),
               SizedBox(height: screenHeight * 0.02),
-              // Radio buttons with borders and background color (smaller boxes)
+
+              // Saloon Owners
               Container(
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.black, width: 1),
                   borderRadius: BorderRadius.circular(8),
-                  color: _selectedCategory == 'Saloon Owners'
-                      ? const Color.fromARGB(255, 147, 117, 165)
-                      : Colors.transparent,
+                  color:
+                      _selectedCategory == 'Saloon Owners'
+                          ? const Color.fromARGB(255, 147, 117, 165)
+                          : Colors.transparent,
                 ),
                 child: RadioListTile<String>(
-                  dense: true, // Makes the RadioListTile more compact
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  dense: true,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
                   title: Text(
                     'Saloon Owners',
-                    style: TextStyle(fontSize: screenHeight * 0.02), // Smaller font size
+                    style: TextStyle(fontSize: screenHeight * 0.02),
                   ),
                   subtitle: Text(
                     'Those who have the shop',
@@ -109,24 +106,30 @@ class _SelectCategoryPageState extends State<SelectCategoryPage> {
                   },
                   activeColor: const Color(0xFF6A1B9A),
                   secondary: Image.asset(
-                    'assets/saloon_icon.png', // Replace with your saloon icon path
-                    height: screenHeight * 0.025, // Smaller icon size (~18 on a 720p screen)
+                    'assets/saloon_icon.png',
+                    height: screenHeight * 0.025,
                     width: screenHeight * 0.025,
                   ),
                 ),
               ),
               SizedBox(height: screenHeight * 0.005),
+
+              // Spa Owners
               Container(
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.black, width: 1),
                   borderRadius: BorderRadius.circular(8),
-                  color: _selectedCategory == 'Spa Owners'
-                      ? const Color.fromARGB(255, 147, 117, 165)
-                      : Colors.transparent,
+                  color:
+                      _selectedCategory == 'Spa Owners'
+                          ? const Color.fromARGB(255, 147, 117, 165)
+                          : Colors.transparent,
                 ),
                 child: RadioListTile<String>(
                   dense: true,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
                   title: Text(
                     'Spa Owners',
                     style: TextStyle(fontSize: screenHeight * 0.02),
@@ -139,29 +142,35 @@ class _SelectCategoryPageState extends State<SelectCategoryPage> {
                   groupValue: _selectedCategory,
                   onChanged: (value) {
                     setState(() {
-                      _selectedCategory = value;
+                      _selectedCategory = value!;
                     });
                   },
                   activeColor: const Color(0xFF6A1B9A),
                   secondary: Image.asset(
-                    'assets/spa_icon.png', // Replace with your spa icon path
+                    'assets/spa_icon.png',
                     height: screenHeight * 0.025,
                     width: screenHeight * 0.025,
                   ),
                 ),
               ),
               SizedBox(height: screenHeight * 0.005),
+
+              // Customer
               Container(
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.black, width: 1),
                   borderRadius: BorderRadius.circular(8),
-                  color: _selectedCategory == 'Customer'
-                      ? const Color.fromARGB(255, 147, 117, 165)
-                      : Colors.transparent,
+                  color:
+                      _selectedCategory == 'Customer'
+                          ? const Color.fromARGB(255, 147, 117, 165)
+                          : Colors.transparent,
                 ),
                 child: RadioListTile<String>(
                   dense: true,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
                   title: Text(
                     'Customer',
                     style: TextStyle(fontSize: screenHeight * 0.02),
@@ -179,50 +188,59 @@ class _SelectCategoryPageState extends State<SelectCategoryPage> {
                   },
                   activeColor: const Color(0xFF6A1B9A),
                   secondary: Image.asset(
-                    'assets/customer_icon.png', // Replace with your customer icon path
+                    'assets/customer_icon.png',
                     height: screenHeight * 0.025,
                     width: screenHeight * 0.025,
                   ),
                 ),
               ),
-              SizedBox(height: screenHeight * 0.005),
-              // Note
+              SizedBox(height: screenHeight * 0.02),
+
               Text(
                 'Once you are done selecting your profession, proceed by clicking on the next button',
                 style: TextStyle(
-                  fontSize: screenHeight * 0.018, // Responsive font size (~14 on a 720p screen)
+                  fontSize: screenHeight * 0.018,
                   color: Colors.black,
                 ),
               ),
               SizedBox(height: screenHeight * 0.03),
-              // Next button
+
+              // Next Button
               ElevatedButton(
-                onPressed: _selectedCategory == null
-                    ? null // Disable button if no category is selected
-                    : () {
-                        if (_selectedCategory == 'Customer') {
-                          // Navigate to SignUpPage if Customer is selected
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const SignUpPage()),
-                          );
-                        } else {
-                          // Show a message for Saloon Owners or Spa Owners
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Registration for $_selectedCategory is not yet available.',
+                onPressed:
+                    _selectedCategory == null
+                        ? null
+                        : () {
+                          if (_selectedCategory == 'Customer') {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const SignUpPage(),
                               ),
-                              duration: const Duration(seconds: 2),
-                              backgroundColor: const Color(0xFF6A1B9A),
-                              behavior: SnackBarBehavior.floating,
-                            ),
-                          );
-                        }
-                      },
+                            );
+                          } else if (_selectedCategory == 'Saloon Owners') {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) => const MerchantSignupMain(),
+                              ),
+                            );
+                          }
+                          else if (_selectedCategory == 'Spa Owners') {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const SpaOwnerLoginPage(),
+                              ),
+                            );
+                          }
+                          // Do nothing for Spa Owners or other categories
+                        },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF6A1B9A), // Purple color
-                  minimumSize: Size(double.infinity, screenHeight * 0.06), // Responsive button height
+                  backgroundColor: const Color(0xFF6A1B9A),
+                  minimumSize: Size(double.infinity, screenHeight * 0.06),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(25),
                   ),
@@ -230,7 +248,7 @@ class _SelectCategoryPageState extends State<SelectCategoryPage> {
                 child: Text(
                   'Next',
                   style: TextStyle(
-                    fontSize: screenHeight * 0.025, // Responsive font size (~18 on a 720p screen)
+                    fontSize: screenHeight * 0.025,
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                   ),

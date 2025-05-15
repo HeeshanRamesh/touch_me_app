@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class FavouriteScreen extends StatefulWidget {
-  const FavouriteScreen({Key? key}) : super(key: key);
+  const FavouriteScreen({super.key});
 
   @override
   _FavouriteScreenState createState() => _FavouriteScreenState();

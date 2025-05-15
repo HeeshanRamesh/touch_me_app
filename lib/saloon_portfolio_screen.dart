@@ -6,7 +6,7 @@ import 'saloon_gift_card_screen.dart'; // Import for navigation
 import 'saloon_detail_screen.dart'; // Import for navigation
 
 class SaloonPortfolioScreen extends StatefulWidget {
-  const SaloonPortfolioScreen({Key? key}) : super(key: key);
+  const SaloonPortfolioScreen({super.key});
 
   @override
   _SaloonPortfolioScreenState createState() => _SaloonPortfolioScreenState();

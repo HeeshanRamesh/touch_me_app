@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class SearchDateScreen extends StatefulWidget {
-  const SearchDateScreen({Key? key}) : super(key: key);
+  const SearchDateScreen({super.key});
 
   @override
   _SearchDateScreenState createState() => _SearchDateScreenState();

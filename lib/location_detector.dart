@@ -10,7 +10,7 @@ class LocationDetectorPage extends StatelessWidget {
       body: Column(
         children: [
           // Map image at the top
-          Container(
+          SizedBox(
             height: MediaQuery.of(context).size.height * 0.5, // Take up 50% of the screen height
             width: double.infinity,
             child: Image.asset(

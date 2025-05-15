@@ -6,11 +6,11 @@ class HorizontalNavBar extends StatelessWidget {
   final Function(String) onTabSelected;
 
   const HorizontalNavBar({
-    Key? key,
+    super.key,
     required this.tabs,
     required this.activeTab,
     required this.onTabSelected,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
