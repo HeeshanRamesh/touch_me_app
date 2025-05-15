@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:touch_me/signup_page.dart';
 import 'location_detector.dart';
 
 class LoginPage extends StatefulWidget {
