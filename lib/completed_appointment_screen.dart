@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:touch_me/inside_appointment_review_screen.dart';
 
 class CompletedAppointmentScreen extends StatelessWidget {
-  const CompletedAppointmentScreen({Key? key}) : super(key: key);
+  const CompletedAppointmentScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +13,7 @@ class CompletedAppointmentScreen extends StatelessWidget {
 }
 
 class CompletedAppointmentsTab extends StatefulWidget {
-  const CompletedAppointmentsTab({Key? key}) : super(key: key);
+  const CompletedAppointmentsTab({super.key});
 
   @override
   _CompletedAppointmentsTabState createState() => _CompletedAppointmentsTabState();

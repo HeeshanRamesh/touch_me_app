@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:touch_me/saloon_dashboard_screen.dart';
+import 'package:intl/intl.dart';
+import 'package:touch_me/services/merchant_auth_service.dart';
+import 'package:touch_me/merchant_login_page.dart';
 
 class MerchantSignupMain extends StatefulWidget {
   const MerchantSignupMain({super.key});
@@ -16,22 +19,19 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
 
   // Form controllers
   final TextEditingController _outletNameController = TextEditingController();
-  final TextEditingController _outletAddressController =
-      TextEditingController();
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _cityController = TextEditingController();
   final TextEditingController _ownerNameController = TextEditingController();
+  final TextEditingController _ownerEmailController = TextEditingController();
+  final TextEditingController _ownerPasswordController = TextEditingController();
   final TextEditingController _managerNameController = TextEditingController();
   final TextEditingController _managerEmailController = TextEditingController();
-  final TextEditingController _beneficiaryNameController =
-      TextEditingController();
-  final TextEditingController _accountNumberController =
-      TextEditingController();
+  final TextEditingController _managerPasswordController = TextEditingController();
+  final TextEditingController _beneficiaryNameController = TextEditingController();
+  final TextEditingController _accountNumberController = TextEditingController();
 
   // Form keys for validation
   final GlobalKey<FormState> _outletInfoFormKey = GlobalKey<FormState>();
   final GlobalKey<FormState> _contactInfoFormKey = GlobalKey<FormState>();
-  final GlobalKey<FormState> _businessInfoFormKey = GlobalKey<FormState>();
   final GlobalKey<FormState> _bankInfoFormKey = GlobalKey<FormState>();
 
   // State for uploads and selections
@@ -47,29 +47,66 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
   String? _selectedBank;
   String? _selectedBranch;
 
+  // Simulated URLs for uploaded files (replace with actual file upload logic)
+  String? _businessRegImageUrl;
+  String? _logoImageUrl;
+  String? _nicFrontImageUrl;
+  String? _nicBackImageUrl;
+  String? _bankStatementImageUrl;
+
+  // Opening hours (hardcoded for now, as per API example)
+  Map<String, Map<String, String>> _openingHours = {
+    "monday": {"open": "08:00", "close": "18:00"},
+    "tuesday": {"open": "08:00", "close": "18:00"},
+    "wednesday": {"open": "08:00", "close": "18:00"},
+    "thursday": {"open": "08:00", "close": "18:00"},
+    "friday": {"open": "08:00", "close": "18:00"},
+    "saturday": {"open": "09:00", "close": "15:00"},
+    "sunday": {"open": "", "close": ""},
+  };
+
   @override
   void dispose() {
     _outletNameController.dispose();
-    _outletAddressController.dispose();
     _emailController.dispose();
-    _cityController.dispose();
     _ownerNameController.dispose();
+    _ownerEmailController.dispose();
+    _ownerPasswordController.dispose();
     _managerNameController.dispose();
     _managerEmailController.dispose();
+    _managerPasswordController.dispose();
     _beneficiaryNameController.dispose();
     _accountNumberController.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
   void next() {
-    // Validate current step before proceeding
     bool isValid = true;
     switch (_page) {
       case 0:
         isValid = _outletInfoFormKey.currentState?.validate() ?? false;
+        if (isValid && _phoneNumber == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Please enter a valid phone number"),
+              backgroundColor: Colors.red,
+            ),
+          );
+          isValid = false;
+        }
         break;
       case 1:
         isValid = _contactInfoFormKey.currentState?.validate() ?? false;
+        if (isValid && _managerPhoneNumber == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Please enter a valid manager phone number"),
+              backgroundColor: Colors.red,
+            ),
+          );
+          isValid = false;
+        }
         break;
       case 2:
         isValid = _validateBusinessInfoStep();
@@ -77,6 +114,15 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
       case 3:
         isValid = _bankInfoFormKey.currentState?.validate() ?? false;
         if (isValid) isValid = _validateBankInfoStep();
+        if (isValid && _bankPhoneNumber == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Please enter a valid bank phone number"),
+              backgroundColor: Colors.red,
+            ),
+          );
+          isValid = false;
+        }
         break;
     }
 
@@ -84,14 +130,12 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
 
     if (_page < 3) {
       setState(() => _isSubmitting = true);
-
       Future.delayed(const Duration(seconds: 1), () {
         setState(() => _isSubmitting = false);
         _controller.nextPage(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeIn,
         );
-
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(_getSuccessMessageForPage(_page)),
@@ -213,8 +257,118 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
     return null;
   }
 
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter password';
+    }
+    if (value.length < 6) {
+      return 'Password must be at least 6 characters';
+    }
+    return null;
+  }
+
+  String _simulateFileUpload(String fileType) {
+    return "http://example.com/$fileType.jpg";
+  }
+
+  Future<void> _submitForm() async {
+    if (!_bankInfoFormKey.currentState!.validate()) return;
+    if (!_validateBankInfoStep()) return;
+    if (_phoneNumber == null || _managerPhoneNumber == null || _bankPhoneNumber == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please ensure all phone numbers are provided"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    if (_businessRegImageUrl == null ||
+        _logoImageUrl == null ||
+        _nicFrontImageUrl == null ||
+        _nicBackImageUrl == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please ensure all required images are uploaded"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+
+    try {
+      final result = await MerchantAuthService().signupMerchant(
+        outletName: _outletNameController.text.trim(),
+        outletEmail: _emailController.text.trim(),
+        outletPhone: _phoneNumber!,
+        ownerName: _ownerNameController.text.trim(),
+        ownerEmail: _ownerEmailController.text.trim(),
+        ownerPhone: _phoneNumber!, // Using outlet phone for simplicity
+        ownerPassword: _ownerPasswordController.text.trim(),
+        managerName: _managerNameController.text.trim(),
+        managerEmail: _managerEmailController.text.trim(),
+        managerPhone: _managerPhoneNumber!,
+        managerPassword: _managerPasswordController.text.trim(),
+        beneficiaryName: _beneficiaryNameController.text.trim(),
+        accountNumber: _accountNumberController.text.trim(),
+        bankPhone: _bankPhoneNumber!,
+        bankName: _selectedBank!,
+        bankBranch: _selectedBranch!,
+        businessRegImage: _businessRegImageUrl!,
+        logoImage: _logoImageUrl!,
+        nicFrontImage: _nicFrontImageUrl!,
+        nicBackImage: _nicBackImageUrl!,
+        openingHours: _openingHours,
+      );
+
+      if (result['success'] == true) {
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const SaloonDashboardScreen()),
+          );
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message'] ?? 'Registration completed successfully!'),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message'] ?? 'Registration failed'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Failed to sign up: $e"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final DateTime currentDateTime = DateTime(2025, 5, 20, 11, 00); // Updated to current date and time
+    final String formattedDateTime = DateFormat('hh:mm a Z \'on\' EEEE, MMMM d, yyyy')
+        .format(currentDateTime.toUtc().add(const Duration(hours: 5, minutes: 30)));
+
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -228,6 +382,17 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
                 _progressStep(isActive: _page >= 2),
                 _progressStep(isActive: _page >= 3),
               ],
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              child: Text(
+                formattedDateTime,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFF6A1B9A),
+                ),
+                textAlign: TextAlign.center,
+              ),
             ),
             Expanded(
               child: PageView(
@@ -273,12 +438,6 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
               decoration: _inputDecoration("Outlet Name"),
               validator: (value) => _validateRequired(value, "outlet name"),
             ),
-            _buildFieldLabel("Outlet Address *"),
-            TextFormField(
-              controller: _outletAddressController,
-              decoration: _inputDecoration("Outlet Address", icon: Icons.store),
-              validator: (value) => _validateRequired(value, "outlet address"),
-            ),
             _buildFieldLabel("E-mail Address *"),
             TextFormField(
               controller: _emailController,
@@ -303,72 +462,59 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
                 validator: (p) => _validatePhoneNumber(p?.number),
               ),
             ),
-            _buildFieldLabel("City *"),
-            TextFormField(
-              controller: _cityController,
-              decoration: _inputDecoration("City"),
-              validator: (value) => _validateRequired(value, "city"),
-            ),
-            const SizedBox(height: 20),
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  if (_outletAddressController.text.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Please enter outlet address first"),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                    return;
-                  }
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Location picked successfully!"),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF6A1B9A),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  elevation: 5,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 40,
-                    vertical: 12,
-                  ),
-                ),
-                child: const Text(
-                  "Pick Location",
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ),
             const SizedBox(height: 20),
             Center(
               child: _isSubmitting
                   ? const CircularProgressIndicator(
                       color: Color(0xFF6A1B9A),
                     )
-                  : ElevatedButton(
-                      onPressed: next,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6A1B9A),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
+                  : Column(
+                      children: [
+                        ElevatedButton(
+                          onPressed: next,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF6A1B9A),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            elevation: 5,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 60,
+                              vertical: 14,
+                            ),
+                          ),
+                          child: const Text(
+                            "Continue",
+                            style: TextStyle(color: Colors.white),
+                          ),
                         ),
-                        elevation: 5,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 60,
-                          vertical: 14,
+                        const SizedBox(height: 10),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const MerchantLoginPage(),
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF6A1B9A),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            elevation: 5,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 60,
+                              vertical: 14,
+                            ),
+                          ),
+                          child: const Text(
+                            "Sign In",
+                            style: TextStyle(color: Colors.white),
+                          ),
                         ),
-                      ),
-                      child: const Text(
-                        "Continue",
-                        style: TextStyle(color: Colors.white),
-                      ),
+                      ],
                     ),
             ),
             const SizedBox(height: 20),
@@ -417,6 +563,20 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
               decoration: _inputDecoration("Owner Name"),
               validator: (value) => _validateRequired(value, "owner name"),
             ),
+            _buildFieldLabel("Owner E-mail Address *"),
+            TextFormField(
+              controller: _ownerEmailController,
+              decoration: _inputDecoration("Owner E-mail Address", icon: Icons.email),
+              keyboardType: TextInputType.emailAddress,
+              validator: _validateEmail,
+            ),
+            _buildFieldLabel("Owner Password *"),
+            TextFormField(
+              controller: _ownerPasswordController,
+              decoration: _inputDecoration("Owner Password", icon: Icons.lock),
+              obscureText: true,
+              validator: _validatePassword,
+            ),
             _buildFieldLabel("Outlet Manager's Name *"),
             TextFormField(
               controller: _managerNameController,
@@ -426,9 +586,16 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
             _buildFieldLabel("Manager's E-mail Address *"),
             TextFormField(
               controller: _managerEmailController,
-              decoration: _inputDecoration("E-mail Address", icon: Icons.email),
+              decoration: _inputDecoration("Manager E-mail Address", icon: Icons.email),
               keyboardType: TextInputType.emailAddress,
               validator: _validateEmail,
+            ),
+            _buildFieldLabel("Manager's Password *"),
+            TextFormField(
+              controller: _managerPasswordController,
+              decoration: _inputDecoration("Manager Password", icon: Icons.lock),
+              obscureText: true,
+              validator: _validatePassword,
             ),
             _buildFieldLabel("Manager's Phone Number *"),
             Container(
@@ -550,7 +717,10 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
             "Upload",
             isUploaded: _businessRegUploaded,
             onPressed: () {
-              setState(() => _businessRegUploaded = true);
+              setState(() {
+                _businessRegUploaded = true;
+                _businessRegImageUrl = _simulateFileUpload("business_reg");
+              });
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text("Business registration uploaded successfully!"),
@@ -586,7 +756,10 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
             "Upload",
             isUploaded: _logoUploaded,
             onPressed: () {
-              setState(() => _logoUploaded = true);
+              setState(() {
+                _logoUploaded = true;
+                _logoImageUrl = _simulateFileUpload("logo");
+              });
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text("Outlet logo uploaded successfully!"),
@@ -605,7 +778,10 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
             "Upload",
             isUploaded: _nicFrontUploaded,
             onPressed: () {
-              setState(() => _nicFrontUploaded = true);
+              setState(() {
+                _nicFrontUploaded = true;
+                _nicFrontImageUrl = _simulateFileUpload("nic_front");
+              });
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text("NIC front uploaded successfully!"),
@@ -619,7 +795,10 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
             "Upload",
             isUploaded: _nicBackUploaded,
             onPressed: () {
-              setState(() => _nicBackUploaded = true);
+              setState(() {
+                _nicBackUploaded = true;
+                _nicBackImageUrl = _simulateFileUpload("nic_back");
+              });
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text("NIC back uploaded successfully!"),
@@ -736,14 +915,8 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
                 items: const [
                   DropdownMenuItem(value: "BOC", child: Text("Bank of Ceylon")),
                   DropdownMenuItem(value: "PB", child: Text("Peoples Bank")),
-                  DropdownMenuItem(
-                    value: "HNB",
-                    child: Text("Hatton National Bank"),
-                  ),
-                  DropdownMenuItem(
-                    value: "COMB",
-                    child: Text("Commercial Bank"),
-                  ),
+                  DropdownMenuItem(value: "HNB", child: Text("Hatton National Bank")),
+                  DropdownMenuItem(value: "COMB", child: Text("Commercial Bank")),
                 ],
                 onChanged: (value) => setState(() => _selectedBank = value),
                 validator: (value) => value == null ? 'Please select bank' : null,
@@ -774,198 +947,179 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
               style: TextStyle(fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 10),
-            Center(
-              child: _purpleUploadButton(
-                "Upload",
-                isUploaded: _bankStatementUploaded,
-                onPressed: () {
-                  setState(() => _bankStatementUploaded = true);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Bank statement uploaded successfully!"),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                },
-              ),
+          Center(
+            child: _purpleUploadButton(
+              "Upload",
+              isUploaded: _bankStatementUploaded,
+              onPressed: () {
+                setState(() {
+                  _bankStatementUploaded = true;
+                  _bankStatementImageUrl = _simulateFileUpload("bank_statement");
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Bank statement uploaded successfully!"),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              },
             ),
-            const SizedBox(height: 25),
-            Center(
-              child: _isSubmitting
-                  ? const CircularProgressIndicator(
-                      color: Color(0xFF6A1B9A),
-                    )
-                  : ElevatedButton(
-                      onPressed: () {
-                        if (_bankInfoFormKey.currentState!.validate() &&
-                            _validateBankInfoStep()) {
-                          setState(() => _isSubmitting = true);
-
-                          Future.delayed(const Duration(seconds: 2), () {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const SaloonDashboardScreen(),
-                              ),
-                            );
-
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  "Registration completed successfully!",
-                                ),
-                                backgroundColor: Colors.green,
-                                duration: Duration(seconds: 3),
-                              ),
-                            );
-                          });
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6A1B9A),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
-                        ),
-                        elevation: 5,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 60,
-                          vertical: 14,
-                        ),
+          ),
+          const SizedBox(height: 25),
+          Center(
+            child: _isSubmitting
+                ? const CircularProgressIndicator(
+                    color: Color(0xFF6A1B9A),
+                  )
+                : ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MerchantLoginPage()),
+        );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF6A1B9A),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25),
                       ),
-                      child: const Text(
-                        "Finish Registration",
-                        style: TextStyle(color: Colors.white),
+                      elevation: 5,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 60,
+                        vertical: 14,
                       ),
                     ),
-            ),
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
-    );
-  }
-
-  List<DropdownMenuItem<String>> _getBranchOptions() {
-    if (_selectedBank == null) return [];
-
-    switch (_selectedBank) {
-      case "BOC":
-        return [
-          const DropdownMenuItem(value: "Colombo", child: Text("Colombo Main")),
-          const DropdownMenuItem(value: "Kandy", child: Text("Kandy")),
-          const DropdownMenuItem(value: "Galle", child: Text("Galle")),
-        ];
-      case "PB":
-        return [
-          const DropdownMenuItem(value: "Colombo", child: Text("Colombo Main")),
-          const DropdownMenuItem(value: "Negombo", child: Text("Negombo")),
-        ];
-      case "HNB":
-        return [
-          const DropdownMenuItem(value: "Colombo", child: Text("Colombo Main")),
-          const DropdownMenuItem(
-            value: "Kurunegala",
-            child: Text("Kurunegala"),
+                    child: const Text(
+                      "Finish Registration",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
           ),
-        ];
-      case "COMB":
-        return [
-          const DropdownMenuItem(value: "Colombo", child: Text("Colombo Main")),
-          const DropdownMenuItem(value: "Matara", child: Text("Matara")),
-        ];
-      default:
-        return [];
-    }
-  }
-
-  Widget _progressStep({required bool isActive}) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4),
-      width: 35,
-      height: 6,
-      decoration: BoxDecoration(
-        color: isActive ? const Color(0xFF4A0072) : Colors.grey.shade300,
-        borderRadius: BorderRadius.circular(10),
-      ),
-    );
-  }
-
-  Widget _buildFieldLabel(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6, top: 12),
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontWeight: FontWeight.w600,
-          color: Color(0xFF6A1B9A),
-        ),
-      ),
-    );
-  }
-
-  InputDecoration _inputDecoration(String hint, {IconData? icon}) {
-    return InputDecoration(
-      hintText: hint,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(25),
-        borderSide: const BorderSide(color: Color(0xFF6A1B9A), width: 1.2),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(25),
-        borderSide: const BorderSide(color: Color(0xFF6A1B9A), width: 1.2),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(25),
-        borderSide: const BorderSide(color: Color(0xFF4A0072), width: 2),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(25),
-        borderSide: const BorderSide(color: Colors.red, width: 1.2),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(25),
-        borderSide: const BorderSide(color: Colors.red, width: 2),
-      ),
-      prefixIcon: icon != null ? Icon(icon, color: const Color(0xFF6A1B9A)) : null,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      errorStyle: const TextStyle(color: Colors.red, fontSize: 12),
-      filled: true,
-      fillColor: const Color(0xFFF3E5F5),
-    );
-  }
-
-  BoxDecoration _fieldDecoration() {
-    return BoxDecoration(
-      border: Border.all(color: const Color(0xFF6A1B9A), width: 1.2),
-      borderRadius: BorderRadius.circular(25),
-      color: const Color(0xFFF3E5F5), // Light purple background
-    );
-  }
-
-  Widget _purpleUploadButton(
-    String label, {
-    required bool isUploaded,
-    required VoidCallback onPressed,
-  }) {
-    return ElevatedButton(
-      onPressed: onPressed,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: isUploaded ? Colors.green : const Color(0xFF4A0072),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
-        elevation: 4,
-        padding: const EdgeInsets.symmetric(vertical: 12),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (isUploaded) const Icon(Icons.check, color: Colors.white),
-          const SizedBox(width: 8),
-          Text(
-            isUploaded ? "$label (Uploaded)" : label,
-            style: const TextStyle(color: Colors.white),
-          ),
+          const SizedBox(height: 20),
         ],
       ),
-    );
+    ),
+  );
+}
+
+List<DropdownMenuItem<String>> _getBranchOptions() {
+  if (_selectedBank == null) return [];
+
+  switch (_selectedBank) {
+    case "BOC":
+      return [
+        const DropdownMenuItem(value: "Colombo", child: Text("Colombo Main")),
+        const DropdownMenuItem(value: "Kandy", child: Text("Kandy")),
+        const DropdownMenuItem(value: "Galle", child: Text("Galle")),
+      ];
+    case "PB":
+      return [
+        const DropdownMenuItem(value: "Colombo", child: Text("Colombo Main")),
+        const DropdownMenuItem(value: "Negombo", child: Text("Negombo")),
+      ];
+    case "HNB":
+      return [
+        const DropdownMenuItem(value: "Colombo", child: Text("Colombo Main")),
+        const DropdownMenuItem(value: "Kurunegala", child: Text("Kurunegala")),
+      ];
+    case "COMB":
+      return [
+        const DropdownMenuItem(value: "Colombo", child: Text("Colombo Main")),
+        const DropdownMenuItem(value: "Matara", child: Text("Matara")),
+      ];
+    default:
+      return [];
   }
+}
+
+Widget _progressStep({required bool isActive}) {
+  return Container(
+    margin: const EdgeInsets.symmetric(horizontal: 4),
+    width: 35,
+    height: 6,
+    decoration: BoxDecoration(
+      color: isActive ? const Color(0xFF4A0072) : Colors.grey.shade300,
+      borderRadius: BorderRadius.circular(10),
+    ),
+  );
+}
+
+Widget _buildFieldLabel(String text) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 6, top: 12),
+    child: Text(
+      text,
+      style: const TextStyle(
+        fontWeight: FontWeight.w600,
+        color: Color(0xFF6A1B9A),
+      ),
+    ),
+  );
+}
+
+InputDecoration _inputDecoration(String hint, {IconData? icon}) {
+  return InputDecoration(
+    hintText: hint,
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(25),
+      borderSide: const BorderSide(color: Color(0xFF6A1B9A), width: 1.2),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(25),
+      borderSide: const BorderSide(color: Color(0xFF6A1B9A), width: 1.2),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(25),
+      borderSide: const BorderSide(color: Color(0xFF4A0072), width: 2),
+    ),
+    errorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(25),
+      borderSide: const BorderSide(color: Colors.red, width: 1.2),
+    ),
+    focusedErrorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(25),
+      borderSide: const BorderSide(color: Colors.red, width: 2),
+    ),
+    prefixIcon: icon != null ? Icon(icon, color: const Color(0xFF6A1B9A)) : null,
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+    errorStyle: const TextStyle(color: Colors.red, fontSize: 12),
+    filled: true,
+    fillColor: const Color(0xFFF3E5F5),
+  );
+}
+
+BoxDecoration _fieldDecoration() {
+  return BoxDecoration(
+    border: Border.all(color: const Color(0xFF6A1B9A), width: 1.2),
+    borderRadius: BorderRadius.circular(25),
+    color: const Color(0xFFF3E5F5),
+  );
+}
+
+Widget _purpleUploadButton(
+  String label, {
+  required bool isUploaded,
+  required VoidCallback onPressed,
+}) {
+  return ElevatedButton(
+    onPressed: onPressed,
+    style: ElevatedButton.styleFrom(
+      backgroundColor: isUploaded ? Colors.green : const Color(0xFF4A0072),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+      elevation: 4,
+      padding: const EdgeInsets.symmetric(vertical: 12),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (isUploaded) const Icon(Icons.check, color: Colors.white),
+        const SizedBox(width: 8),
+        Text(
+          isUploaded ? "$label (Uploaded)" : label,
+          style: const TextStyle(color: Colors.white),
+        ),
+      ],
+    ),
+  );
+}
 }

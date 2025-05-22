@@ -12,16 +12,20 @@ dependencies:
 
   table_calendar: ^3.0.9
   location: ^5.0.3
+  http: ^0.13.6
   google_maps_webservice: ^0.0.20-nullsafety.5
   google_maps_flutter: ^2.5.0
   geolocator: ^10.1.0
   geocoding: ^2.1.1
-  http: ^0.13.6
   intl_phone_field: ^3.1.0
   fl_chart: ^0.64.0
   permission_handler: ^11.3.1
   url_launcher: ^6.3.0
   flutter_rating_bar: ^4.0.1
+  retry: ^3.1.2
+  shared_preferences: ^2.5.3
+  image_picker: ^1.1.2
+  flutter_secure_storage: ^9.2.4
   # Removed duplicate dependencies key and its content
   
 

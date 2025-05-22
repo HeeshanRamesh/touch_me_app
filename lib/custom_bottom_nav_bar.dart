@@ -6,11 +6,11 @@ class CustomBottomNavBar extends StatelessWidget {
   final VoidCallback? onSearchPressed;
 
   const CustomBottomNavBar({
-    Key? key,
+    super.key,
     required this.currentIndex,
     required this.onTap,
     this.onSearchPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

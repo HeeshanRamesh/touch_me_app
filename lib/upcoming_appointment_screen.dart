@@ -6,7 +6,7 @@ import 'search_date_screen.dart'; // Import the SearchDateScreen
 import 'completed_appointment_screen.dart'; // Import the CompletedAppointmentScreen
 
 class UpcomingAppointmentScreen extends StatelessWidget {
-  const UpcomingAppointmentScreen({Key? key}) : super(key: key);
+  const UpcomingAppointmentScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +17,7 @@ class UpcomingAppointmentScreen extends StatelessWidget {
 }
 
 class UpcomingAppointmentContent extends StatefulWidget {
-  const UpcomingAppointmentContent({Key? key}) : super(key: key);
+  const UpcomingAppointmentContent({super.key});
 
   @override
   _UpcomingAppointmentContentState createState() => _UpcomingAppointmentContentState();
@@ -251,7 +251,7 @@ class _UpcomingAppointmentContentState extends State<UpcomingAppointmentContent>
 }
 
 class UpcomingAppointmentsTab extends StatelessWidget {
-  const UpcomingAppointmentsTab({Key? key}) : super(key: key);
+  const UpcomingAppointmentsTab({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -471,7 +471,7 @@ class UpcomingAppointmentsTab extends StatelessWidget {
 }
 
 class CompletedAppointmentTab extends StatefulWidget {
-  const CompletedAppointmentTab({Key? key}) : super(key: key);
+  const CompletedAppointmentTab({super.key});
 
   @override
   _CompletedAppointmentTabState createState() => _CompletedAppointmentTabState();
@@ -688,7 +688,7 @@ class _CompletedAppointmentTabState extends State<CompletedAppointmentTab> {
 }
 
 class CancelledAppointmentTab extends StatefulWidget {
-  const CancelledAppointmentTab({Key? key}) : super(key: key);
+  const CancelledAppointmentTab({super.key});
 
   @override
   _CancelledAppointmentTabState createState() => _CancelledAppointmentTabState();

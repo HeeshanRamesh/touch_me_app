@@ -1,7 +1,7 @@
 // Updated SaloonDashboardScreen with working BottomNavigationBar navigation to AddServiceScreen
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:touch_me/add_services_screen.dart';
+import 'package:touch_me/owner_service_page.dart';
 
 class SaloonDashboardScreen extends StatefulWidget {
   const SaloonDashboardScreen({super.key});
@@ -25,7 +25,7 @@ class _SaloonDashboardScreenState extends State<SaloonDashboardScreen> {
           if (index == 2) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const AddServiceScreen()),
+              MaterialPageRoute(builder: (_) => const OwnerServicePage()),
             );
           } else {
             setState(() {

@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
-import 'custom_bottom_nav_bar.dart'; // Import the CustomBottomNavBar
-import 'one_saloon_inside_screen.dart'; // Import the OneSaloonInsideScreen
-import 'search_screen.dart'; // Import the SearchScreen
-import 'inside_category_screen.dart'; // Import the InsideCategoryScreen
-import 'favourite_screen.dart'; // Import the FavouriteScreen
-import 'profile_screen.dart'; // Import the ProfileScreen
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
+
+import 'custom_bottom_nav_bar.dart';
+import 'favourite_screen.dart';
+import 'services/services.dart';
+import 'inside_category_screen.dart';
+import 'one_saloon_inside_screen.dart';
+import 'profile_screen.dart';
+import 'search_screen.dart';
 
 class CustomerHomeScreen extends StatefulWidget {
   const CustomerHomeScreen({super.key});
@@ -14,15 +18,36 @@ class CustomerHomeScreen extends StatefulWidget {
 }
 
 class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
-  int _selectedIndex = 0; // Track the selected bottom navigation item
+  int _selectedIndex = 0;
+  late Future<List<Service>> _servicesFuture;
+  String? _authToken;
 
-  // List of screens to display based on the selected index
-  final List<Widget> _screens = [
-    const CustomerHomeContent(), // Home screen content
-    const Center(child: Text('Grid Screen')), // Replace with actual GridScreen
-    const FavouriteScreen(),
-    const ProfileScreen(),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadToken();
+  }
+
+  Future<void> _loadToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _authToken = prefs.getString('auth_token');
+      if (_authToken != null && _authToken!.isNotEmpty) {
+        _refreshServices();
+      } else {
+        // Handle case where no token is found
+        _servicesFuture = Future.value([]); // Empty list if no token
+      }
+    });
+  }
+
+  void _refreshServices() {
+    if (_authToken != null) {
+      setState(() {
+        _servicesFuture = ServiceApi().fetchServices(_authToken!, context);
+      });
+    }
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -50,19 +75,47 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
+
+  final List<Widget> _screens = [
+    CustomerHomeContent(),
+    const Center(child: Text('Grid Screen')),
+    FavouriteScreen(),
+    const ProfileScreen(),
+  ];
 }
 
-// Extracted CustomerHomeScreen content into a separate widget for clarity
-class CustomerHomeContent extends StatelessWidget {
-  const CustomerHomeContent({Key? key}) : super(key: key);
+class CustomerHomeContent extends StatefulWidget {
+  const CustomerHomeContent({super.key});
+
+  @override
+  State<CustomerHomeContent> createState() => _CustomerHomeContentState();
+}
+
+class _CustomerHomeContentState extends State<CustomerHomeContent> {
+  late Future<List<Service>> _servicesFuture;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final parentState = context.findAncestorStateOfType<_CustomerHomeScreenState>();
+    if (parentState != null && parentState._authToken != null) {
+      _servicesFuture = ServiceApi().fetchServices(parentState._authToken!, context);
+    } else {
+      _servicesFuture = Future.value([]);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final DateTime currentDateTime = DateTime(2025, 5, 19, 14, 5);
+    final String formattedDateTime = DateFormat('EEEE, MMMM d, yyyy, hh:mm a Z')
+        .format(currentDateTime.toUtc().add(const Duration(hours: 5, minutes: 30)));
+
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(120), // Height for AppBar with search bar
+        preferredSize: const Size.fromHeight(120),
         child: AppBar(
-          backgroundColor: const Color(0xFF6A1B9A), // Purple color
+          backgroundColor: const Color(0xFF6A1B9A),
           leading: Builder(
             builder: (context) => IconButton(
               icon: const Icon(Icons.menu, color: Colors.white),
@@ -74,19 +127,17 @@ class CustomerHomeContent extends StatelessWidget {
             children: [
               const Text(
                 'Good Morning',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
               ),
               const SizedBox(height: 4),
               const Text(
                 'Arshan Sayed',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                ),
+                style: TextStyle(color: Colors.white, fontSize: 14),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                formattedDateTime,
+                style: const TextStyle(color: Colors.white, fontSize: 12),
               ),
             ],
           ),
@@ -94,30 +145,16 @@ class CustomerHomeContent extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(right: 16.0),
               child: TextButton(
-                onPressed: () {
-                  // Handle location tracker action
-                },
+                onPressed: () {},
                 style: TextButton.styleFrom(
                   backgroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                 ),
-                child: Row(
+                child: const Row(
                   children: [
-                    const Icon(
-                      Icons.location_pin,
-                      color: Color(0xFF6A1B9A),
-                      size: 16,
-                    ),
-                    const SizedBox(width: 4),
-                    const Text(
-                      'Kesbewa',
-                      style: TextStyle(
-                        color: Color(0xFF6A1B9A),
-                        fontSize: 14,
-                      ),
-                    ),
+                    Icon(Icons.location_pin, color: Color(0xFF6A1B9A), size: 16),
+                    SizedBox(width: 4),
+                    Text('Kesbewa', style: TextStyle(color: Color(0xFF6A1B9A), fontSize: 14)),
                   ],
                 ),
               ),
@@ -128,12 +165,11 @@ class CustomerHomeContent extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: TextField(
-                readOnly: true, // Prevent keyboard from appearing
+                readOnly: true,
                 onTap: () {
-                  // Navigate to SearchScreen when the search bar is tapped
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const SearchScreen()),
+                    MaterialPageRoute(builder: (context) => SearchScreen()),
                   );
                 },
                 decoration: InputDecoration(
@@ -163,54 +199,20 @@ class CustomerHomeContent extends StatelessWidget {
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(
-                color: Color(0xFF6A1B9A),
-              ),
+            DrawerHeader(
+              decoration: BoxDecoration(color: Color(0xFF6A1B9A)),
               child: Text(
                 'Menu',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
               ),
             ),
-            ListTile(
-              leading: const Icon(Icons.home),
-              title: const Text('Home'),
-              onTap: () {},
-            ),
-            ListTile(
-              leading: const Icon(Icons.message),
-              title: const Text('Messages'),
-              onTap: () {},
-            ),
-            ListTile(
-              leading: const Icon(Icons.category),
-              title: const Text('Categories'),
-              onTap: () {},
-            ),
-            ListTile(
-              leading: const Icon(Icons.bookmark),
-              title: const Text('Saved'),
-              onTap: () {},
-            ),
-            ListTile(
-              leading: const Icon(Icons.account_circle),
-              title: const Text('Profile'),
-              onTap: () {},
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Settings'),
-              onTap: () {},
-            ),
-            ListTile(
-              leading: const Icon(Icons.logout),
-              title: const Text('Logout'),
-              onTap: () {},
-            ),
+            ListTile(leading: Icon(Icons.home), title: Text('Home')),
+            ListTile(leading: Icon(Icons.message), title: Text('Messages')),
+            ListTile(leading: Icon(Icons.category), title: Text('Categories')),
+            ListTile(leading: Icon(Icons.bookmark), title: Text('Saved')),
+            ListTile(leading: Icon(Icons.account_circle), title: Text('Profile')),
+            ListTile(leading: Icon(Icons.settings), title: Text('Settings')),
+            ListTile(leading: Icon(Icons.logout), title: Text('Logout')),
           ],
         ),
       ),
@@ -218,160 +220,110 @@ class CustomerHomeContent extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Services Section (Horizontal list of circular items)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Services',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  const Text('Services', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   GestureDetector(
-                    onTap: () {
-                      // Navigate to view all services page
-                    },
-                    child: const Text(
-                      'View all',
-                      style: TextStyle(
-                        color: Color(0xFF6A1B9A),
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    child: const Text('View all', style: TextStyle(color: Color(0xFF6A1B9A), fontSize: 14, fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),
             ),
             SizedBox(
-              height: 90, // Adjusted height for CircleAvatar (radius: 30) + Text
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: 9,
-                itemBuilder: (context, index) {
-                  final List<Map<String, dynamic>> services = [
-                    {
-                      'name': 'Wellness & Spa',
-                      'image': 'assets/services/wellness_spa_image.png',
-                    },
-                    {
-                      'name': 'Braids & Locs',
-                      'image': 'assets/services/braids_locs_image.png',
-                    },
-                    {
-                      'name': 'Tattoo',
-                      'image': 'assets/services/tattoo_image.png',
-                    },
-                    {
-                      'name': 'Aesthetic Medicine',
-                      'image': 'assets/services/aesthetic_medicine_image.png',
-                    },
-                    {
-                      'name': 'Hair Removal',
-                      'image': 'assets/services/hair_removal_image.png',
-                    },
-                    {
-                      'name': 'Nail Salon',
-                      'image': 'assets/services/nail_salon_image.png',
-                    },
-                    {
-                      'name': 'Brows & Lashes',
-                      'image': 'assets/services/brows_lashes_image.png',
-                    },
-                    {
-                      'name': 'Piercing',
-                      'image': 'assets/services/piercing_image.png',
-                    },
-                    {
-                      'name': 'Makeup',
-                      'image': 'assets/services/makeup_image.png',
-                    },
-                  ];
-                  final service = services[index];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Column(
-                      children: [
-                        CircleAvatar(
-                          radius: 30,
-                          backgroundImage: AssetImage(service['image']),
-                          onBackgroundImageError: (error, stackTrace) {
-                            debugPrint('Error loading ${service['image']}: $error');
-                          },
+              height: 100,
+              child: FutureBuilder<List<Service>>(
+                future: _servicesFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text('Failed to load services: ${snapshot.error}', style: const TextStyle(color: Colors.red, fontSize: 14), textAlign: TextAlign.center),
+                          const SizedBox(height: 8),
+                          ElevatedButton(
+                            onPressed: () {
+                              final parentState = context.findAncestorStateOfType<_CustomerHomeScreenState>();
+                              if (parentState != null) parentState._refreshServices();
+                            },
+                            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6A1B9A)),
+                            child: const Text('Retry', style: TextStyle(color: Colors.white)),
+                          ),
+                        ],
+                      ),
+                    );
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(child: Text('No services available'));
+                  }
+
+                  final services = snapshot.data!;
+                  return ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: services.length,
+                    itemBuilder: (context, index) {
+                      final service = services[index];
+                      final imageMap = {
+                        'Haircut': 'assets/services/haircut_image.png',
+                        'Massage': 'assets/services/massage_image.png',
+                      };
+                      final imagePath = imageMap[service.serviceName] ?? 'assets/services/default_image.png';
+
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Column(
+                          children: [
+                            CircleAvatar(
+                              radius: 30,
+                              backgroundColor: Colors.grey[200],
+                              child: ClipOval(
+                                child: Image.asset(
+                                  imagePath,
+                                  fit: BoxFit.cover,
+                                  width: 60,
+                                  height: 60,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    debugPrint('Error loading $imagePath: $error');
+                                    return const Icon(Icons.image_not_supported, color: Colors.grey, size: 30);
+                                  },
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(service.serviceName, style: const TextStyle(fontSize: 12), textAlign: TextAlign.center),
+                          ],
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          service['name'],
-                          style: const TextStyle(fontSize: 12),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
+                      );
+                    },
                   );
                 },
               ),
             ),
-            // Special Offers Section (Horizontal list of cards)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: const Text(
-                'Special Offers',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Text('Special Offers', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             ),
             SizedBox(
-              height: 220, // Height to accommodate card content without overflow
+              height: 220,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: 4,
                 itemBuilder: (context, index) {
-                  final List<Map<String, dynamic>> specialOffers = [
-                    {
-                      'title': 'Salon Niro',
-                      'location': '121/A, Kesbewa, Piliyandala',
-                      'rating': 4.5,
-                      'reviews': 236,
-                      'discount': 'Save Up To 10%',
-                      'imagePath': 'assets/offers/offer1.png',
-                    },
-                    {
-                      'title': 'Prasa With Duli',
-                      'location': '112/A, Yakkala, Gampaha',
-                      'rating': 4.5,
-                      'reviews': 155,
-                      'discount': 'Save Up To 15%',
-                      'imagePath': 'assets/offers/offer2.png',
-                    },
-                    {
-                      'title': 'Salon Niro',
-                      'location': '121/A, Kesbewa, Piliyandala',
-                      'rating': 4.5,
-                      'reviews': 236,
-                      'discount': 'Save Up To 10%',
-                      'imagePath': 'assets/offers/offer3.png',
-                    },
-                    {
-                      'title': 'Prasa With Duli',
-                      'location': '112/A, Yakkala, Gampaha',
-                      'rating': 4.5,
-                      'reviews': 155,
-                      'discount': 'Save Up To 15%',
-                      'imagePath': 'assets/offers/offer4.png',
-                    },
+                  const List<Map<String, dynamic>> specialOffers = [
+                    {'title': 'Salon Niro', 'location': '121/A, Kesbewa, Piliyandala', 'rating': 4.5, 'reviews': 236, 'discount': 'Save Up To 10%', 'imagePath': 'assets/offers/offer1.png'},
+                    {'title': 'Prasa With Duli', 'location': '112/A, Yakkala, Gampaha', 'rating': 4.5, 'reviews': 155, 'discount': 'Save Up To 15%', 'imagePath': 'assets/offers/offer2.png'},
+                    {'title': 'Salon Niro', 'location': '121/A, Kesbewa, Piliyandala', 'rating': 4.5, 'reviews': 236, 'discount': 'Save Up To 10%', 'imagePath': 'assets/offers/offer3.png'},
+                    {'title': 'Prasa With Duli', 'location': '112/A, Yakkala, Gampaha', 'rating': 4.5, 'reviews': 155, 'discount': 'Save Up To 15%', 'imagePath': 'assets/offers/offer4.png'},
                   ];
                   final offer = specialOffers[index];
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: GestureDetector(
                       onTap: () {
-                        // Navigate to OneSaloonInsideScreen
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -388,19 +340,14 @@ class CustomerHomeContent extends StatelessWidget {
                       },
                       child: Card(
                         elevation: 2,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         child: SizedBox(
                           width: 250,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               ClipRRect(
-                                borderRadius: const BorderRadius.only(
-                                  topLeft: Radius.circular(10),
-                                  topRight: Radius.circular(10),
-                                ),
+                                borderRadius: const BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10)),
                                 child: Image.asset(
                                   offer['imagePath'],
                                   height: 100,
@@ -408,7 +355,7 @@ class CustomerHomeContent extends StatelessWidget {
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) {
                                     debugPrint('Error loading ${offer['imagePath']}: $error');
-                                    return const Icon(Icons.image, size: 100, color: Colors.grey);
+                                    return const Icon(Icons.image_not_supported, size: 100, color: Colors.grey);
                                   },
                                 ),
                               ),
@@ -417,30 +364,15 @@ class CustomerHomeContent extends StatelessWidget {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
-                                      offer['title'],
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
+                                    Text(offer['title'], style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                                     const SizedBox(height: 4),
-                                    Text(
-                                      offer['location'],
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey,
-                                      ),
-                                    ),
+                                    Text(offer['location'], style: const TextStyle(fontSize: 12, color: Colors.grey)),
                                     const SizedBox(height: 4),
                                     Row(
                                       children: [
                                         const Icon(Icons.star, color: Colors.yellow, size: 16),
                                         const SizedBox(width: 4),
-                                        Text(
-                                          '${offer['rating']} (${offer['reviews']} Reviews)',
-                                          style: const TextStyle(fontSize: 12),
-                                        ),
+                                        Text('${offer['rating']} (${offer['reviews']} Reviews)', style: const TextStyle(fontSize: 12)),
                                       ],
                                     ),
                                     const SizedBox(height: 4),
@@ -451,14 +383,7 @@ class CustomerHomeContent extends StatelessWidget {
                                           children: [
                                             const Icon(Icons.discount, color: Colors.purple, size: 16),
                                             const SizedBox(width: 4),
-                                            Text(
-                                              offer['discount'],
-                                              style: const TextStyle(
-                                                fontSize: 12,
-                                                color: Colors.purple,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
+                                            Text(offer['discount'], style: const TextStyle(fontSize: 12, color: Colors.purple, fontWeight: FontWeight.bold)),
                                           ],
                                         ),
                                         const Icon(Icons.favorite_border, color: Colors.purple, size: 16),
@@ -476,75 +401,35 @@ class CustomerHomeContent extends StatelessWidget {
                 },
               ),
             ),
-            // Recommended Section (Horizontal list of cards)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: const Text(
-                'Recommended',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Text('Recommended', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             ),
             SizedBox(
-              height: 220, // Height to accommodate card content without overflow
+              height: 220,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: 4,
                 itemBuilder: (context, index) {
-                  final List<Map<String, dynamic>> recommended = [
-                    {
-                      'title': 'Priya Salon',
-                      'location': '12/B, Bokundara, Maharagama',
-                      'rating': 5.0,
-                      'reviews': 336,
-                      'discount': 'Save Up To 10%',
-                      'imagePath': 'assets/offers/offer4.png',
-                    },
-                    {
-                      'title': 'Leo Max Men Salon',
-                      'location': '23/A, Wijerama, Nugegoda',
-                      'rating': 4.8,
-                      'reviews': 255,
-                      'discount': 'Save Up To 10%',
-                      'imagePath': 'assets/offers/offer3.png',
-                    },
-                    {
-                      'title': 'Priya Salon',
-                      'location': '12/B, Bokundara, Maharagama',
-                      'rating': 5.0,
-                      'reviews': 336,
-                      'discount': 'Save Up To 10%',
-                      'imagePath': 'assets/offers/offer2.png',
-                    },
-                    {
-                      'title': 'Leo Max Men Salon',
-                      'location': '23/A, Wijerama, Nugegoda',
-                      'rating': 4.8,
-                      'reviews': 255,
-                      'discount': 'Save Up To 10%',
-                      'imagePath': 'assets/offers/offer1.png',
-                    },
+                  const List<Map<String, dynamic>> recommended = [
+                    {'title': 'Priya Salon', 'location': '12/B, Bokundara, Maharagama', 'rating': 5.0, 'reviews': 336, 'discount': 'Save Up To 10%', 'imagePath': 'assets/offers/offer4.png'},
+                    {'title': 'Leo Max Men Salon', 'location': '23/A, Wijerama, Nugegoda', 'rating': 4.8, 'reviews': 255, 'discount': 'Save Up To 10%', 'imagePath': 'assets/offers/offer3.png'},
+                    {'title': 'Priya Salon', 'location': '12/B, Bokundara, Maharagama', 'rating': 5.0, 'reviews': 336, 'discount': 'Save Up To 10%', 'imagePath': 'assets/offers/offer2.png'},
+                    {'title': 'Leo Max Men Salon', 'location': '23/A, Wijerama, Nugegoda', 'rating': 4.8, 'reviews': 255, 'discount': 'Save Up To 10%', 'imagePath': 'assets/offers/offer1.png'},
                   ];
                   final item = recommended[index];
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: Card(
                       elevation: 2,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       child: SizedBox(
                         width: 250,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             ClipRRect(
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(10),
-                                topRight: Radius.circular(10),
-                              ),
+                              borderRadius: const BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10)),
                               child: Image.asset(
                                 item['imagePath'],
                                 height: 100,
@@ -552,7 +437,7 @@ class CustomerHomeContent extends StatelessWidget {
                                 fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) {
                                   debugPrint('Error loading ${item['imagePath']}: $error');
-                                  return const Icon(Icons.image, size: 100, color: Colors.grey);
+                                  return const Icon(Icons.image_not_supported, size: 100, color: Colors.grey);
                                 },
                               ),
                             ),
@@ -561,30 +446,15 @@ class CustomerHomeContent extends StatelessWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    item['title'],
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                                  Text(item['title'], style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                                   const SizedBox(height: 4),
-                                  Text(
-                                    item['location'],
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
+                                  Text(item['location'], style: const TextStyle(fontSize: 12, color: Colors.grey)),
                                   const SizedBox(height: 4),
                                   Row(
                                     children: [
                                       const Icon(Icons.star, color: Colors.yellow, size: 16),
                                       const SizedBox(width: 4),
-                                      Text(
-                                        '${item['rating']} (${item['reviews']} Reviews)',
-                                        style: const TextStyle(fontSize: 12),
-                                      ),
+                                      Text('${item['rating']} (${item['reviews']} Reviews)', style: const TextStyle(fontSize: 12)),
                                     ],
                                   ),
                                   const SizedBox(height: 4),
@@ -595,14 +465,7 @@ class CustomerHomeContent extends StatelessWidget {
                                         children: [
                                           const Icon(Icons.discount, color: Colors.purple, size: 16),
                                           const SizedBox(width: 4),
-                                          Text(
-                                            item['discount'],
-                                            style: const TextStyle(
-                                              fontSize: 12,
-                                              color: Colors.purple,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
+                                          Text(item['discount'], style: const TextStyle(fontSize: 12, color: Colors.purple, fontWeight: FontWeight.bold)),
                                         ],
                                       ),
                                       const Icon(Icons.favorite_border, color: Colors.purple, size: 16),
@@ -619,31 +482,14 @@ class CustomerHomeContent extends StatelessWidget {
                 },
               ),
             ),
-            // Nearest Saloon Section (Vertical list of cards)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Nearest Saloon',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  const Text('Nearest Saloon', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   GestureDetector(
-                    onTap: () {
-                      // Navigate to view all nearest saloons page
-                    },
-                    child: const Text(
-                      'View all',
-                      style: TextStyle(
-                        color: Color(0xFF6A1B9A),
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    child: Text('View all', style: TextStyle(color: Color(0xFF6A1B9A), fontSize: 14, fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),
@@ -653,25 +499,10 @@ class CustomerHomeContent extends StatelessWidget {
               physics: const NeverScrollableScrollPhysics(),
               itemCount: 3,
               itemBuilder: (context, index) {
-                final List<Map<String, dynamic>> nearestSaloons = [
-                  {
-                    'title': 'Lotas Saloon',
-                    'location': 'Colombo Havelock Road',
-                    'rating': 4.5,
-                    'imagePath': 'assets/saloons/lotas_saloon_image.png',
-                  },
-                  {
-                    'title': 'Glamour Grove Studio',
-                    'location': 'Colombo Havelock Road',
-                    'rating': 4.5,
-                    'imagePath': 'assets/saloons/glamour_grove_image.png',
-                  },
-                  {
-                    'title': 'Lotas Saloon',
-                    'location': 'Colombo Havelock Road',
-                    'rating': 4.5,
-                    'imagePath': 'assets/saloons/lotas_saloon_image_2.png',
-                  },
+                const List<Map<String, dynamic>> nearestSaloons = [
+                  {'title': 'Lotas Saloon', 'location': 'Colombo Havelock Road', 'rating': 4.5, 'imagePath': 'assets/saloons/lotas_saloon_image.png'},
+                  {'title': 'Glamour Grove Studio', 'location': 'Colombo Havelock Road', 'rating': 4.5, 'imagePath': 'assets/saloons/glamour_grove_image.png'},
+                  {'title': 'Lotas Saloon', 'location': 'Colombo Havelock Road', 'rating': 4.5, 'imagePath': 'assets/saloons/lotas_saloon_image_2.png'},
                 ];
                 final saloon = nearestSaloons[index];
                 return Card(
@@ -683,11 +514,11 @@ class CustomerHomeContent extends StatelessWidget {
                       onBackgroundImageError: (error, stackTrace) {
                         debugPrint('Error loading ${saloon['imagePath']}: $error');
                       },
+                      child: saloon['imagePath'] == 'assets/services/default_image.png'
+                          ? const Icon(Icons.image_not_supported, color: Colors.grey)
+                          : null,
                     ),
-                    title: Text(
-                      saloon['title'],
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
+                    title: Text(saloon['title'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -696,11 +527,7 @@ class CustomerHomeContent extends StatelessWidget {
                             const Icon(Icons.location_pin, color: Colors.grey, size: 16),
                             const SizedBox(width: 4),
                             Expanded(
-                              child: Text(
-                                saloon['location'],
-                                style: const TextStyle(fontSize: 12, color: Colors.grey),
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                              child: Text(saloon['location'], style: const TextStyle(fontSize: 12, color: Colors.grey), overflow: TextOverflow.ellipsis),
                             ),
                           ],
                         ),
@@ -709,32 +536,16 @@ class CustomerHomeContent extends StatelessWidget {
                           children: [
                             const Icon(Icons.star, color: Colors.yellow, size: 16),
                             const SizedBox(width: 4),
-                            Text(
-                              '${saloon['rating']}',
-                              style: const TextStyle(fontSize: 12),
-                            ),
+                            Text('${saloon['rating']}', style: const TextStyle(fontSize: 12)),
                           ],
                         ),
                       ],
                     ),
                     trailing: ElevatedButton(
-                      onPressed: () {
-                        // Handle book now action
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6A1B9A),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                      ),
-                      child: const Text(
-                        'Book Now',
-                        style: TextStyle(color: Colors.white, fontSize: 12),
-                      ),
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6A1B9A), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))),
+                      child: const Text('Book Now', style: TextStyle(color: Colors.white, fontSize: 12)),
                     ),
-                    onTap: () {
-                      // Navigate to saloon details page
-                    },
                   ),
                 );
               },
