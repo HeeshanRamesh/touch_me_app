@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 class InsideAppointmentReviewScreen extends StatelessWidget {
-  const InsideAppointmentReviewScreen({Key? key}) : super(key: key);
+  const InsideAppointmentReviewScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +13,7 @@ class InsideAppointmentReviewScreen extends StatelessWidget {
 }
 
 class InsideAppointmentReviewContent extends StatefulWidget {
-  const InsideAppointmentReviewContent({Key? key}) : super(key: key);
+  const InsideAppointmentReviewContent({super.key});
 
   @override
   _InsideAppointmentReviewContentState createState() => _InsideAppointmentReviewContentState();

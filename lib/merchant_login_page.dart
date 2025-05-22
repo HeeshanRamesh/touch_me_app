@@ -1,40 +1,36 @@
-// Importing necessary libraries for Flutter UI and authentication service
 import 'package:flutter/material.dart';
-import 'package:touch_me/signup_page.dart';
-import 'location_detector.dart';
-import 'package:touch_me/services/auth_service.dart';
-import 'package:touch_me/customer_home_screen.dart';
+import 'package:touch_me/merchant_signup_main.dart';
+import 'package:touch_me/saloon_dashboard_screen.dart';
+import 'package:touch_me/services/merchant_auth_service.dart';
 
-// LoginPage widget to handle user login
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class MerchantLoginPage extends StatefulWidget {
+  final String? username;
+  const MerchantLoginPage({super.key, this.username});
 
   @override
-  _LoginPageState createState() => _LoginPageState();
+  _MerchantLoginPageState createState() => _MerchantLoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _MerchantLoginPageState extends State<MerchantLoginPage> {
   bool _obscurePassword = true;
   bool _isLoading = false;
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   String? _usernameError;
   String? _passwordError;
-  final AuthService _authService = AuthService(); // Updated to use AuthService
   final _usernameFocus = FocusNode();
   final _passwordFocus = FocusNode();
-
-  Map<String, String>? _storedCredentials;
 
   @override
   void initState() {
     super.initState();
-    _storedCredentials = {'username': '', 'password': ''};
+    if (widget.username != null) {
+      _usernameController.text = widget.username!;
+    }
     _usernameController.addListener(_validateUsername);
     _passwordController.addListener(_validatePassword);
   }
 
-  // Email validation: simple English letters, ends with @gmail.com
   void _validateUsername() {
     final username = _usernameController.text.trim();
     if (username.isEmpty) {
@@ -52,7 +48,6 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  // Password validation: at least 6 characters
   void _validatePassword() {
     final password = _passwordController.text.trim();
     if (password.isEmpty) {
@@ -67,26 +62,6 @@ class _LoginPageState extends State<LoginPage> {
       setState(() {
         _passwordError = null;
       });
-    }
-  }
-
-  // Handle focus change to enforce validation before moving
-  void _handleFocusChange() {
-    if (_usernameFocus.hasFocus) {
-      _validateUsername();
-      if (_usernameError != null) {
-        _usernameFocus.requestFocus();
-      }
-    } else if (_passwordFocus.hasFocus) {
-      _validateUsername();
-      if (_usernameError != null) {
-        _usernameFocus.requestFocus();
-      } else {
-        _validatePassword();
-        if (_passwordError != null) {
-          _passwordFocus.requestFocus();
-        }
-      }
     }
   }
 
@@ -106,7 +81,11 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      final response = await _authService.login(username, password); // Updated method call
+      final response = await MerchantAuthService().loginMerchant(username, password);
+
+      setState(() {
+        _isLoading = false;
+      });
 
       if (!mounted) return;
 
@@ -122,57 +101,55 @@ class _LoginPageState extends State<LoginPage> {
           ),
         );
 
-        await Future.delayed(const Duration(milliseconds: 1500));
-        if (!mounted) return;
-
+        print('Navigating to SaloonDashboardScreen');
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const CustomerHomeScreen()),
+          MaterialPageRoute(builder: (context) => const SaloonDashboardScreen()),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(response['message'] ?? 'Authentication failed. Please try again.'),
+            content: Text(
+              response['message'] ?? 'Authentication failed. Please check your credentials or account type.',
+            ),
             backgroundColor: Colors.red.shade700,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
+            duration: const Duration(seconds: 4),
           ),
         );
       }
     } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+
       if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Network error. Please check your connection.'),
+          content: Text('Network error: ${e.toString()}'),
           backgroundColor: Colors.red.shade700,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
+          duration: const Duration(seconds: 4),
         ),
       );
     }
-
-    setState(() {
-      _isLoading = false;
-    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final args = ModalRoute.of(context)?.settings.arguments;
-    if (args != null && args is Map<String, String>) {
-      _storedCredentials = args;
-      _usernameController.text = args['username'] ?? '';
-      _validateUsername();
-
+    if (widget.username != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Welcome, ${args['username']}! Please login to continue.',
+              'Welcome, ${widget.username}! Please login to continue.',
             ),
             backgroundColor: Colors.blue.shade700,
             behavior: SnackBarBehavior.floating,
@@ -204,7 +181,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 20),
               const Text(
-                'Welcome Back!',
+                'Merchant Login',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -221,7 +198,6 @@ class _LoginPageState extends State<LoginPage> {
                   errorText: _usernameError,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
-                    borderSide: const BorderSide(color: Colors.grey),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
@@ -260,7 +236,6 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
-                    borderSide: const BorderSide(color: Colors.grey),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
@@ -281,7 +256,7 @@ class _LoginPageState extends State<LoginPage> {
               Align(
                 alignment: Alignment.centerRight,
                 child: GestureDetector(
-                  onTap: () {}, // TODO: Implement forgot password navigation
+                  onTap: () {}, // TODO: Implement forgot password
                   child: const Text(
                     'Forgot Password?',
                     style: TextStyle(
@@ -307,11 +282,7 @@ class _LoginPageState extends State<LoginPage> {
                     ? const CircularProgressIndicator(color: Colors.white)
                     : const Text(
                         'Login',
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
                       ),
               ),
               const SizedBox(height: 20),
@@ -320,10 +291,7 @@ class _LoginPageState extends State<LoginPage> {
                   Expanded(child: Divider(color: Colors.grey.shade400)),
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 10),
-                    child: Text(
-                      'Or Continue',
-                      style: TextStyle(color: Colors.grey),
-                    ),
+                    child: Text('Or Continue', style: TextStyle(color: Colors.grey)),
                   ),
                   Expanded(child: Divider(color: Colors.grey.shade400)),
                 ],
@@ -349,10 +317,7 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(width: 10),
                     const Text(
                       'With Google',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.black,
-                      ),
+                      style: TextStyle(fontSize: 16, color: Colors.black),
                     ),
                   ],
                 ),
@@ -361,23 +326,17 @@ class _LoginPageState extends State<LoginPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
-                    'Create An Account ',
-                    style: TextStyle(color: Colors.black),
-                  ),
+                  const Text('Create An Account ', style: TextStyle(color: Colors.black)),
                   GestureDetector(
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const SignUpPage()),
+                        MaterialPageRoute(builder: (context) => const MerchantSignupMain()),
                       );
                     },
                     child: const Text(
                       'Sign Up',
-                      style: TextStyle(
-                        color: Color(0xFF6A1B9A),
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: TextStyle(color: Color(0xFF6A1B9A), fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],

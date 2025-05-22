@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'book_appointment_screen.dart'; // Import the BookAppointmentScreen
 
 class InsideAppointmentScreen extends StatelessWidget {
-  const InsideAppointmentScreen({Key? key}) : super(key: key);
+  const InsideAppointmentScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +13,7 @@ class InsideAppointmentScreen extends StatelessWidget {
 }
 
 class InsideAppointmentContent extends StatefulWidget {
-  const InsideAppointmentContent({Key? key}) : super(key: key);
+  const InsideAppointmentContent({super.key});
 
   @override
   _InsideAppointmentContentState createState() => _InsideAppointmentContentState();
