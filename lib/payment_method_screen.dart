@@ -1,7 +1,41 @@
 import 'package:flutter/material.dart';
+import 'credit_card_payment_screen.dart';
+import 'cash_payment_screen.dart';
 
-class PaymentMethodScreen extends StatelessWidget {
+class PaymentMethodScreen extends StatefulWidget {
   const PaymentMethodScreen({super.key});
+
+  @override
+  _PaymentMethodScreenState createState() => _PaymentMethodScreenState();
+}
+
+class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
+  int _selectedIndex = 0;
+  bool? _isCreditCardSelected; // Initially null to track if an option is selected
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  void _navigateToPaymentScreen() {
+    if (_isCreditCardSelected == true) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const CreditCardPaymentScreen(),
+        ),
+      );
+    } else if (_isCreditCardSelected == false) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const CashPaymentScreen(),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +63,6 @@ class PaymentMethodScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Payment Options Section
               const Text(
                 'Payment Options',
                 style: TextStyle(
@@ -42,36 +75,47 @@ class PaymentMethodScreen extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  // Credit Card Option
-                  Container(
-                    padding: const EdgeInsets.all(16.0),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.credit_card,
-                      size: 40,
-                      color: Colors.black,
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _isCreditCardSelected = true;
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(16.0),
+                      decoration: BoxDecoration(
+                        color: _isCreditCardSelected == true ? Colors.purple[100] : Colors.grey[200],
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.credit_card,
+                        size: 40,
+                        color: Colors.black,
+                      ),
                     ),
                   ),
-                  // Cash Option
-                  Container(
-                    padding: const EdgeInsets.all(16.0),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.money,
-                      size: 40,
-                      color: Colors.black,
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _isCreditCardSelected = false;
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(16.0),
+                      decoration: BoxDecoration(
+                        color: _isCreditCardSelected == false ? Colors.purple[100] : Colors.grey[200],
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.money,
+                        size: 40,
+                        color: Colors.black,
+                      ),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 30),
-              // Select Your Card Section
               const Text(
                 'Select your card',
                 style: TextStyle(
@@ -81,7 +125,6 @@ class PaymentMethodScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              // Card Widget
               Container(
                 padding: const EdgeInsets.all(16.0),
                 decoration: BoxDecoration(
@@ -98,7 +141,6 @@ class PaymentMethodScreen extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        // Bank Logo (Placeholder Icon)
                         const Icon(
                           Icons.account_balance,
                           color: Colors.white,
@@ -220,15 +262,11 @@ class PaymentMethodScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 30),
-              // Continue Button
               Center(
                 child: ElevatedButton(
-                  onPressed: () {
-                    // Handle continue action (placeholder)
-                    print('Continue pressed');
-                  },
+                  onPressed: _isCreditCardSelected != null ? _navigateToPaymentScreen : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6A1B9A), // Purple background
+                    backgroundColor: _isCreditCardSelected != null ? const Color(0xFF6A1B9A) : Colors.grey,
                     padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8.0),
@@ -244,7 +282,6 @@ class PaymentMethodScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
             ],
           ),
         ),

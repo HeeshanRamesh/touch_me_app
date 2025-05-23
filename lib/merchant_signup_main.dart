@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:touch_me/saloon_dashboard_screen.dart';
 import 'package:intl/intl.dart';
+import 'package:touch_me/saloon_map_screen.dart';
+import 'package:touch_me/saloon_opening_hours_screen.dart';
 import 'package:touch_me/services/merchant_auth_service.dart';
 import 'package:touch_me/merchant_login_page.dart';
 
@@ -413,117 +415,146 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
     );
   }
 
-  Widget _buildOutletInfoStep() {
-    return Form(
-      key: _outletInfoFormKey,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: ListView(
-          children: [
-            const SizedBox(height: 20),
-            const Center(
-              child: Text(
-                "Outlet Information - Step 1 of 4",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFFB71C9B),
-                ),
+ Widget _buildOutletInfoStep() {
+  return Form(
+    key: _outletInfoFormKey,
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: ListView(
+        children: [
+          const SizedBox(height: 20),
+          const Center(
+            child: Text(
+              "Outlet Information - Step 1 of 4",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFFB71C9B),
               ),
             ),
-            const SizedBox(height: 20),
-            _buildFieldLabel("Outlet Name *"),
-            TextFormField(
-              controller: _outletNameController,
-              decoration: _inputDecoration("Outlet Name"),
-              validator: (value) => _validateRequired(value, "outlet name"),
+          ),
+          const SizedBox(height: 20),
+          _buildFieldLabel("Outlet Name *"),
+          TextFormField(
+            controller: _outletNameController,
+            decoration: _inputDecoration("Outlet Name"),
+            validator: (value) => _validateRequired(value, "outlet name"),
+          ),
+          _buildFieldLabel("E-mail Address *"),
+          TextFormField(
+            controller: _emailController,
+            decoration: _inputDecoration("E-mail Address", icon: Icons.email),
+            keyboardType: TextInputType.emailAddress,
+            validator: _validateEmail,
+          ),
+          _buildFieldLabel("Phone Number *"),
+          Container(
+            decoration: _fieldDecoration(),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: IntlPhoneField(
+              decoration: const InputDecoration(
+                hintText: 'Phone Number',
+                border: InputBorder.none,
+                errorBorder: InputBorder.none,
+                filled: true,
+                fillColor: Color(0xFFF3E5F5),
+              ),
+              initialCountryCode: 'LK',
+              onChanged: (phone) => _phoneNumber = phone.completeNumber,
+              validator: (p) => _validatePhoneNumber(p?.number),
             ),
-            _buildFieldLabel("E-mail Address *"),
-            TextFormField(
-              controller: _emailController,
-              decoration: _inputDecoration("E-mail Address", icon: Icons.email),
-              keyboardType: TextInputType.emailAddress,
-              validator: _validateEmail,
-            ),
-            _buildFieldLabel("Phone Number *"),
-            Container(
-              decoration: _fieldDecoration(),
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: IntlPhoneField(
-                decoration: const InputDecoration(
-                  hintText: 'Phone Number',
-                  border: InputBorder.none,
-                  errorBorder: InputBorder.none,
-                  filled: true,
-                  fillColor: Color(0xFFF3E5F5),
+          ),
+          const SizedBox(height: 20),
+          Center(
+            child: ElevatedButton(
+              onPressed: _isSubmitting
+                  ? null
+                  : () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const SaloonMapScreen(),
+                        ),
+                      );
+                    },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF6A1B9A),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
                 ),
-                initialCountryCode: 'LK',
-                onChanged: (phone) => _phoneNumber = phone.completeNumber,
-                validator: (p) => _validatePhoneNumber(p?.number),
+                elevation: 5,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 60,
+                  vertical: 14,
+                ),
+              ),
+              child: const Text(
+                "Create Pickup Location",
+                style: TextStyle(color: Colors.white),
               ),
             ),
-            const SizedBox(height: 20),
-            Center(
-              child: _isSubmitting
-                  ? const CircularProgressIndicator(
-                      color: Color(0xFF6A1B9A),
-                    )
-                  : Column(
-                      children: [
-                        ElevatedButton(
-                          onPressed: next,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF6A1B9A),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            elevation: 5,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 60,
-                              vertical: 14,
-                            ),
+          ),
+          const SizedBox(height: 20),
+          Center(
+            child: _isSubmitting
+                ? const CircularProgressIndicator(
+                    color: Color(0xFF6A1B9A),
+                  )
+                : Column(
+                    children: [
+                      ElevatedButton(
+                        onPressed: next,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF6A1B9A),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
                           ),
-                          child: const Text(
-                            "Continue",
-                            style: TextStyle(color: Colors.white),
+                          elevation: 5,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 60,
+                            vertical: 14,
                           ),
                         ),
-                        const SizedBox(height: 10),
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const MerchantLoginPage(),
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF6A1B9A),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
+                        child: const Text(
+                          "Continue",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const MerchantLoginPage(),
                             ),
-                            elevation: 5,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 60,
-                              vertical: 14,
-                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF6A1B9A),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
                           ),
-                          child: const Text(
-                            "Sign In",
-                            style: TextStyle(color: Colors.white),
+                          elevation: 5,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 60,
+                            vertical: 14,
                           ),
                         ),
-                      ],
-                    ),
-            ),
-            const SizedBox(height: 20),
-          ],
-        ),
+                        child: const Text(
+                          "Sign In",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
+          const SizedBox(height: 20),
+        ],
       ),
-    );
-  }
-
+    ),
+  );
+}
   Widget _buildContactInfoStep() {
     return Form(
       key: _contactInfoFormKey,
@@ -615,32 +646,41 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
               ),
             ),
             const SizedBox(height: 16),
-            Container(
-              decoration: _fieldDecoration(),
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Opening hours saved successfully!"),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.edit, color: Color(0xFF6A1B9A)),
-                label: const Text(
-                  "Set opening hours and date",
-                  style: TextStyle(color: Color(0xFF6A1B9A)),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  shadowColor: Colors.transparent,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                ),
-              ),
-            ),
+Container(
+  decoration: _fieldDecoration(),
+  child: ElevatedButton.icon(
+    onPressed: () async {
+      // Navigate to SaloonOpeningHoursScreen and wait for the result
+      final openingHours = await Navigator.push<Map<String, Map<String, String>>>(
+        context,
+        MaterialPageRoute(builder: (context) => const SaloonOpeningHoursScreen()),
+      );
+
+      // Show SnackBar only if opening hours were saved (i.e., result is not null)
+      if (openingHours != null && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Opening hours saved successfully!"),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    },
+    icon: const Icon(Icons.edit, color: Color(0xFF6A1B9A)),
+    label: const Text(
+      "Set opening hours and date",
+      style: TextStyle(color: Color(0xFF6A1B9A)),
+    ),
+    style: ElevatedButton.styleFrom(
+      backgroundColor: Colors.white,
+      shadowColor: Colors.transparent,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(25),
+      ),
+    ),
+  ),
+),
             const SizedBox(height: 30),
             Center(
               child: _isSubmitting

@@ -14,30 +14,33 @@ class CustomBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    const referenceWidth = 375.0;
+    final scaleFactor = screenWidth / referenceWidth;
+
     return BottomAppBar(
       shape: const CircularNotchedRectangle(),
       color: Colors.white,
       child: SizedBox(
-        height: 70, // Increased height to accommodate labels
+        height: 70 * scaleFactor,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            // Home Icon with Label
             _buildNavItem(
               icon: Icons.home,
               label: 'Home',
               index: 0,
               isSelected: currentIndex == 0,
+              scaleFactor: scaleFactor,
             ),
-            // Appointments Icon with Label
             _buildNavItem(
               icon: Icons.grid_view,
               label: 'Appointments',
               index: 1,
               isSelected: currentIndex == 1,
+              scaleFactor: scaleFactor,
             ),
-            const SizedBox(width: 20), // Space for FAB
-            // Favorites Icon with Badge
+            SizedBox(width: 20 * scaleFactor),
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -46,23 +49,20 @@ class CustomBottomNavBar extends StatelessWidget {
                   children: [
                     IconButton(
                       icon: Icon(
-                        currentIndex == 2
-                            ? Icons.favorite
-                            : Icons.favorite_border,
-                        color:
-                            currentIndex == 2
-                                ? const Color(0xFF6A1B9A)
-                                : Colors.grey,
+                        currentIndex == 2 ? Icons.favorite : Icons.favorite_border,
+                        color: currentIndex == 2
+                            ? const Color(0xFF6A1B9A)
+                            : Colors.grey,
+                        size: 24 * scaleFactor,
                       ),
                       onPressed: () => onTap(2),
                     ),
-                    // Badge
                     Positioned(
                       right: 5,
                       top: 5,
                       child: Container(
-                        width: 10,
-                        height: 10,
+                        width: 10 * scaleFactor,
+                        height: 10 * scaleFactor,
                         decoration: const BoxDecoration(
                           color: Colors.red,
                           shape: BoxShape.circle,
@@ -74,21 +74,20 @@ class CustomBottomNavBar extends StatelessWidget {
                 Text(
                   'Favorites',
                   style: TextStyle(
-                    color:
-                        currentIndex == 2
-                            ? const Color(0xFF6A1B9A)
-                            : Colors.black,
-                    fontSize: 12,
+                    color: currentIndex == 2
+                        ? const Color(0xFF6A1B9A)
+                        : Colors.black,
+                    fontSize: 12 * scaleFactor,
                   ),
                 ),
               ],
             ),
-            // Profile Icon with Label
             _buildNavItem(
               icon: Icons.person_outline,
               label: 'Profile',
               index: 3,
               isSelected: currentIndex == 3,
+              scaleFactor: scaleFactor,
             ),
           ],
         ),
@@ -101,6 +100,7 @@ class CustomBottomNavBar extends StatelessWidget {
     required String label,
     required int index,
     required bool isSelected,
+    required double scaleFactor,
   }) {
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -109,6 +109,7 @@ class CustomBottomNavBar extends StatelessWidget {
           icon: Icon(
             icon,
             color: isSelected ? const Color(0xFF6A1B9A) : Colors.grey,
+            size: 24 * scaleFactor,
           ),
           onPressed: () => onTap(index),
         ),
@@ -116,7 +117,7 @@ class CustomBottomNavBar extends StatelessWidget {
           label,
           style: TextStyle(
             color: isSelected ? const Color(0xFF6A1B9A) : Colors.black,
-            fontSize: 12,
+            fontSize: 12 * scaleFactor,
           ),
         ),
       ],
