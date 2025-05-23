@@ -26,7 +26,13 @@ dependencies:
   shared_preferences: ^2.5.3
   image_picker: ^1.1.2
   flutter_secure_storage: ^9.2.4
+  
+  #flutter_google_places: ^0.3.0
+  #google_api_headers: ^1.6.0
   # Removed duplicate dependencies key and its content
+
+  #dependency_overrides:
+  #google_api_headers: ^1.7.0
   
 
 
