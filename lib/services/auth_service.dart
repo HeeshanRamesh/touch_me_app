@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 
 // AuthService class to handle authentication-related operations
 class AuthService {
-  static const String baseUrl = 'http://192.168.8.111:6000/api/users';
+  static const String baseUrl = 'http://192.168.8.199:6000/api/users';
 
   // Method to register a new user
   Future<Map<String, dynamic>> register({

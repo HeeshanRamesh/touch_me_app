@@ -1,7 +1,7 @@
 name: touch_me
 description: "A new Flutter project."
 publish_to: 'none'
-version: 0.1.0
+version: 1.0.0+1
 
 environment:
   sdk: ^3.7.2
@@ -9,7 +9,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
   table_calendar: ^3.0.9
   location: ^5.0.3
   http: ^0.13.6
@@ -26,6 +25,7 @@ dependencies:
   shared_preferences: ^2.5.3
   image_picker: ^1.1.2
   flutter_secure_storage: ^9.2.4
+<<<<<<< Updated upstream
   
   #flutter_google_places: ^0.3.0
   #google_api_headers: ^1.6.0
@@ -34,10 +34,10 @@ dependencies:
   #dependency_overrides:
   #google_api_headers: ^1.7.0
   
+=======
+  flutter_launcher_icons: ^0.14.3
+>>>>>>> Stashed changes
 
-
-
-  
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -51,3 +51,8 @@ flutter:
     - assets/services/
     - assets/saloons/
     - assets/favourites/
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/app_icon.png" # <- make sure this file exists
