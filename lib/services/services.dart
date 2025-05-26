@@ -43,7 +43,7 @@ class Service {
 }
 
 class ServiceApi {
-  static const String _baseUrl = 'http://192.168.8.111:6000/api/services';
+  static const String _baseUrl = 'http://192.168.8.199:6000/api/services';
 
   Future<List<Service>> fetchServices(String authToken, BuildContext context) async {
     const retryOptions = RetryOptions(
