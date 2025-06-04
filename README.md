@@ -1,1 +1,3 @@
-# touch_me_app
+# touch_me
+
+A new Flutter project.
