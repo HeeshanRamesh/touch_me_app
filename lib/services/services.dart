@@ -1,93 +1,112 @@
-import 'dart:async';
+// services/services.dart
 import 'dart:convert';
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:retry/retry.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:touch_me/login_page.dart';
+import '../models/service.dart';
 
-// Service model to map the API response
-class Service {
-  final String id;
-  final String serviceName;
-  final String serviceDescription;
-  final double price;
-  final String image;
-  final bool isActive;
-  final DateTime createdAt;
-  final DateTime updatedAt;
+Future<List<Service>> fetchServices(String token) async {
+  final response = await http.get(
+    Uri.parse('http://192.168.8.199:6000/api/services'),
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token', // ✅ Include token
+    },
+  );
 
-  Service({
-    required this.id,
-    required this.serviceName,
-    required this.serviceDescription,
-    required this.price,
-    required this.image,
-    required this.isActive,
-    required this.createdAt,
-    required this.updatedAt,
-  });
-
-  factory Service.fromJson(Map<String, dynamic> json) {
-    return Service(
-      id: json['id'] ?? '',
-      serviceName: json['serviceName'] ?? '',
-      serviceDescription: json['serviceDescription'] ?? '',
-      price: (json['price'] ?? 0.0).toDouble(),
-      image: json['image'] ?? '',
-      isActive: json['isActive'] ?? false,
-      createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toString()),
-      updatedAt: DateTime.parse(json['updatedAt'] ?? DateTime.now().toString()),
-    );
+  if (response.statusCode == 200) {
+    final List<dynamic> data = json.decode(response.body);
+    return data.map((json) => Service.fromJson(json)).toList();
+  } else {
+    throw Exception('Failed to load services. Status: ${response.statusCode}');
   }
 }
 
-class ServiceApi {
-  static const String _baseUrl = 'http://192.168.8.199:6000/api/services';
 
-  Future<List<Service>> fetchServices(String authToken, BuildContext context) async {
-    const retryOptions = RetryOptions(
-      maxAttempts: 3,
-      delayFactor: Duration(seconds: 1),
+Future<List<Service>> fetchServicesByMerchant(
+  String merchantId,
+  String token,
+) async {
+  try {
+    final url = Uri.parse(
+      'http://192.168.8.199:6000/api/services/merchant/$merchantId',
+    );
+    print('🌐 Calling: $url');
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
     );
 
-    try {
-      print('Attempting to fetch services from $_baseUrl with token: $authToken');
-      final response = await retry(
-        () async => await http.get(
-          Uri.parse(_baseUrl),
-          headers: {
-            'Authorization': 'Bearer $authToken',
-            'Content-Type': 'application/json',
-          },
-        ).timeout(const Duration(seconds: 5)),
-        retryIf: (e) => e is http.ClientException || e is TimeoutException,
-        onRetry: (e) => print('Retrying GET due to: $e'),
-      );
+    print('✅ Response Status: ${response.statusCode}');
+    print('📦 Response Body: ${response.body}');
 
-      print('Received response with status code: ${response.statusCode}');
-      if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        print('Parsed ${data.length} services from API response');
-        return data.map((json) => Service.fromJson(json)).toList();
-      } else if (response.statusCode == 401) {
-        print('Unauthorized: Logging out user due to invalid token');
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.remove('auth_token');
-        if (context.mounted) {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) => const LoginPage()),
-            (Route<dynamic> route) => false,
-          );
-        }
-        throw Exception('Session expired. Please log in again.');
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+
+      // Log the raw data for debugging
+      print('ℹ️ Parsed JSON data: $data');
+
+      // Handle different response formats
+      List<dynamic> services;
+      if (data is List) {
+        services = data;
+      } else if (data is Map &&
+          (data['services'] is List || data['data'] is List)) {
+        services = data['services'] ?? data['data'] ?? [];
       } else {
-        throw Exception('Failed to load services: HTTP ${response.statusCode} - ${response.reasonPhrase}');
+        print('⚠️ Unexpected response format: $data');
+        return [];
       }
-    } catch (e) {
-      print('Error fetching services: $e');
-      throw Exception('Error fetching services: $e');
+
+      if (services.isEmpty) {
+        print('⚠️ No services found for merchant ID: $merchantId');
+      }
+
+      return services
+          .map((s) => Service.fromJson(s as Map<String, dynamic>))
+          .toList();
+    } else if (response.statusCode == 404) {
+      print('ℹ️ No services found for merchant (404)');
+      return [];
+    } else {
+      throw Exception(
+        'Failed to load services. Status: ${response.statusCode}, Body: ${response.body}',
+      );
     }
+  } catch (e, stackTrace) {
+    print('❌ Error fetching services: $e\nStackTrace: $stackTrace');
+    return [];
   }
 }
+
+Future<http.Response> addServiceForMerchant({
+  required String merchantId,
+  required String token,
+  required Service service,
+}) async {
+  final url = Uri.parse('http://192.168.8.199:6000/api/services/$merchantId');
+
+  final Map<String, dynamic> serviceData = {
+    'serviceName': service.serviceName,
+    'serviceDescription': service.serviceDescription,
+    'price': service.price,
+    'image': service.image,
+    'isActive': service.isActive,
+  };
+
+  return await http.post(
+    url,
+    headers: {
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json',
+    },
+    body: jsonEncode(serviceData),
+  );
+}
+
+
+
+
+

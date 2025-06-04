@@ -1,7 +1,8 @@
-// Updated SaloonDashboardScreen with working BottomNavigationBar navigation to AddServiceScreen
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:touch_me/owner_service_page.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:touch_me/add_services_screen.dart';
+
 
 class SaloonDashboardScreen extends StatefulWidget {
   const SaloonDashboardScreen({super.key});
@@ -21,12 +22,32 @@ class _SaloonDashboardScreenState extends State<SaloonDashboardScreen> {
         currentIndex: _currentIndex,
         selectedItemColor: const Color(0xFF6A1B9A),
         unselectedItemColor: Colors.grey,
-        onTap: (index) {
+        onTap: (index) async {
           if (index == 2) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const OwnerServicePage()),
-            );
+            // Load merchantId from secure storage
+            final storage = const FlutterSecureStorage();
+            String? merchantId = await storage.read(key: "merchantId");
+
+            if (merchantId == null || merchantId.isEmpty) {
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Merchant ID not found. Please login again."),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+              return;
+            }
+
+            if (context.mounted) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => AddServiceScreen(merchantId: merchantId),
+                ),
+              );
+            }
           } else {
             setState(() {
               _currentIndex = index;

@@ -1,5 +1,6 @@
 // Importing necessary libraries for Flutter UI and authentication service
 import 'package:flutter/material.dart';
+import 'package:touch_me/customer_home_content.dart';
 import 'package:touch_me/signup_page.dart';
 import 'location_detector.dart';
 import 'package:touch_me/services/auth_service.dart';
@@ -127,8 +128,13 @@ class _LoginPageState extends State<LoginPage> {
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const CustomerHomeScreen()),
+          MaterialPageRoute(
+            builder: (context) => CustomerHomeContent(token: response['token']),
+          ),
         );
+
+
+
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

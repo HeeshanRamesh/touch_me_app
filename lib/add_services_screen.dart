@@ -6,10 +6,21 @@ import 'package:retry/retry.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:touch_me/merchant_services_screen.dart';
 import 'login_page.dart';
+import '../models/service.dart';
 
 class AddServiceScreen extends StatefulWidget {
-  const AddServiceScreen({super.key});
+  final Service? service; // Pass service for edit mode
+  final String? serviceId; // Pass ID for edit mode
+  final String? merchantId; // Pass merchantId for add mode
+
+  const AddServiceScreen({
+    Key? key,
+    this.service,
+    this.serviceId,
+    this.merchantId, // Pass merchantId here for ADD mode
+  }) : super(key: key);
 
   @override
   State<AddServiceScreen> createState() => _AddServiceScreenState();
@@ -23,7 +34,20 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final storage = const FlutterSecureStorage();
   bool _isSubmitting = false;
-  String? _imageUrl = 'https://example.com/images/massage.jpg';
+  String? _imageUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.service != null) {
+      _serviceNameController.text = widget.service!.serviceName;
+      _descriptionController.text = widget.service!.serviceDescription;
+      _priceController.text = widget.service!.price.toString();
+      _imageUrl = widget.service!.image;
+    } else {
+      _imageUrl = 'https://example.com/images/massage.jpg';
+    }
+  }
 
   @override
   void dispose() {
@@ -43,15 +67,25 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
 
         if (response.statusCode == 200 || response.statusCode == 201) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Service added successfully!"),
+            SnackBar(
+              content: Text(
+                widget.serviceId != null
+                    ? "Service updated successfully!"
+                    : "Service added successfully!",
+              ),
               backgroundColor: Colors.green,
             ),
           );
-          _serviceNameController.clear();
-          _descriptionController.clear();
-          _priceController.clear();
-          setState(() => _imageUrl = 'https://example.com/images/massage.jpg');
+          // Navigate to MerchantServicesScreen after success!
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder:
+                  (context) =>
+                      MerchantServicesScreen(merchantId: widget.merchantId!),
+            ),
+            (Route<dynamic> route) => false,
+          );
         } else if (response.statusCode == 401) {
           await storage.delete(key: "token");
           if (mounted) {
@@ -72,7 +106,8 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                  "Failed to add service: ${responseBody['error']?['message'] ?? response.reasonPhrase}"),
+                "Failed to ${widget.serviceId != null ? 'update' : 'add'} service: ${responseBody['error']?['message'] ?? response.reasonPhrase}",
+              ),
               backgroundColor: Colors.red,
             ),
           );
@@ -84,28 +119,24 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
           errorMessage =
               "Cannot connect to the server. Please check if the server is running and the URL is correct.";
         } else if (e is FormatException) {
-          //errorMessage = "Invalid price format. Please enter a valid number (e.g., 1500 or 1500.00).";
           errorMessage = e.toString();
         } else {
           errorMessage = "Error: $e";
         }
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
         );
       } finally {
-        if (mounted) {
-          setState(() => _isSubmitting = false);
-        }
+        if (mounted) setState(() => _isSubmitting = false);
       }
     }
   }
 
+
   Future<http.Response> _sendServiceToBackend() async {
-    const String baseUrl = 'http://192.168.8.111:6000';
-    const String endpoint = '/api/services';
+    const String baseUrl = 'http://192.168.8.199:6000';
+    String endpoint = '';
+    String method = 'POST';
 
     String? token = await storage.read(key: "token");
     if (token == null || token.isEmpty) {
@@ -113,52 +144,79 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
     }
 
     final priceText = _priceController.text.trim();
-    print('Price Input: $priceText'); // Debug: Log raw input
-    if (priceText.isEmpty) {
-      throw const FormatException("Price cannot be empty");
-    }
-
+    if (priceText.isEmpty) throw const FormatException("Price cannot be empty");
     double price;
     try {
-      // Parse price, allowing integer or decimal inputs
       price = double.parse(priceText);
-      print('Parsed Price: $price'); // Debug: Log parsed price
-      if (price <= 0) {
+      if (price <= 0)
         throw const FormatException("Price must be greater than 0");
-      }
     } catch (e) {
-      print('Price Parse Error: $e'); // Debug: Log parse error
       throw const FormatException("Invalid price format");
     }
 
     final Map<String, dynamic> serviceData = {
       "serviceName": _serviceNameController.text.trim(),
       "serviceDescription": _descriptionController.text.trim(),
-      "price": price, // Send as double (1500.0)
+      "price": price,
       "image": _imageUrl,
       "isActive": true,
     };
+
+    if (widget.serviceId != null) {
+      // Editing existing service
+      endpoint = '/api/services/${widget.serviceId}';
+      method = 'PUT';
+    } else {
+      // Adding for a specific merchant
+      if (widget.merchantId == null || widget.merchantId!.isEmpty) {
+        throw Exception("Merchant ID not provided for adding a service.");
+      }
+      endpoint = '/api/services/${widget.merchantId}';
+      method = 'POST';
+    }
+
+    final url = Uri.parse('$baseUrl$endpoint');
 
     const retryOptions = RetryOptions(
       maxAttempts: 3,
       delayFactor: Duration(seconds: 1),
     );
 
-    print('Request Payload: ${jsonEncode(serviceData)}');
+    Future<http.Response> request() {
+      if (method == 'PUT') {
+        return http
+            .put(
+              url,
+              headers: {
+                'Authorization': 'Bearer $token',
+                'Content-Type': 'application/json',
+              },
+              body: jsonEncode(serviceData),
+            )
+            .timeout(const Duration(seconds: 5));
+      } else {
+        return http
+            .post(
+              url,
+              headers: {
+                'Authorization': 'Bearer $token',
+                'Content-Type': 'application/json',
+              },
+              body: jsonEncode(serviceData),
+            )
+            .timeout(const Duration(seconds: 5));
+      }
+    }
+
     final response = await retry(
-      () async => await http.post(
-        Uri.parse('$baseUrl$endpoint'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode(serviceData),
-      ).timeout(const Duration(seconds: 5)),
+      () => request(),
       retryIf: (e) => e is http.ClientException || e is TimeoutException,
-      onRetry: (e) => print('Retrying POST due to: $e'),
+      onRetry: (e) => print('Retrying $method due to: $e'),
     );
 
-    print('Add Service Response: Status=${response.statusCode}, Body=${response.body}');
+    print(
+      'Service Response: Status=${response.statusCode}, Body=${response.body}',
+    );
     return response;
   }
 
@@ -177,7 +235,10 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to pick image: $e"), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text("Failed to pick image: $e"),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
@@ -190,9 +251,12 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
-        title: const Text(
-          "Add Service",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
+        title: Text(
+          widget.serviceId != null ? "Edit Service" : "Add Service",
+          style: const TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       body: Padding(
@@ -201,9 +265,9 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
           key: _formKey,
           child: ListView(
             children: [
-              const Text(
-                "Service Details",
-                style: TextStyle(
+              Text(
+                widget.serviceId != null ? "Edit Service" : "Service Details",
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF6A1B9A),
@@ -221,20 +285,18 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                 _priceController,
                 inputType: const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'^\d*(\.\d{0,2})?$')), // Allow 1500, 1500.0, 1500.00
+                  FilteringTextInputFormatter.allow(
+                    RegExp(r'^\d*(\.\d{0,2})?$'),
+                  ),
                 ],
                 validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
+                  if (value == null || value.trim().isEmpty)
                     return 'Please enter price';
-                  }
                   try {
                     final price = double.parse(value.trim());
-                    if (price <= 0) {
-                      return 'Price must be greater than 0';
-                    }
+                    if (price <= 0) return 'Price must be greater than 0';
                     return null;
                   } catch (e) {
-                    print('Validator Parse Error: $e'); // Debug: Log validator error
                     return 'Please enter a valid number (e.g., 1500 or 1500.00)';
                   }
                 },
@@ -243,7 +305,10 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
               ElevatedButton.icon(
                 onPressed: _isSubmitting ? null : _pickImage,
                 icon: const Icon(Icons.image, color: Colors.white),
-                label: const Text("Pick Image (Optional)", style: TextStyle(color: Colors.white)),
+                label: const Text(
+                  "Pick Image (Optional)",
+                  style: TextStyle(color: Colors.white),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF6A1B9A),
                   shape: RoundedRectangleBorder(
@@ -262,12 +327,15 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                   ),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
-                child: _isSubmitting
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text(
-                        "Add Service",
-                        style: TextStyle(color: Colors.white),
-                      ),
+                child:
+                    _isSubmitting
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : Text(
+                          widget.serviceId != null
+                              ? "Update Service"
+                              : "Add Service",
+                          style: const TextStyle(color: Colors.white),
+                        ),
               ),
             ],
           ),
@@ -291,9 +359,12 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
         keyboardType: inputType,
         inputFormatters: inputFormatters,
         maxLines: maxLines,
-        validator: validator ??
+        validator:
+            validator ??
             (value) =>
-                value == null || value.trim().isEmpty ? 'Please enter $hint' : null,
+                value == null || value.trim().isEmpty
+                    ? 'Please enter $hint'
+                    : null,
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: const TextStyle(
