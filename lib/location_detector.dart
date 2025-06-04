@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:touch_me/customer_home_content.dart';
 import 'customer_home_screen.dart'; // Import InsideCategoryScreen
 
 class LocationDetectorPage extends StatelessWidget {
@@ -64,10 +65,10 @@ class LocationDetectorPage extends StatelessWidget {
             child: ElevatedButton(
               onPressed: () {
                 // Navigate to InsideCategoryScreen
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const CustomerHomeScreen()),
-                );
+                // Navigator.push(
+                //   context,
+                //   MaterialPageRoute(builder: (context) =>  CustomerHomeContent()),
+                // );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF6A1B9A), // Purple color
@@ -93,10 +94,10 @@ class LocationDetectorPage extends StatelessWidget {
             child: OutlinedButton(
               onPressed: () {
                 // Navigate to InsideCategoryScreen
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const CustomerHomeScreen()),
-                );
+                // Navigator.push(
+                //   context,
+                //   MaterialPageRoute(builder: (context) =>  CustomerHomeContent()),
+                // );
               },
               style: OutlinedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 50),

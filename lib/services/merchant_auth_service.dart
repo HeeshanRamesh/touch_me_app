@@ -4,7 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class MerchantAuthService {
   static const String baseUrl = 'http://192.168.8.199:6000/api/merchants/';
-  static const String loginUrl = 'http://192.168.8.199:6000/api/users/login';
+  static const String loginUrl = 'http://192.168.8.199:6000/api/auth/login';
   static String? _token;
 
   final storage = const FlutterSecureStorage();
@@ -60,10 +60,7 @@ class MerchantAuthService {
       "businessRegistration": {
         "registrationImage": businessRegImage,
         "logo": logoImage,
-        "nic": {
-          "frontImage": nicFrontImage,
-          "backImage": nicBackImage,
-        },
+        "nic": {"frontImage": nicFrontImage, "backImage": nicBackImage},
       },
       "bankDetails": {
         "beneficiaryName": beneficiaryName,
@@ -99,14 +96,17 @@ class MerchantAuthService {
         } else {
           return {
             'success': true,
-            'message': 'Merchant registered successfully, but login failed: ${loginResult['message']}',
+            'message':
+                'Merchant registered successfully, but login failed: ${loginResult['message']}',
             'data': responseData,
           };
         }
       } else {
         return {
           'success': false,
-          'message': responseData['error']?['message'] ?? 'Failed to sign up merchant: ${response.statusCode}',
+          'message':
+              responseData['error']?['message'] ??
+              'Failed to sign up merchant: ${response.statusCode}',
           'error': responseData['error'] ?? 'Unknown error',
         };
       }
@@ -120,18 +120,26 @@ class MerchantAuthService {
     }
   }
 
-  Future<Map<String, dynamic>> loginMerchant(String email, String password) async {
+  Future<Map<String, dynamic>> loginMerchant(
+    String email,
+    String password,
+  ) async {
     try {
-      print('Login Payload: ${jsonEncode({'email': email, 'password': password})}');
+      print(
+        'Login Payload: ${jsonEncode({'email': email, 'password': password})}',
+      );
       final response = await http.post(
         Uri.parse(loginUrl),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'email': email, 'password': password}),
       );
 
-      print('Login Response: Status=${response.statusCode}, Body=${response.body}');
+      print(
+        'Login Response: Status=${response.statusCode}, Body=${response.body}',
+      );
 
-      final responseData = response.body.isNotEmpty ? jsonDecode(response.body) : {};
+      final responseData =
+          response.body.isNotEmpty ? jsonDecode(response.body) : {};
 
       if (response.statusCode == 200 && responseData['token'] != null) {
         if (responseData['role'] != 'Merchant') {
@@ -143,6 +151,18 @@ class MerchantAuthService {
         }
         setToken(responseData['token']);
         await storage.write(key: "token", value: responseData['token']);
+
+        // 🌟 SAVE MERCHANT ID TO STORAGE 🌟
+        if (responseData['merchant'] != null &&
+            (responseData['merchant']['id'] != null ||
+                responseData['merchant']['_id'] != null)) {
+          // Support both id and _id keys (just in case backend changes field name)
+          String merchantId =
+              responseData['merchant']['id'] ?? responseData['merchant']['_id'];
+          await storage.write(key: "merchantId", value: merchantId);
+          print("Merchant ID saved: $merchantId");
+        }
+
         return {
           'success': true,
           'message': 'Login successful',
@@ -164,7 +184,8 @@ class MerchantAuthService {
       } else {
         return {
           'success': false,
-          'message': responseData['message'] ?? 'Login failed: ${response.statusCode}',
+          'message':
+              responseData['message'] ?? 'Login failed: ${response.statusCode}',
           'token': null,
         };
       }
