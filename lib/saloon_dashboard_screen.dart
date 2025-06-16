@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:touch_me/add_services_screen.dart';
+import 'package:touch_me/merchant_services_screen.dart';
+import 'package:touch_me/my_bookings_page.dart';
 
 
 class SaloonDashboardScreen extends StatefulWidget {
@@ -44,8 +46,17 @@ class _SaloonDashboardScreenState extends State<SaloonDashboardScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => AddServiceScreen(merchantId: merchantId),
+                  builder:
+                      (_) => MerchantServicesScreen(merchantId: merchantId),
                 ),
+              );
+            }
+          } else if (index == 1) {
+            // Bookings tab
+            if (context.mounted) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const MyBookingsPage()),
               );
             }
           } else {

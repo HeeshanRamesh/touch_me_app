@@ -5,7 +5,7 @@ import '../models/service.dart';
 
 Future<List<Service>> fetchServices(String token) async {
   final response = await http.get(
-    Uri.parse('http://192.168.8.199:6000/api/services'),
+    Uri.parse('http://api.touchmeapp.com/api/services'),
     headers: {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $token', // ✅ Include token
@@ -27,7 +27,7 @@ Future<List<Service>> fetchServicesByMerchant(
 ) async {
   try {
     final url = Uri.parse(
-      'http://192.168.8.199:6000/api/services/merchant/$merchantId',
+      'http://api.touchmeapp.com/api/services/merchant/$merchantId',
     );
     print('🌐 Calling: $url');
 
@@ -86,7 +86,7 @@ Future<http.Response> addServiceForMerchant({
   required String token,
   required Service service,
 }) async {
-  final url = Uri.parse('http://192.168.8.199:6000/api/services/$merchantId');
+  final url = Uri.parse('http://api.touchmeapp.com/api/services/$merchantId');
 
   final Map<String, dynamic> serviceData = {
     'serviceName': service.serviceName,

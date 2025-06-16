@@ -37,7 +37,7 @@ class _MerchantServicesScreenState extends State<MerchantServicesScreen> {
       }
 
       final url = Uri.parse(
-        'http://192.168.8.199:6000/api/services/merchant/$merchantId',
+        'http://api.touchmeapp.com/api/services/merchant/$merchantId',
       );
       final response = await http.get(
         url,
@@ -74,7 +74,7 @@ class _MerchantServicesScreenState extends State<MerchantServicesScreen> {
         throw Exception("Not logged in.");
       }
       final url = Uri.parse(
-        'http://192.168.8.199:6000/api/services/$serviceId',
+        'http://api.touchmeapp.com/api/services/$serviceId',
       );
       final response = await http.delete(
         url,

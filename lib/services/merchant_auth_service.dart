@@ -3,8 +3,8 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class MerchantAuthService {
-  static const String baseUrl = 'http://192.168.8.199:6000/api/merchants/';
-  static const String loginUrl = 'http://192.168.8.199:6000/api/auth/login';
+  static const String baseUrl = 'http://api.touchmeapp.com/api/merchants/';
+  static const String loginUrl = 'http://api.touchmeapp.com/api/auth/login';
   static String? _token;
 
   final storage = const FlutterSecureStorage();

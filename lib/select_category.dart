@@ -46,7 +46,7 @@ class _SelectCategoryPageState extends State<SelectCategoryPage> {
                   height: screenHeight * 0.2,
                   width: screenHeight * 0.2,
                   child: Image.asset(
-                    'assets/beauty_tools.png',
+                    'assets/app_icon.png',
                     fit: BoxFit.contain,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(

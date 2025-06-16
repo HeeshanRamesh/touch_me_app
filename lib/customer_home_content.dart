@@ -4,8 +4,15 @@ import 'merchant_list_screen.dart';
 
 class CustomerHomeContent extends StatelessWidget {
   final String token;
+  final String customerId;
+  final Map<String, dynamic> user; // <-- Accept user!
 
-  const CustomerHomeContent({super.key, required this.token});
+  const CustomerHomeContent({
+    Key? key,
+    required this.token,
+    required this.customerId,
+    required this.user,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -43,12 +50,15 @@ class CustomerHomeContent extends StatelessWidget {
                 ),
               ),
               Text(
-                'Arshan Sayed',
+                user['first_name'] ??
+                    user['email'] ??
+                    '', // Or use full name fields if available
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 14 * scaleFactor,
                 ),
               ),
+
               Text(
                 formattedDateTime,
                 style: TextStyle(
@@ -122,7 +132,7 @@ class CustomerHomeContent extends StatelessWidget {
                                 (_) => MerchantListScreen(
                                   serviceName: service['name'],
                                   token: token,
-                                  customerId: '', // Set if needed
+                                  customerId: customerId, // Set if needed
                                 ),
                           ),
                         );

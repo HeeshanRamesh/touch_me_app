@@ -1,9 +1,8 @@
-// Importing necessary libraries for Flutter UI and authentication service
 import 'package:flutter/material.dart';
 import 'package:touch_me/services/auth_service.dart';
 import 'login_page.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-// SignUpPage widget to handle user registration
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
 
@@ -19,7 +18,8 @@ class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   String? _warningMessage;
   final AuthService _authService = AuthService(); // Updated to use AuthService
@@ -37,7 +37,7 @@ class _SignUpPageState extends State<SignUpPage> {
   String? _passwordError;
   String? _confirmPasswordError;
 
-  // Validation methods
+  // Validation methods (no change)
   String? _validateFirstName(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'First name is required';
@@ -56,7 +56,9 @@ class _SignUpPageState extends State<SignUpPage> {
     if (value == null || value.trim().isEmpty) {
       return 'Email is required';
     }
-    if (!RegExp(r'^[a-z0-9]+(\.[a-z0-9]+)*@gmail\.com$').hasMatch(value.trim())) {
+    if (!RegExp(
+      r'^[a-z0-9]+(\.[a-z0-9]+)*@gmail\.com$',
+    ).hasMatch(value.trim())) {
       return 'Email must use lowercase letters, numbers, or dots and end with @gmail.com';
     }
     return null;
@@ -92,13 +94,13 @@ class _SignUpPageState extends State<SignUpPage> {
     return null;
   }
 
-  // Check sequential input
+  // Sequential input check and other methods are unchanged...
   void _checkSequentialInput(String currentField, BuildContext context) {
     setState(() {
       _warningMessage = null;
     });
-
-    if (currentField == 'lastName' && _validateFirstName(_firstNameController.text) != null) {
+    if (currentField == 'lastName' &&
+        _validateFirstName(_firstNameController.text) != null) {
       setState(() {
         _warningMessage = 'Please correct the First Name field first';
         _lastNameController.clear();
@@ -109,7 +111,8 @@ class _SignUpPageState extends State<SignUpPage> {
         (_validateFirstName(_firstNameController.text) != null ||
             _validateLastName(_lastNameController.text) != null)) {
       setState(() {
-        _warningMessage = 'Please correct the First Name and Last Name fields first';
+        _warningMessage =
+            'Please correct the First Name and Last Name fields first';
         _emailController.clear();
         _emailError = null;
       });
@@ -123,7 +126,8 @@ class _SignUpPageState extends State<SignUpPage> {
             _validateLastName(_lastNameController.text) != null ||
             _validateEmail(_emailController.text) != null)) {
       setState(() {
-        _warningMessage = 'Please correct the First Name, Last Name, and Email fields first';
+        _warningMessage =
+            'Please correct the First Name, Last Name, and Email fields first';
         _phoneController.clear();
         _phoneError = null;
       });
@@ -140,7 +144,8 @@ class _SignUpPageState extends State<SignUpPage> {
             _validateEmail(_emailController.text) != null ||
             _validatePhone(_phoneController.text) != null)) {
       setState(() {
-        _warningMessage = 'Please correct the First Name, Last Name, Email, and Phone fields first';
+        _warningMessage =
+            'Please correct the First Name, Last Name, Email, and Phone fields first';
         _passwordController.clear();
         _passwordError = null;
       });
@@ -160,7 +165,8 @@ class _SignUpPageState extends State<SignUpPage> {
             _validatePhone(_phoneController.text) != null ||
             _validatePassword(_passwordController.text) != null)) {
       setState(() {
-        _warningMessage = 'Please correct the First Name, Last Name, Email, Phone, and Password fields first';
+        _warningMessage =
+            'Please correct the First Name, Last Name, Email, Phone, and Password fields first';
         _confirmPasswordController.clear();
         _confirmPasswordError = null;
       });
@@ -178,7 +184,6 @@ class _SignUpPageState extends State<SignUpPage> {
     }
   }
 
-  // Handle field submission
   void _handleFieldSubmission(String currentField, BuildContext context) {
     if (currentField == 'firstName') {
       if (_validateFirstName(_firstNameController.text) == null) {
@@ -214,7 +219,9 @@ class _SignUpPageState extends State<SignUpPage> {
       _emailError = _validateEmail(_emailController.text);
       _phoneError = _validatePhone(_phoneController.text);
       _passwordError = _validatePassword(_passwordController.text);
-      _confirmPasswordError = _validateConfirmPassword(_confirmPasswordController.text);
+      _confirmPasswordError = _validateConfirmPassword(
+        _confirmPasswordController.text,
+      );
     });
 
     if (_firstNameError != null ||
@@ -250,18 +257,19 @@ class _SignUpPageState extends State<SignUpPage> {
     if (result['success']) {
       await showDialog(
         context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Account Created Successfully'),
-          content: const Text(
-            'Your account has been created. You can now login with your credentials.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Continue'),
+        builder:
+            (context) => AlertDialog(
+              title: const Text('Account Created Successfully'),
+              content: const Text(
+                'Your account has been created. You can now login with your credentials.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Continue'),
+                ),
+              ],
             ),
-          ],
-        ),
       );
 
       Navigator.pushReplacement(
@@ -317,10 +325,7 @@ class _SignUpPageState extends State<SignUpPage> {
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: Colors.grey.shade300),
                   ),
-                  child: Image.asset(
-                    'assets/app_icon.png',
-                    height: 80,
-                  ),
+                  child: Image.asset('assets/app_icon.png', height: 80),
                 ),
                 const SizedBox(height: 20),
                 const Text(
@@ -366,7 +371,8 @@ class _SignUpPageState extends State<SignUpPage> {
                     });
                     _checkSequentialInput('firstName', context);
                   },
-                  onFieldSubmitted: (_) => _handleFieldSubmission('firstName', context),
+                  onFieldSubmitted:
+                      (_) => _handleFieldSubmission('firstName', context),
                 ),
                 const SizedBox(height: 15),
                 TextFormField(
@@ -395,7 +401,8 @@ class _SignUpPageState extends State<SignUpPage> {
                     });
                     _checkSequentialInput('lastName', context);
                   },
-                  onFieldSubmitted: (_) => _handleFieldSubmission('lastName', context),
+                  onFieldSubmitted:
+                      (_) => _handleFieldSubmission('lastName', context),
                 ),
                 const SizedBox(height: 15),
                 TextFormField(
@@ -425,7 +432,8 @@ class _SignUpPageState extends State<SignUpPage> {
                     });
                     _checkSequentialInput('email', context);
                   },
-                  onFieldSubmitted: (_) => _handleFieldSubmission('email', context),
+                  onFieldSubmitted:
+                      (_) => _handleFieldSubmission('email', context),
                 ),
                 const SizedBox(height: 15),
                 TextFormField(
@@ -455,7 +463,8 @@ class _SignUpPageState extends State<SignUpPage> {
                     });
                     _checkSequentialInput('phone', context);
                   },
-                  onFieldSubmitted: (_) => _handleFieldSubmission('phone', context),
+                  onFieldSubmitted:
+                      (_) => _handleFieldSubmission('phone', context),
                 ),
                 const SizedBox(height: 15),
                 TextFormField(
@@ -467,7 +476,9 @@ class _SignUpPageState extends State<SignUpPage> {
                     hintText: 'Password',
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                        _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
                         color: Colors.grey,
                       ),
                       onPressed: () {
@@ -493,11 +504,14 @@ class _SignUpPageState extends State<SignUpPage> {
                   onChanged: (value) {
                     setState(() {
                       _passwordError = _validatePassword(value);
-                      _confirmPasswordError = _validateConfirmPassword(_confirmPasswordController.text);
+                      _confirmPasswordError = _validateConfirmPassword(
+                        _confirmPasswordController.text,
+                      );
                     });
                     _checkSequentialInput('password', context);
                   },
-                  onFieldSubmitted: (_) => _handleFieldSubmission('password', context),
+                  onFieldSubmitted:
+                      (_) => _handleFieldSubmission('password', context),
                 ),
                 const SizedBox(height: 15),
                 TextFormField(
@@ -509,7 +523,9 @@ class _SignUpPageState extends State<SignUpPage> {
                     hintText: 'Confirm Password',
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
+                        _obscureConfirmPassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
                         color: Colors.grey,
                       ),
                       onPressed: () {
@@ -538,7 +554,8 @@ class _SignUpPageState extends State<SignUpPage> {
                     });
                     _checkSequentialInput('confirmPassword', context);
                   },
-                  onFieldSubmitted: (_) => _handleFieldSubmission('confirmPassword', context),
+                  onFieldSubmitted:
+                      (_) => _handleFieldSubmission('confirmPassword', context),
                 ),
                 const SizedBox(height: 30),
                 ElevatedButton(
@@ -550,24 +567,23 @@ class _SignUpPageState extends State<SignUpPage> {
                       borderRadius: BorderRadius.circular(25),
                     ),
                   ),
-                  child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text(
-                          'Create Account',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                  child:
+                      _isLoading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text(
+                            'Create Account',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
                 ),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Flexible(
-                      child: Divider(color: Colors.grey.shade400),
-                    ),
+                    Flexible(child: Divider(color: Colors.grey.shade400)),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 10),
                       child: Text(
@@ -576,9 +592,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    Flexible(
-                      child: Divider(color: Colors.grey.shade400),
-                    ),
+                    Flexible(child: Divider(color: Colors.grey.shade400)),
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -596,18 +610,15 @@ class _SignUpPageState extends State<SignUpPage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Image.network(
-                        'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/512px-Google_%22G%22_Logo.svg.png',
-                        height: 24,
-                        width: 24,
+                      const FaIcon(
+                        FontAwesomeIcons.google,
+                        color: Colors.red,
+                        size: 24,
                       ),
                       const SizedBox(width: 10),
                       const Text(
                         'With Google',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.black,
-                        ),
+                        style: TextStyle(fontSize: 16, color: Colors.black),
                       ),
                     ],
                   ),
@@ -628,7 +639,9 @@ class _SignUpPageState extends State<SignUpPage> {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => const LoginPage()),
+                            MaterialPageRoute(
+                              builder: (context) => const LoginPage(),
+                            ),
                           );
                         },
                         child: Text(

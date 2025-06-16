@@ -3,12 +3,12 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/service.dart';
+import '../models/review.dart';
 import '../services/services.dart';
 import '../services/bookings.dart';
-import 'merchant_service_list_screen.dart'; // Adjust import if needed
+import '../services/reviews.dart';
 
-
-class MerchantServiceListScreen extends StatelessWidget {
+class MerchantServiceListScreen extends StatefulWidget {
   final String merchantId;
   final String outletName;
   final String token;
@@ -25,195 +25,240 @@ class MerchantServiceListScreen extends StatelessWidget {
   });
 
   @override
+  State<MerchantServiceListScreen> createState() =>
+      _MerchantServiceListScreenState();
+}
+
+class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
+  late Future<List<Service>> _futureServices;
+  late Future<List<Review>> _futureReviews;
+
+  @override
+  void initState() {
+    super.initState();
+    _futureServices = fetchServicesByMerchant(widget.merchantId, widget.token);
+    _futureReviews = fetchReviewsByMerchant(widget.merchantId, widget.token);
+  }
+
+  void refreshReviews() {
+    setState(() {
+      _futureReviews = fetchReviewsByMerchant(widget.merchantId, widget.token);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 5,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(outletName),
+          title: Text(widget.outletName),
           backgroundColor: const Color(0xFF6A1B9A),
+          bottom: const TabBar(
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white54,
+            indicatorColor: Colors.white,
+            isScrollable: true,
+            tabs: [
+              Tab(text: 'Services'),
+              Tab(text: 'Reviews'),
+              Tab(text: 'Portfolio'),
+              Tab(text: 'Gift Cards'),
+              Tab(text: 'Details'),
+            ],
+          ),
         ),
-        body: FutureBuilder<List<Service>>(
-          future: fetchServicesByMerchant(merchantId, token),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            }
+        body: TabBarView(
+          children: [
+            // Services Tab
+            FutureBuilder<List<Service>>(
+              future: _futureServices,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                }
 
-            final services = snapshot.data ?? [];
-            if (services.isEmpty) {
-              return const Center(
-                child: Text(
-                  'No services available for this merchant.',
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
-                ),
-              );
-            }
-
-            const String location = '12/2A, Kesbewa, Piliyandala';
-            const int reviewCount = 226;
-            const double rating = 5.0;
-
-            return SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    height: 200,
-                    decoration: const BoxDecoration(
-                      image: DecorationImage(
-                        image: NetworkImage(
-                          'https://media.istockphoto.com/id/469090778/photo/interior-of-empty-modern-hair-and-beauty-salon.jpg?s=612x612&w=0&k=20&c=pGrPWP2B83obfEA8unZrPm9oCLEuSLv3tqeK0zA4bEc=',
-                        ),
-                        fit: BoxFit.cover,
-                      ),
+                final services = snapshot.data ?? [];
+                if (services.isEmpty) {
+                  return const Center(
+                    child: Text(
+                      'No services available for this merchant.',
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              outletName,
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
+                  );
+                }
+
+                const String location = '12/2A, Kesbewa, Piliyandala';
+                const int reviewCount = 226;
+                const double rating = 5.0;
+
+                return SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        height: 200,
+                        decoration: const BoxDecoration(
+                          image: DecorationImage(
+                            image: NetworkImage(
+                              'https://media.istockphoto.com/id/469090778/photo/interior-of-empty-modern-hair-and-beauty-salon.jpg?s=612x612&w=0&k=20&c=pGrPWP2B83obfEA8unZrPm9oCLEuSLv3tqeK0zA4bEc=',
                             ),
-                            const Text(
-                              'Save Up to 10% ✂️',
-                              style: TextStyle(
-                                color: Colors.purple,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          location,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey,
+                            fit: BoxFit.cover,
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Row(
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Icon(
-                              Icons.star,
-                              size: 16,
-                              color: Colors.amber,
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  widget.outletName,
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const Text(
+                                  'Save Up to 10% ✂️',
+                                  style: TextStyle(
+                                    color: Colors.purple,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 4),
+                            const SizedBox(height: 4),
                             Text(
-                              '$rating',
+                              location,
                               style: const TextStyle(
-                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                                color: Colors.grey,
                               ),
                             ),
-                            const SizedBox(width: 6),
-                            Text(
-                              '$reviewCount Reviews',
-                              style: const TextStyle(fontSize: 13),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.star,
+                                  size: 16,
+                                  color: Colors.amber,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '$rating',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  '$reviewCount Reviews',
+                                  style: const TextStyle(fontSize: 13),
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
-                        const TabBar(
-                          labelColor: Colors.black,
-                          unselectedLabelColor: Colors.grey,
-                          indicatorColor: Colors.black,
-                          labelPadding: EdgeInsets.symmetric(horizontal: 8.0),
-                          isScrollable: true,
-                          tabs: [
-                            Tab(text: 'Services'),
-                            Tab(text: 'Reviews'),
-                            Tab(text: 'Portfolio'),
-                            Tab(text: 'Gift Cards'),
-                            Tab(text: 'Details'),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                    child: TextField(
-                      decoration: InputDecoration(
-                        hintText: 'Search for Service',
-                        prefixIcon: const Icon(Icons.search),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                        child: TextField(
+                          decoration: InputDecoration(
+                            hintText: 'Search for Service',
+                            prefixIcon: const Icon(Icons.search),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                    child: const Text(
-                      'Popular Services',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                      const SizedBox(height: 12),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                        child: const Text(
+                          'Popular Services',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: services.length >= 3 ? 3 : services.length,
-                    itemBuilder: (context, index) {
-                      final service = services[index];
-                      return ServiceCard(
-                        service: service,
-                        customerId: customerId,
-                        salonOwnerId: salonOwnerId,
-                        token: token,
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                    child: const Text(
-                      'Other Services',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: services.length >= 3 ? 3 : services.length,
+                        itemBuilder: (context, index) {
+                          final service = services[index];
+                          return ServiceCard(
+                            service: service,
+                            customerId: widget.customerId,
+                            salonOwnerId: widget.salonOwnerId,
+                            token: widget.token,
+                          );
+                        },
                       ),
-                    ),
+                      const SizedBox(height: 12),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                        child: const Text(
+                          'Other Services',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount:
+                            services.length > 3 ? services.length - 3 : 0,
+                        itemBuilder: (context, index) {
+                          final service = services[index + 3];
+                          return ServiceCard(
+                            service: service,
+                            customerId: widget.customerId,
+                            salonOwnerId: widget.salonOwnerId,
+                            token: widget.token,
+                          );
+                        },
+                      ),
+                    ],
                   ),
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: services.length > 3 ? services.length - 3 : 0,
-                    itemBuilder: (context, index) {
-                      final service = services[index + 3];
-                      return ServiceCard(
-                        service: service,
-                        customerId: customerId,
-                        salonOwnerId: salonOwnerId,
-                        token: token,
-                      );
-                    },
-                  ),
-                ],
-              ),
-            );
-          },
+                );
+              },
+            ),
+
+            // Reviews Tab
+            ReviewsTab(
+              merchantId: widget.merchantId,
+              token: widget.token,
+              onReviewSubmitted: refreshReviews,
+              futureReviews: _futureReviews,
+            ),
+
+            // Portfolio Tab
+            const Center(child: Text('Portfolio (Coming Soon)')),
+
+            // Gift Cards Tab
+            const Center(child: Text('Gift Cards (Coming Soon)')),
+
+            // Details Tab
+            const Center(child: Text('Details (Coming Soon)')),
+          ],
         ),
       ),
     );
   }
 }
+
+// =========== ServiceCard Widget ===========
 
 class ServiceCard extends StatelessWidget {
   final Service service;
@@ -282,11 +327,10 @@ class ServiceCard extends StatelessWidget {
                       },
                     ),
                     const SizedBox(height: 16),
-                   Text(
+                    Text(
                       'Amount to Pay: Rs ${service.price.toStringAsFixed(2)}',
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
-
                   ],
                 ),
               ),
@@ -300,17 +344,6 @@ class ServiceCard extends StatelessWidget {
                       selectedDate == null || selectedTime == null
                           ? null
                           : () async {
-                            if (selectedDate == null || selectedTime == null) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Please select both date and time',
-                                  ),
-                                ),
-                              );
-                              return;
-                            }
-
                             final formattedDate =
                                 '${selectedDate!.year}-${selectedDate!.month.toString().padLeft(2, '0')}-${selectedDate!.day.toString().padLeft(2, '0')}';
                             final formattedTime =
@@ -318,23 +351,19 @@ class ServiceCard extends StatelessWidget {
                             final shortId = DateTime.now()
                                 .millisecondsSinceEpoch
                                 .toString()
-                                .substring(5); // make it shorter
+                                .substring(5);
                             orderId = 'ORD${service.id}${shortId}'.substring(
                               0,
                               21,
-                            ); // limit to 21 characters
-
+                            );
 
                             try {
-                              // 1. Initiate OnePay payment (amount is in LKR, not divided by 100!)
                               final paymentResponse = await _initiateOnePayPayment(
-                                amount:
-                                    service.price
-                                        .toDouble(), // Pass the price as LKR, e.g., 1500.00
+                                amount: service.price.toDouble(),
                                 orderId: orderId!,
                                 customerId: customerId,
                                 returnUrl:
-                                    'http://192.168.177.109:6000/api/payments/payment-callback',
+                                    'http://api.touchmeapp.com/api/payments/payment-callback',
                                 token: token,
                               );
 
@@ -344,7 +373,6 @@ class ServiceCard extends StatelessWidget {
                                 final ipgTransactionId =
                                     paymentResponse['ipg_transaction_id'];
 
-                                // 2. Book the service and save the transaction ID
                                 final bookingResponse = await bookService(
                                   customerId: customerId,
                                   salonOwnerId: salonOwnerId,
@@ -375,13 +403,9 @@ class ServiceCard extends StatelessWidget {
                                   );
                                 }
 
-
-                                // 3. Open the payment gateway URL
                                 if (await canLaunch(paymentUrl)) {
                                   await launch(paymentUrl);
                                   Navigator.pop(context);
-
-                                  // Show booking + payment initiation success
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content: Text(
@@ -404,7 +428,6 @@ class ServiceCard extends StatelessWidget {
                                     ),
                                   );
                                 }
-
                               } else {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
@@ -421,7 +444,6 @@ class ServiceCard extends StatelessWidget {
                                 ),
                               );
                             }
-
                           },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.purple,
@@ -445,13 +467,13 @@ class ServiceCard extends StatelessWidget {
   }) async {
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.177.109:6000/api/payments/onepay-payment'),
+        Uri.parse('http://api.touchmeapp.com/api/payments/onepay-payment'),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token', // Remove if not required
+          'Authorization': 'Bearer $token',
         },
         body: jsonEncode({
-          'amount': amount.toStringAsFixed(2), // "1500.00"
+          'amount': amount.toStringAsFixed(2),
           'reference': orderId,
           'transactionRedirectUrl': returnUrl,
           'customerFirstName': 'Test',
@@ -461,13 +483,8 @@ class ServiceCard extends StatelessWidget {
         }),
       );
 
-      print('✅ OnePay Response Status: ${response.statusCode}');
-      print('📦 OnePay Response Body: ${response.body}');
-
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-
-        // Flexible extraction for backend shape
         if (data['paymentUrl'] != null && data['ipg_transaction_id'] != null) {
           return {
             'status': 'success',
@@ -475,7 +492,6 @@ class ServiceCard extends StatelessWidget {
             'ipg_transaction_id': data['ipg_transaction_id'],
           };
         }
-
         if (data['data'] != null) {
           return {
             'status': 'success',
@@ -483,8 +499,6 @@ class ServiceCard extends StatelessWidget {
             'ipg_transaction_id': data['data']['ipg_transaction_id'],
           };
         }
-
-        // fallback if shape unexpected
         return {
           'status': 'success',
           'paymentUrl': '',
@@ -498,12 +512,9 @@ class ServiceCard extends StatelessWidget {
         };
       }
     } catch (e) {
-      print('❌ Error initiating OnePay payment: $e');
       return {'status': 'failure', 'message': e.toString()};
     }
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -571,6 +582,200 @@ class ServiceCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+// =========== ReviewsTab Widget ===========
+
+class ReviewsTab extends StatefulWidget {
+  final String merchantId;
+  final String token;
+  final VoidCallback onReviewSubmitted;
+  final Future<List<Review>> futureReviews;
+
+  const ReviewsTab({
+    super.key,
+    required this.merchantId,
+    required this.token,
+    required this.onReviewSubmitted,
+    required this.futureReviews,
+  });
+
+  @override
+  State<ReviewsTab> createState() => _ReviewsTabState();
+}
+
+class _ReviewsTabState extends State<ReviewsTab> {
+  // Dialog form values
+  final _formKey = GlobalKey<FormState>();
+  String _message = '';
+  String _improvements = '';
+  int _rating = 5;
+  bool _submitting = false;
+
+  void _openAddReviewDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            return AlertDialog(
+              title: const Text('Add Your Review'),
+              content: Form(
+                key: _formKey,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextFormField(
+                        decoration: const InputDecoration(labelText: 'Message'),
+                        maxLines: 2,
+                        minLines: 1,
+                        validator:
+                            (val) =>
+                                val == null || val.length < 10
+                                    ? 'Minimum 10 chars'
+                                    : null,
+                        onSaved: (val) => _message = val ?? '',
+                      ),
+                      TextFormField(
+                        decoration: const InputDecoration(
+                          labelText: 'Improvements',
+                        ),
+                        validator:
+                            (val) =>
+                                val == null || val.isEmpty ? 'Required' : null,
+                        onSaved: (val) => _improvements = val ?? '',
+                      ),
+                      DropdownButtonFormField<int>(
+                        decoration: const InputDecoration(labelText: 'Rating'),
+                        value: _rating,
+                        onChanged:
+                            (val) => setStateDialog(() => _rating = val ?? 5),
+                        items: List.generate(
+                          5,
+                          (i) => DropdownMenuItem(
+                            value: i + 1,
+                            child: Text('${i + 1} Star${i == 0 ? '' : 's'}'),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed:
+                      _submitting
+                          ? null
+                          : () async {
+                            if (!_formKey.currentState!.validate()) return;
+                            _formKey.currentState!.save();
+                            setStateDialog(() => _submitting = true);
+                            final success = await addReview(
+                              merchantId: widget.merchantId,
+                              token: widget.token,
+                              message: _message,
+                              improvements: _improvements,
+                              rating: _rating,
+                            );
+                            setStateDialog(() => _submitting = false);
+                            if (success) {
+                              if (mounted) Navigator.of(context).pop();
+                              widget.onReviewSubmitted();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Review submitted!'),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Failed to submit review.'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          },
+                  child:
+                      _submitting
+                          ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                          : const Text('Submit'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        // Top Row: "Add" Icon button
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            IconButton(
+              icon: const Icon(
+                Icons.add_circle_outline,
+                color: Colors.purple,
+                size: 28,
+              ),
+              tooltip: "Add a review",
+              onPressed: _openAddReviewDialog,
+            ),
+            const SizedBox(width: 8),
+          ],
+        ),
+        // Review List
+        Expanded(
+          child: FutureBuilder<List<Review>>(
+            future: widget.futureReviews,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Error loading reviews.'));
+              }
+              final reviews = snapshot.data ?? [];
+              if (reviews.isEmpty) {
+                return const Center(child: Text('No reviews yet.'));
+              }
+              return ListView.builder(
+                itemCount: reviews.length,
+                itemBuilder: (context, i) {
+                  final r = reviews[i];
+                  return ListTile(
+                    leading: Icon(Icons.star, color: Colors.amber[700]),
+                    title: Text(r.message),
+                    subtitle: Text(
+                      'Improvements: ${r.improvements}\nRating: ${r.rating}/5',
+                    ),
+                    trailing: Text(
+                      '${r.createdAt.day}/${r.createdAt.month}/${r.createdAt.year}',
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }

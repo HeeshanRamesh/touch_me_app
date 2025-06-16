@@ -5,35 +5,41 @@ import '../models/merchant.dart';
 class MerchantCard extends StatelessWidget {
   final Merchant merchant;
   final String token;
+final String customerId;
 
-  const MerchantCard({super.key, required this.merchant, required this.token, required String customerId});
+  const MerchantCard({
+    super.key,
+    required this.merchant,
+    required this.token,
+    required this.customerId, // <-- Add this
+  });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
      onTap: () {
-  print('🆔 Navigating to services for merchant ID: ${merchant.id}');
-  if (merchant.id.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('This merchant has no ID - cannot show services'),
-      ),
-    );
-    return;
-  }
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (_) => MerchantServiceListScreen(
-        merchantId: merchant.id,
-        outletName: merchant.outletName,
-        token: token,
-        customerId:'682acdf6ad3ad62944028a99', // Replace with actual customerId
-                  salonOwnerId: '682acd07ad3ad62944028a93',
-      ),
-    ),
-  );
-},
+        if (merchant.id.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('This merchant has no ID - cannot show services'),
+            ),
+          );
+          return;
+        }
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => MerchantServiceListScreen(
+            merchantId: merchant.id,
+            outletName: merchant.outletName,
+            token: token,
+            customerId: customerId, // <--- good!
+            salonOwnerId: merchant.id, // <-- fix this if you want real owner id
+          ),
+        ),
+      );
+      },
+
       child: Card(
         margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

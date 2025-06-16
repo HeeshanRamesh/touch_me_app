@@ -1,5 +1,6 @@
 // Importing necessary libraries for Flutter UI and authentication service
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:touch_me/customer_home_content.dart';
 import 'package:touch_me/signup_page.dart';
 import 'location_detector.dart';
@@ -91,6 +92,7 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  // login_page.dart (only the relevant _login method part)
   Future<void> _login() async {
     _validateUsername();
     _validatePassword();
@@ -107,7 +109,7 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      final response = await _authService.login(username, password); // Updated method call
+      final response = await _authService.login(username, password);
 
       if (!mounted) return;
 
@@ -129,16 +131,20 @@ class _LoginPageState extends State<LoginPage> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => CustomerHomeContent(token: response['token']),
+            builder:
+                (context) => CustomerHomeContent(
+                  token: response['token'],
+                  customerId: response['user']?['id'] ?? '',
+                  user: response['user'] ?? {}, // Pass the full user map!
+                ),
           ),
         );
-
-
-
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(response['message'] ?? 'Authentication failed. Please try again.'),
+            content: Text(
+              response['message'] ?? 'Authentication failed. Please try again.',
+            ),
             backgroundColor: Colors.red.shade700,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -165,6 +171,7 @@ class _LoginPageState extends State<LoginPage> {
       _isLoading = false;
     });
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -347,18 +354,15 @@ class _LoginPageState extends State<LoginPage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Image.network(
-                      'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/512px-Google_%22G%22_Logo.svg.png',
-                      height: 24,
-                      width: 24,
+                    const FaIcon(
+                      FontAwesomeIcons.google,
+                      color: Colors.red,
+                      size: 24,
                     ),
                     const SizedBox(width: 10),
                     const Text(
                       'With Google',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.black,
-                      ),
+                      style: TextStyle(fontSize: 16, color: Colors.black),
                     ),
                   ],
                 ),

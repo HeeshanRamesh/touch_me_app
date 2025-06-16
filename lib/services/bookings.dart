@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:touch_me/models/booking.dart';
 
 Future<Map<String, dynamic>> bookService({
   required String customerId,
@@ -11,7 +12,7 @@ Future<Map<String, dynamic>> bookService({
   required String ipgTransactionId,
 }) async {
   try {
-    final url = Uri.parse('http://192.168.8.199:6000/api/bookings');
+    final url = Uri.parse('http://api.touchmeapp.com/api/bookings');
     print('🌐 Booking service at: $url');
 
     final response = await http.post(
@@ -43,5 +44,24 @@ Future<Map<String, dynamic>> bookService({
   } catch (e, stackTrace) {
     print('❌ Error booking service: $e\nStackTrace: $stackTrace');
     throw Exception('Error booking service: $e');
+  }
+}
+
+
+Future<List<Booking>> fetchMerchantBookings(String token) async {
+  final url = Uri.parse('http://192.168.157.109:6000/api/bookings/my/bookings');
+  final response = await http.get(
+    url,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    },
+  );
+  if (response.statusCode == 200) {
+    final data = jsonDecode(response.body);
+    final bookings = data['bookings'] as List<dynamic>;
+    return bookings.map((b) => Booking.fromJson(b)).toList();
+  } else {
+    throw Exception('Failed to fetch bookings');
   }
 }

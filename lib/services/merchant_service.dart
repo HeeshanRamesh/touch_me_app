@@ -4,7 +4,7 @@ import '../models/merchant.dart';
 
 Future<List<Merchant>> fetchMerchants(String token) async {
   final response = await http.get(
-    Uri.parse('http://192.168.8.199:6000/api/merchants'),
+    Uri.parse('http://api.touchmeapp.com/api/merchants'),
     headers: {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $token',

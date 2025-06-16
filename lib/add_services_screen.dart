@@ -134,7 +134,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
 
 
   Future<http.Response> _sendServiceToBackend() async {
-    const String baseUrl = 'http://192.168.8.199:6000';
+    const String baseUrl = 'http://api.touchmeapp.com';
     String endpoint = '';
     String method = 'POST';
 
