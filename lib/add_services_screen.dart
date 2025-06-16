@@ -13,7 +13,7 @@ import '../models/service.dart';
 class AddServiceScreen extends StatefulWidget {
   final Service? service; // Pass service for edit mode
   final String? serviceId; // Pass ID for edit mode
-  final String? merchantId; // Pass merchantId for add mode
+  final String? merchantId; // Pass merchantId for add mode.
 
   const AddServiceScreen({
     Key? key,
@@ -131,7 +131,6 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
       }
     }
   }
-
 
   Future<http.Response> _sendServiceToBackend() async {
     const String baseUrl = 'http://api.touchmeapp.com';
