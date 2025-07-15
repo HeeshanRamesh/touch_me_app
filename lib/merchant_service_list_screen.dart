@@ -594,6 +594,7 @@ class ServiceCardWidget extends StatelessWidget {
 
                               print('✅ Booking Response: ${jsonEncode(bookingResponse)}');
                               if (bookingResponse['success'] == true) {
+                                print('✅ Data sent for successful booking: ${jsonEncode(bookingResponse)}');
                                 // Close the dialog first
                                 Navigator.pop(context);
                                 

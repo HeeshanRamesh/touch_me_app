@@ -790,37 +790,495 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
   }
 
   List<DropdownMenuItem<String>> _getBranchOptions() {
-    if (_selectedBank == null) return [];
-
-    switch (_selectedBank) {
-      case "BOC":
-        return [
-          const DropdownMenuItem(value: "Colombo", child: Text("Colombo Main")),
-          const DropdownMenuItem(value: "Kandy", child: Text("Kandy")),
-          const DropdownMenuItem(value: "Galle", child: Text("Galle")),
-        ];
-      case "PB":
-        return [
-          const DropdownMenuItem(value: "Colombo", child: Text("Colombo Main")),
-          const DropdownMenuItem(value: "Negombo", child: Text("Negombo")),
-        ];
-      case "HNB":
-        return [
-          const DropdownMenuItem(value: "Colombo", child: Text("Colombo Main")),
-          const DropdownMenuItem(
-            value: "Kurunegala",
-            child: Text("Kurunegala"),
-          ),
-        ];
-      case "COMB":
-        return [
-          const DropdownMenuItem(value: "Colombo", child: Text("Colombo Main")),
-          const DropdownMenuItem(value: "Matara", child: Text("Matara")),
-        ];
-      default:
-        return [];
-    }
+  if (_selectedBank == null) return [];
+  
+  switch (_selectedBank) {
+    case "BOC": // Bank of Ceylon
+      return [
+        // Colombo District
+        const DropdownMenuItem(value: "BOC_Colombo_Main", child: Text("Colombo Main Branch")),
+        const DropdownMenuItem(value: "BOC_Colombo_Fort", child: Text("Colombo Fort")),
+        const DropdownMenuItem(value: "BOC_Colombo_Pettah", child: Text("Colombo Pettah")),
+        const DropdownMenuItem(value: "BOC_Colombo_Bambalapitiya", child: Text("Bambalapitiya")),
+        const DropdownMenuItem(value: "BOC_Colombo_Dehiwala", child: Text("Dehiwala")),
+        const DropdownMenuItem(value: "BOC_Colombo_Maharagama", child: Text("Maharagama")),
+        const DropdownMenuItem(value: "BOC_Colombo_Nugegoda", child: Text("Nugegoda")),
+        const DropdownMenuItem(value: "BOC_Colombo_Wellawatta", child: Text("Wellawatta")),
+        const DropdownMenuItem(value: "BOC_Colombo_Kotte", child: Text("Kotte")),
+        const DropdownMenuItem(value: "BOC_Colombo_Rajagiriya", child: Text("Rajagiriya")),
+        const DropdownMenuItem(value: "BOC_Colombo_Borella", child: Text("Borella")),
+        const DropdownMenuItem(value: "BOC_Colombo_Maradana", child: Text("Maradana")),
+        const DropdownMenuItem(value: "BOC_Colombo_Grandpass", child: Text("Grandpass")),
+        const DropdownMenuItem(value: "BOC_Colombo_Kelaniya", child: Text("Kelaniya")),
+        const DropdownMenuItem(value: "BOC_Colombo_Kirulapone", child: Text("Kirulapone")),
+        const DropdownMenuItem(value: "BOC_Colombo_Kolonnawa", child: Text("Kolonnawa")),
+        const DropdownMenuItem(value: "BOC_Colombo_Kotahena", child: Text("Kotahena")),
+        const DropdownMenuItem(value: "BOC_Colombo_Mount_Lavinia", child: Text("Mount Lavinia")),
+        const DropdownMenuItem(value: "BOC_Colombo_Moratuwa", child: Text("Moratuwa")),
+        const DropdownMenuItem(value: "BOC_Colombo_Piliyandala", child: Text("Piliyandala")),
+        const DropdownMenuItem(value: "BOC_Colombo_Homagama", child: Text("Homagama")),
+        const DropdownMenuItem(value: "BOC_Colombo_Pannipitiya", child: Text("Pannipitiya")),
+        const DropdownMenuItem(value: "BOC_Colombo_Kaduwela", child: Text("Kaduwela")),
+        const DropdownMenuItem(value: "BOC_Colombo_Malabe", child: Text("Malabe")),
+        const DropdownMenuItem(value: "BOC_Colombo_Battaramulla", child: Text("Battaramulla")),
+        const DropdownMenuItem(value: "BOC_Colombo_Athurugiriya", child: Text("Athurugiriya")),
+        const DropdownMenuItem(value: "BOC_Colombo_Kottawa", child: Text("Kottawa")),
+        const DropdownMenuItem(value: "BOC_Colombo_Kohuwala", child: Text("Kohuwala")),
+        const DropdownMenuItem(value: "BOC_Colombo_Angoda", child: Text("Angoda")),
+        const DropdownMenuItem(value: "BOC_Colombo_Thalawathugoda", child: Text("Thalawathugoda")),
+        
+        // Gampaha District
+        const DropdownMenuItem(value: "BOC_Negombo_Main", child: Text("Negombo Main")),
+        const DropdownMenuItem(value: "BOC_Gampaha_Main", child: Text("Gampaha Main")),
+        const DropdownMenuItem(value: "BOC_Katunayake", child: Text("Katunayake")),
+        const DropdownMenuItem(value: "BOC_Ja_Ela", child: Text("Ja-Ela")),
+        const DropdownMenuItem(value: "BOC_Wattala", child: Text("Wattala")),
+        const DropdownMenuItem(value: "BOC_Kelaniya_2", child: Text("Kelaniya Branch 2")),
+        const DropdownMenuItem(value: "BOC_Minuwangoda", child: Text("Minuwangoda")),
+        const DropdownMenuItem(value: "BOC_Veyangoda", child: Text("Veyangoda")),
+        const DropdownMenuItem(value: "BOC_Kiribathgoda", child: Text("Kiribathgoda")),
+        const DropdownMenuItem(value: "BOC_Kandana", child: Text("Kandana")),
+        const DropdownMenuItem(value: "BOC_Divulapitiya", child: Text("Divulapitiya")),
+        const DropdownMenuItem(value: "BOC_Mirigama", child: Text("Mirigama")),
+        const DropdownMenuItem(value: "BOC_Attanagalla", child: Text("Attanagalla")),
+        const DropdownMenuItem(value: "BOC_Nittambuwa", child: Text("Nittambuwa")),
+        const DropdownMenuItem(value: "BOC_Dompe", child: Text("Dompe")),
+        const DropdownMenuItem(value: "BOC_Ragama", child: Text("Ragama")),
+        const DropdownMenuItem(value: "BOC_Biyagama", child: Text("Biyagama")),
+        const DropdownMenuItem(value: "BOC_Mahara", child: Text("Mahara")),
+        const DropdownMenuItem(value: "BOC_Seeduwa", child: Text("Seeduwa")),
+        const DropdownMenuItem(value: "BOC_Liyanagemulla", child: Text("Liyanagemulla")),
+        
+        // Kandy District
+        const DropdownMenuItem(value: "BOC_Kandy_Main", child: Text("Kandy Main")),
+        const DropdownMenuItem(value: "BOC_Kandy_Peradeniya", child: Text("Peradeniya")),
+        const DropdownMenuItem(value: "BOC_Kandy_Katugastota", child: Text("Katugastota")),
+        const DropdownMenuItem(value: "BOC_Kandy_Gampola", child: Text("Gampola")),
+        const DropdownMenuItem(value: "BOC_Kandy_Nawalapitiya", child: Text("Nawalapitiya")),
+        const DropdownMenuItem(value: "BOC_Kandy_Kadugannawa", child: Text("Kadugannawa")),
+        const DropdownMenuItem(value: "BOC_Kandy_Pilimatalawa", child: Text("Pilimatalawa")),
+        const DropdownMenuItem(value: "BOC_Kandy_Akurana", child: Text("Akurana")),
+        const DropdownMenuItem(value: "BOC_Kandy_Digana", child: Text("Digana")),
+        const DropdownMenuItem(value: "BOC_Kandy_Teldeniya", child: Text("Teldeniya")),
+        const DropdownMenuItem(value: "BOC_Kandy_Wattegama", child: Text("Wattegama")),
+        const DropdownMenuItem(value: "BOC_Kandy_Kundasale", child: Text("Kundasale")),
+        const DropdownMenuItem(value: "BOC_Kandy_Harispattuwa", child: Text("Harispattuwa")),
+        const DropdownMenuItem(value: "BOC_Kandy_Panvila", child: Text("Panvila")),
+        const DropdownMenuItem(value: "BOC_Kandy_Deltota", child: Text("Deltota")),
+        const DropdownMenuItem(value: "BOC_Kandy_Hewaheta", child: Text("Hewaheta")),
+        const DropdownMenuItem(value: "BOC_Kandy_Medadumbara", child: Text("Medadumbara")),
+        const DropdownMenuItem(value: "BOC_Kandy_Pasbage", child: Text("Pasbage")),
+        const DropdownMenuItem(value: "BOC_Kandy_Poojapitiya", child: Text("Poojapitiya")),
+        const DropdownMenuItem(value: "BOC_Kandy_Udadumbara", child: Text("Udadumbara")),
+        
+        // Galle District
+        const DropdownMenuItem(value: "BOC_Galle_Main", child: Text("Galle Main")),
+        const DropdownMenuItem(value: "BOC_Galle_Hikkaduwa", child: Text("Hikkaduwa")),
+        const DropdownMenuItem(value: "BOC_Galle_Ambalangoda", child: Text("Ambalangoda")),
+        const DropdownMenuItem(value: "BOC_Galle_Bentota", child: Text("Bentota")),
+        const DropdownMenuItem(value: "BOC_Galle_Kosgoda", child: Text("Kosgoda")),
+        const DropdownMenuItem(value: "BOC_Galle_Balapitiya", child: Text("Balapitiya")),
+        const DropdownMenuItem(value: "BOC_Galle_Elpitiya", child: Text("Elpitiya")),
+        const DropdownMenuItem(value: "BOC_Galle_Pitigala", child: Text("Pitigala")),
+        const DropdownMenuItem(value: "BOC_Galle_Tawalama", child: Text("Tawalama")),
+        const DropdownMenuItem(value: "BOC_Galle_Baddegama", child: Text("Baddegama")),
+        const DropdownMenuItem(value: "BOC_Galle_Neluwa", child: Text("Neluwa")),
+        const DropdownMenuItem(value: "BOC_Galle_Nagoda", child: Text("Nagoda")),
+        const DropdownMenuItem(value: "BOC_Galle_Batapola", child: Text("Batapola")),
+        const DropdownMenuItem(value: "BOC_Galle_Imaduwa", child: Text("Imaduwa")),
+        const DropdownMenuItem(value: "BOC_Galle_Habaraduwa", child: Text("Habaraduwa")),
+        const DropdownMenuItem(value: "BOC_Galle_Unawatuna", child: Text("Unawatuna")),
+        const DropdownMenuItem(value: "BOC_Galle_Yakkalamulla", child: Text("Yakkalamulla")),
+        
+        // Matara District
+        const DropdownMenuItem(value: "BOC_Matara_Main", child: Text("Matara Main")),
+        const DropdownMenuItem(value: "BOC_Matara_Weligama", child: Text("Weligama")),
+        const DropdownMenuItem(value: "BOC_Matara_Mirissa", child: Text("Mirissa")),
+        const DropdownMenuItem(value: "BOC_Matara_Akuressa", child: Text("Akuressa")),
+        const DropdownMenuItem(value: "BOC_Matara_Hakmana", child: Text("Hakmana")),
+        const DropdownMenuItem(value: "BOC_Matara_Kamburupitiya", child: Text("Kamburupitiya")),
+        const DropdownMenuItem(value: "BOC_Matara_Devinuwara", child: Text("Devinuwara")),
+        const DropdownMenuItem(value: "BOC_Matara_Dickwella", child: Text("Dickwella")),
+        const DropdownMenuItem(value: "BOC_Matara_Tangalle", child: Text("Tangalle")),
+        const DropdownMenuItem(value: "BOC_Matara_Beliatta", child: Text("Beliatta")),
+        const DropdownMenuItem(value: "BOC_Matara_Urubokka", child: Text("Urubokka")),
+        const DropdownMenuItem(value: "BOC_Matara_Pitabeddara", child: Text("Pitabeddara")),
+        const DropdownMenuItem(value: "BOC_Matara_Pasgoda", child: Text("Pasgoda")),
+        const DropdownMenuItem(value: "BOC_Matara_Thihagoda", child: Text("Thihagoda")),
+        const DropdownMenuItem(value: "BOC_Matara_Kotapola", child: Text("Kotapola")),
+        
+        // Kurunegala District
+        const DropdownMenuItem(value: "BOC_Kurunegala_Main", child: Text("Kurunegala Main")),
+        const DropdownMenuItem(value: "BOC_Kurunegala_Puttalam", child: Text("Puttalam")),
+        const DropdownMenuItem(value: "BOC_Kurunegala_Chilaw", child: Text("Chilaw")),
+        const DropdownMenuItem(value: "BOC_Kurunegala_Kuliyapitiya", child: Text("Kuliyapitiya")),
+        const DropdownMenuItem(value: "BOC_Kurunegala_Narammala", child: Text("Narammala")),
+        const DropdownMenuItem(value: "BOC_Kurunegala_Wariyapola", child: Text("Wariyapola")),
+        const DropdownMenuItem(value: "BOC_Kurunegala_Pannala", child: Text("Pannala")),
+        const DropdownMenuItem(value: "BOC_Kurunegala_Giriulla", child: Text("Giriulla")),
+        const DropdownMenuItem(value: "BOC_Kurunegala_Polgahawela", child: Text("Polgahawela")),
+        const DropdownMenuItem(value: "BOC_Kurunegala_Alawwa", child: Text("Alawwa")),
+        const DropdownMenuItem(value: "BOC_Kurunegala_Mawathagama", child: Text("Mawathagama")),
+        const DropdownMenuItem(value: "BOC_Kurunegala_Dankotuwa", child: Text("Dankotuwa")),
+        const DropdownMenuItem(value: "BOC_Kurunegala_Bingiriya", child: Text("Bingiriya")),
+        const DropdownMenuItem(value: "BOC_Kurunegala_Nikaweratiya", child: Text("Nikaweratiya")),
+        const DropdownMenuItem(value: "BOC_Kurunegala_Hettipola", child: Text("Hettipola")),
+        const DropdownMenuItem(value: "BOC_Kurunegala_Ibbagamuwa", child: Text("Ibbagamuwa")),
+        const DropdownMenuItem(value: "BOC_Kurunegala_Udubaddawa", child: Text("Udubaddawa")),
+        const DropdownMenuItem(value: "BOC_Kurunegala_Mahawa", child: Text("Mahawa")),
+        const DropdownMenuItem(value: "BOC_Kurunegala_Kobeigane", child: Text("Kobeigane")),
+        const DropdownMenuItem(value: "BOC_Kurunegala_Ridigama", child: Text("Ridigama")),
+        
+        // Anuradhapura District
+        const DropdownMenuItem(value: "BOC_Anuradhapura_Main", child: Text("Anuradhapura Main")),
+        const DropdownMenuItem(value: "BOC_Anuradhapura_Kekirawa", child: Text("Kekirawa")),
+        const DropdownMenuItem(value: "BOC_Anuradhapura_Eppawala", child: Text("Eppawala")),
+        const DropdownMenuItem(value: "BOC_Anuradhapura_Habarana", child: Text("Habarana")),
+        const DropdownMenuItem(value: "BOC_Anuradhapura_Mihintale", child: Text("Mihintale")),
+        const DropdownMenuItem(value: "BOC_Anuradhapura_Medawachchiya", child: Text("Medawachchiya")),
+        const DropdownMenuItem(value: "BOC_Anuradhapura_Horowpothana", child: Text("Horowpothana")),
+        const DropdownMenuItem(value: "BOC_Anuradhapura_Galenbindunuwewa", child: Text("Galenbindunuwewa")),
+        const DropdownMenuItem(value: "BOC_Anuradhapura_Thirappane", child: Text("Thirappane")),
+        const DropdownMenuItem(value: "BOC_Anuradhapura_Nochchiyagama", child: Text("Nochchiyagama")),
+        const DropdownMenuItem(value: "BOC_Anuradhapura_Rambewa", child: Text("Rambewa")),
+        const DropdownMenuItem(value: "BOC_Anuradhapura_Talawa", child: Text("Talawa")),
+        const DropdownMenuItem(value: "BOC_Anuradhapura_Palagala", child: Text("Palagala")),
+        const DropdownMenuItem(value: "BOC_Anuradhapura_Kahatagasdigiliya", child: Text("Kahatagasdigiliya")),
+        const DropdownMenuItem(value: "BOC_Anuradhapura_Galnewa", child: Text("Galnewa")),
+        const DropdownMenuItem(value: "BOC_Anuradhapura_Rajanganaya", child: Text("Rajanganaya")),
+        
+        // Polonnaruwa District
+        const DropdownMenuItem(value: "BOC_Polonnaruwa_Main", child: Text("Polonnaruwa Main")),
+        const DropdownMenuItem(value: "BOC_Polonnaruwa_Kaduruwela", child: Text("Kaduruwela")),
+        const DropdownMenuItem(value: "BOC_Polonnaruwa_Medirigiriya", child: Text("Medirigiriya")),
+        const DropdownMenuItem(value: "BOC_Polonnaruwa_Hingurakgoda", child: Text("Hingurakgoda")),
+        const DropdownMenuItem(value: "BOC_Polonnaruwa_Dimbulagala", child: Text("Dimbulagala")),
+        const DropdownMenuItem(value: "BOC_Polonnaruwa_Welikanda", child: Text("Welikanda")),
+        const DropdownMenuItem(value: "BOC_Polonnaruwa_Lankapura", child: Text("Lankapura")),
+        const DropdownMenuItem(value: "BOC_Polonnaruwa_Thamankaduwa", child: Text("Thamankaduwa")),
+        
+        // Trincomalee District
+        const DropdownMenuItem(value: "BOC_Trincomalee_Main", child: Text("Trincomalee Main")),
+        const DropdownMenuItem(value: "BOC_Trincomalee_Kinniya", child: Text("Kinniya")),
+        const DropdownMenuItem(value: "BOC_Trincomalee_Nilaveli", child: Text("Nilaveli")),
+        const DropdownMenuItem(value: "BOC_Trincomalee_Mutur", child: Text("Mutur")),
+        const DropdownMenuItem(value: "BOC_Trincomalee_Kantale", child: Text("Kantale")),
+        const DropdownMenuItem(value: "BOC_Trincomalee_Gomarankadawala", child: Text("Gomarankadawala")),
+        const DropdownMenuItem(value: "BOC_Trincomalee_Seruvila", child: Text("Seruvila")),
+        const DropdownMenuItem(value: "BOC_Trincomalee_Padavi_Sripo", child: Text("Padavi Sripo")),
+        const DropdownMenuItem(value: "BOC_Trincomalee_Verugal", child: Text("Verugal")),
+        const DropdownMenuItem(value: "BOC_Trincomalee_Thambalagamuwa", child: Text("Thambalagamuwa")),
+        
+        // Batticaloa District
+        const DropdownMenuItem(value: "BOC_Batticaloa_Main", child: Text("Batticaloa Main")),
+        const DropdownMenuItem(value: "BOC_Batticaloa_Kaluwanchikudy", child: Text("Kaluwanchikudy")),
+        const DropdownMenuItem(value: "BOC_Batticaloa_Valachchenai", child: Text("Valachchenai")),
+        const DropdownMenuItem(value: "BOC_Batticaloa_Eravur", child: Text("Eravur")),
+        const DropdownMenuItem(value: "BOC_Batticaloa_Kattankudy", child: Text("Kattankudy")),
+        const DropdownMenuItem(value: "BOC_Batticaloa_Oddamavadi", child: Text("Oddamavadi")),
+        const DropdownMenuItem(value: "BOC_Batticaloa_Chenkalady", child: Text("Chenkalady")),
+        const DropdownMenuItem(value: "BOC_Batticaloa_Pasikudah", child: Text("Pasikudah")),
+        const DropdownMenuItem(value: "BOC_Batticaloa_Koralaipattu", child: Text("Koralaipattu")),
+        const DropdownMenuItem(value: "BOC_Batticaloa_Manmunai", child: Text("Manmunai")),
+        
+        // Ampara District
+        const DropdownMenuItem(value: "BOC_Ampara_Main", child: Text("Ampara Main")),
+        const DropdownMenuItem(value: "BOC_Ampara_Kalmunai", child: Text("Kalmunai")),
+        const DropdownMenuItem(value: "BOC_Ampara_Akkaraipattu", child: Text("Akkaraipattu")),
+        const DropdownMenuItem(value: "BOC_Ampara_Sammanthurai", child: Text("Sammanthurai")),
+        const DropdownMenuItem(value: "BOC_Ampara_Pottuvil", child: Text("Pottuvil")),
+        const DropdownMenuItem(value: "BOC_Ampara_Arugam_Bay", child: Text("Arugam Bay")),
+        const DropdownMenuItem(value: "BOC_Ampara_Uhana", child: Text("Uhana")),
+        const DropdownMenuItem(value: "BOC_Ampara_Mahaoya", child: Text("Mahaoya")),
+        const DropdownMenuItem(value: "BOC_Ampara_Damana", child: Text("Damana")),
+        const DropdownMenuItem(value: "BOC_Ampara_Sainthamaruthu", child: Text("Sainthamaruthu")),
+        const DropdownMenuItem(value: "BOC_Ampara_Ninthavur", child: Text("Ninthavur")),
+        const DropdownMenuItem(value: "BOC_Ampara_Lahugala", child: Text("Lahugala")),
+        const DropdownMenuItem(value: "BOC_Ampara_Navithanveli", child: Text("Navithanveli")),
+        
+        // Jaffna District
+        const DropdownMenuItem(value: "BOC_Jaffna_Main", child: Text("Jaffna Main")),
+        const DropdownMenuItem(value: "BOC_Jaffna_Nallur", child: Text("Nallur")),
+        const DropdownMenuItem(value: "BOC_Jaffna_Chavakachcheri", child: Text("Chavakachcheri")),
+        const DropdownMenuItem(value: "BOC_Jaffna_Point_Pedro", child: Text("Point Pedro")),
+        const DropdownMenuItem(value: "BOC_Jaffna_Kayts", child: Text("Kayts")),
+        const DropdownMenuItem(value: "BOC_Jaffna_Karainagar", child: Text("Karainagar")),
+        const DropdownMenuItem(value: "BOC_Jaffna_Velanai", child: Text("Velanai")),
+        const DropdownMenuItem(value: "BOC_Jaffna_Delft", child: Text("Delft")),
+        const DropdownMenuItem(value: "BOC_Jaffna_Thellipalai", child: Text("Thellipalai")),
+        const DropdownMenuItem(value: "BOC_Jaffna_Sandilipay", child: Text("Sandilipay")),
+        const DropdownMenuItem(value: "BOC_Jaffna_Kopay", child: Text("Kopay")),
+        const DropdownMenuItem(value: "BOC_Jaffna_Manipay", child: Text("Manipay")),
+        const DropdownMenuItem(value: "BOC_Jaffna_Uduvil", child: Text("Uduvil")),
+        
+        // Vavuniya District
+        const DropdownMenuItem(value: "BOC_Vavuniya_Main", child: Text("Vavuniya Main")),
+        const DropdownMenuItem(value: "BOC_Vavuniya_Cheddikulam", child: Text("Cheddikulam")),
+        const DropdownMenuItem(value: "BOC_Vavuniya_Nedunkerni", child: Text("Nedunkerni")),
+        const DropdownMenuItem(value: "BOC_Vavuniya_Vavuniya_South", child: Text("Vavuniya South")),
+        const DropdownMenuItem(value: "BOC_Vavuniya_Omanthai", child: Text("Omanthai")),
+        
+        // Mannar District
+        const DropdownMenuItem(value: "BOC_Mannar_Main", child: Text("Mannar Main")),
+        const DropdownMenuItem(value: "BOC_Mannar_Nanattan", child: Text("Nanattan")),
+        const DropdownMenuItem(value: "BOC_Mannar_Madhu", child: Text("Madhu")),
+        const DropdownMenuItem(value: "BOC_Mannar_Musali", child: Text("Musali")),
+        
+        // Mullaitivu District
+        const DropdownMenuItem(value: "BOC_Mullaitivu_Main", child: Text("Mullaitivu Main")),
+        const DropdownMenuItem(value: "BOC_Mullaitivu_Puthukudiyiruppu", child: Text("Puthukudiyiruppu")),
+        const DropdownMenuItem(value: "BOC_Mullaitivu_Oddusuddan", child: Text("Oddusuddan")),
+        const DropdownMenuItem(value: "BOC_Mullaitivu_Kokkilai", child: Text("Kokkilai")),
+        
+        // Ratnapura District
+        const DropdownMenuItem(value: "BOC_Ratnapura_Main", child: Text("Ratnapura Main")),
+        const DropdownMenuItem(value: "BOC_Ratnapura_Embilipitiya", child: Text("Embilipitiya")),
+        const DropdownMenuItem(value: "BOC_Ratnapura_Balangoda", child: Text("Balangoda")),
+        const DropdownMenuItem(value: "BOC_Ratnapura_Pelmadulla", child: Text("Pelmadulla")),
+      ];
+      
+    case "People's Bank": // People's Bank
+      return [
+        const DropdownMenuItem(value: "PB_Colombo_Main", child: Text("Colombo Main - Sir Chittampalam A. Gardiner Mw")),
+        const DropdownMenuItem(value: "PB_Colombo_Fort", child: Text("Colombo Fort")),
+        const DropdownMenuItem(value: "PB_Colombo_Pettah", child: Text("Colombo Pettah")),
+        const DropdownMenuItem(value: "PB_Colombo_Wellawatta", child: Text("Wellawatta")),
+        const DropdownMenuItem(value: "PB_Colombo_Rajagiriya", child: Text("Rajagiriya")),
+        const DropdownMenuItem(value: "PB_Negombo_Main", child: Text("Negombo Main")),
+        const DropdownMenuItem(value: "PB_Negombo_Katunayake", child: Text("Katunayake")),
+        const DropdownMenuItem(value: "PB_Gampaha_Main", child: Text("Gampaha Main")),
+        const DropdownMenuItem(value: "PB_Kandy_Main", child: Text("Kandy Main")),
+        const DropdownMenuItem(value: "PB_Galle_Main", child: Text("Galle Main")),
+        const DropdownMenuItem(value: "PB_Matara_Main", child: Text("Matara Main")),
+        const DropdownMenuItem(value: "PB_Kurunegala_Main", child: Text("Kurunegala Main")),
+        const DropdownMenuItem(value: "PB_Anuradhapura_Main", child: Text("Anuradhapura Main")),
+        const DropdownMenuItem(value: "PB_Jaffna_Main", child: Text("Jaffna Main")),
+        const DropdownMenuItem(value: "PB_Batticaloa_Main", child: Text("Batticaloa Main")),
+      ];
+      
+    case "Commercial Bank": // Commercial Bank of Ceylon
+      return [
+        const DropdownMenuItem(value: "COMB_Colombo_Main", child: Text("Colombo Main - Bristol Street")),
+        const DropdownMenuItem(value: "COMB_Colombo_Fort", child: Text("Colombo Fort")),
+        const DropdownMenuItem(value: "COMB_Colombo_Pettah", child: Text("Colombo Pettah")),
+        const DropdownMenuItem(value: "COMB_Colombo_Bambalapitiya", child: Text("Bambalapitiya")),
+        const DropdownMenuItem(value: "COMB_Colombo_Dehiwala", child: Text("Dehiwala")),
+        const DropdownMenuItem(value: "COMB_Colombo_Nugegoda", child: Text("Nugegoda")),
+        const DropdownMenuItem(value: "COMB_Colombo_Maharagama", child: Text("Maharagama")),
+        const DropdownMenuItem(value: "COMB_Negombo_Main", child: Text("Negombo Main")),
+        const DropdownMenuItem(value: "COMB_Negombo_Dankotuwa", child: Text("Dankotuwa")),
+        const DropdownMenuItem(value: "COMB_Kandy_Main", child: Text("Kandy Main")),
+        const DropdownMenuItem(value: "COMB_Galle_Main", child: Text("Galle Main")),
+        const DropdownMenuItem(value: "COMB_Matara_Main", child: Text("Matara Main")),
+        const DropdownMenuItem(value: "COMB_Kurunegala_Main", child: Text("Kurunegala Main")),
+        const DropdownMenuItem(value: "COMB_Anuradhapura_Main", child: Text("Anuradhapura Main")),
+        const DropdownMenuItem(value: "COMB_Trincomalee_Main", child: Text("Trincomalee Main")),
+        const DropdownMenuItem(value: "COMB_Batticaloa_Main", child: Text("Batticaloa Main")),
+        const DropdownMenuItem(value: "COMB_Jaffna_Main", child: Text("Jaffna Main")),
+        const DropdownMenuItem(value: "COMB_Ratnapura_Main", child: Text("Ratnapura Main")),
+        const DropdownMenuItem(value: "COMB_Badulla_Main", child: Text("Badulla Main")),
+      ];
+      
+    case "HNB": // Hatton National Bank
+      return [
+        const DropdownMenuItem(value: "HNB_Colombo_Main", child: Text("Colombo Main - HNB Towers")),
+        const DropdownMenuItem(value: "HNB_Colombo_Fort", child: Text("Colombo Fort")),
+        const DropdownMenuItem(value: "HNB_Colombo_Pettah", child: Text("Colombo Pettah")),
+        const DropdownMenuItem(value: "HNB_Colombo_Bambalapitiya", child: Text("Bambalapitiya")),
+        const DropdownMenuItem(value: "HNB_Colombo_Dehiwala", child: Text("Dehiwala")),
+        const DropdownMenuItem(value: "HNB_Colombo_Nugegoda", child: Text("Nugegoda")),
+        const DropdownMenuItem(value: "HNB_Kurunegala_Main", child: Text("Kurunegala Main")),
+        const DropdownMenuItem(value: "HNB_Kandy_Main", child: Text("Kandy Main")),
+        const DropdownMenuItem(value: "HNB_Galle_Main", child: Text("Galle Main")),
+        const DropdownMenuItem(value: "HNB_Matara_Main", child: Text("Matara Main")),
+        const DropdownMenuItem(value: "HNB_Negombo_Main", child: Text("Negombo Main")),
+        const DropdownMenuItem(value: "HNB_Anuradhapura_Main", child: Text("Anuradhapura Main")),
+        const DropdownMenuItem(value: "HNB_Trincomalee_Main", child: Text("Trincomalee Main")),
+        const DropdownMenuItem(value: "HNB_Batticaloa_Main", child: Text("Batticaloa Main")),
+        const DropdownMenuItem(value: "HNB_Jaffna_Main", child: Text("Jaffna Main")),
+        const DropdownMenuItem(value: "HNB_Ratnapura_Main", child: Text("Ratnapura Main")),
+        const DropdownMenuItem(value: "HNB_Badulla_Main", child: Text("Badulla Main")),
+      ];
+      
+    case "Seyla Bank": // Seylan Bank
+      return [
+        const DropdownMenuItem(value: "SB_Colombo_Main", child: Text("Colombo Main")),
+        const DropdownMenuItem(value: "SB_Colombo_Fort", child: Text("Colombo Fort")),
+        const DropdownMenuItem(value: "SB_Colombo_Pettah", child: Text("Colombo Pettah")),
+        const DropdownMenuItem(value: "SB_Colombo_Bambalapitiya", child: Text("Bambalapitiya")),
+        const DropdownMenuItem(value: "SB_Colombo_Dehiwala", child: Text("Dehiwala")),
+        const DropdownMenuItem(value: "SB_Kandy_Main", child: Text("Kandy Main")),
+        const DropdownMenuItem(value: "SB_Galle_Main", child: Text("Galle Main")),
+        const DropdownMenuItem(value: "SB_Matara_Main", child: Text("Matara Main")),
+        const DropdownMenuItem(value: "SB_Negombo_Main", child: Text("Negombo Main")),
+        const DropdownMenuItem(value: "SB_Kurunegala_Main", child: Text("Kurunegala Main")),
+        const DropdownMenuItem(value: "SB_Anuradhapura_Main", child: Text("Anuradhapura Main")),
+        const DropdownMenuItem(value: "SB_Jaffna_Main", child: Text("Jaffna Main")),
+        const DropdownMenuItem(value: "SB_Batticaloa_Main", child: Text("Batticaloa Main")),
+        const DropdownMenuItem(value: "SB_Ratnapura_Main", child: Text("Ratnapura Main")),
+      ];
+      
+    case "Sampath Bank": // Sampath Bank
+      return [
+        const DropdownMenuItem(value: "SAMPATH_Colombo_Main", child: Text("Colombo Main")),
+        const DropdownMenuItem(value: "SAMPATH_Colombo_Fort", child: Text("Colombo Fort")),
+        const DropdownMenuItem(value: "SAMPATH_Colombo_Pettah", child: Text("Colombo Pettah")),
+        const DropdownMenuItem(value: "SAMPATH_Colombo_Bambalapitiya", child: Text("Bambalapitiya")),
+        const DropdownMenuItem(value: "SAMPATH_Colombo_Dehiwala", child: Text("Dehiwala")),
+        const DropdownMenuItem(value: "SAMPATH_Colombo_Nugegoda", child: Text("Nugegoda")),
+        const DropdownMenuItem(value: "SAMPATH_Kandy_Main", child: Text("Kandy Main")),
+        const DropdownMenuItem(value: "SAMPATH_Galle_Main", child: Text("Galle Main")),
+        const DropdownMenuItem(value: "SAMPATH_Matara_Main", child: Text("Matara Main")),
+        const DropdownMenuItem(value: "SAMPATH_Negombo_Main", child: Text("Negombo Main")),
+        const DropdownMenuItem(value: "SAMPATH_Kurunegala_Main", child: Text("Kurunegala Main")),
+        const DropdownMenuItem(value: "SAMPATH_Anuradhapura_Main", child: Text("Anuradhapura Main")),
+        const DropdownMenuItem(value: "SAMPATH_Jaffna_Main", child: Text("Jaffna Main")),
+        const DropdownMenuItem(value: "SAMPATH_Batticaloa_Main", child: Text("Batticaloa Main")),
+        const DropdownMenuItem(value: "SAMPATH_Ratnapura_Main", child: Text("Ratnapura Main")),
+      ];
+      
+    case "DFCC": // DFCC Bank
+      return [
+        const DropdownMenuItem(value: "DFCC_Colombo_Main", child: Text("Colombo Main - Galle Road")),
+        const DropdownMenuItem(value: "DFCC_Colombo_Fort", child: Text("Colombo Fort")),
+        const DropdownMenuItem(value: "DFCC_Colombo_Bambalapitiya", child: Text("Bambalapitiya")),
+        const DropdownMenuItem(value: "DFCC_Colombo_Dehiwala", child: Text("Dehiwala")),
+        const DropdownMenuItem(value: "DFCC_Kandy_Main", child: Text("Kandy Main")),
+        const DropdownMenuItem(value: "DFCC_Galle_Main", child: Text("Galle Main")),
+        const DropdownMenuItem(value: "DFCC_Matara_Main", child: Text("Matara Main")),
+        const DropdownMenuItem(value: "DFCC_Negombo_Main", child: Text("Negombo Main")),
+        const DropdownMenuItem(value: "DFCC_Kurunegala_Main", child: Text("Kurunegala Main")),
+        const DropdownMenuItem(value: "DFCC_Anuradhapura_Main", child: Text("Anuradhapura Main")),
+        const DropdownMenuItem(value: "DFCC_Jaffna_Main", child: Text("Jaffna Main")),
+      ];
+      
+    case "NDB": // National Development Bank
+      return [
+        const DropdownMenuItem(value: "NDB_Colombo_Main", child: Text("Colombo Main")),
+        const DropdownMenuItem(value: "NDB_Colombo_Fort", child: Text("Colombo Fort")),
+        const DropdownMenuItem(value: "NDB_Colombo_Pettah", child: Text("Colombo Pettah")),
+        const DropdownMenuItem(value: "NDB_Colombo_Bambalapitiya", child: Text("Bambalapitiya")),
+        const DropdownMenuItem(value: "NDB_Kandy_Main", child: Text("Kandy Main")),
+        const DropdownMenuItem(value: "NDB_Galle_Main", child: Text("Galle Main")),
+        const DropdownMenuItem(value: "NDB_Matara_Main", child: Text("Matara Main")),
+        const DropdownMenuItem(value: "NDB_Negombo_Main", child: Text("Negombo Main")),
+        const DropdownMenuItem(value: "NDB_Kurunegala_Main", child: Text("Kurunegala Main")),
+        const DropdownMenuItem(value: "NDB_Anuradhapura_Main", child: Text("Anuradhapura Main")),
+        const DropdownMenuItem(value: "NDB_Jaffna_Main", child: Text("Jaffna Main")),
+        const DropdownMenuItem(value: "NDB_Batticaloa_Main", child: Text("Batticaloa Main")),
+      ];
+      
+    case "AMANA": // Amana Bank
+      return [
+        const DropdownMenuItem(value: "AMANA_Colombo_Main", child: Text("Colombo Main")),
+        const DropdownMenuItem(value: "AMANA_Colombo_Fort", child: Text("Colombo Fort")),
+        const DropdownMenuItem(value: "AMANA_Negombo_Main", child: Text("Negombo Main")),
+        const DropdownMenuItem(value: "AMANA_Kandy_Main", child: Text("Kandy Main")),
+        const DropdownMenuItem(value: "AMANA_Galle_Main", child: Text("Galle Main")),
+        const DropdownMenuItem(value: "AMANA_Matara_Main", child: Text("Matara Main")),
+        const DropdownMenuItem(value: "AMANA_Matale_Main", child: Text("Matale Main")),
+        const DropdownMenuItem(value: "AMANA_Mawanella_Main", child: Text("Mawanella Main")),
+        const DropdownMenuItem(value: "AMANA_Kurunegala_Main", child: Text("Kurunegala Main")),
+        const DropdownMenuItem(value: "AMANA_Anuradhapura_Main", child: Text("Anuradhapura Main")),
+        const DropdownMenuItem(value: "AMANA_Jaffna_Main", child: Text("Jaffna Main")),
+        const DropdownMenuItem(value: "AMANA_Batticaloa_Main", child: Text("Batticaloa Main")),
+      ];
+      
+    case "CARGILLS": // Cargills Bank
+      return [
+        const DropdownMenuItem(value: "CARGILLS_Colombo_Main", child: Text("Colombo Main")),
+        const DropdownMenuItem(value: "CARGILLS_Colombo_Fort", child: Text("Colombo Fort")),
+        const DropdownMenuItem(value: "CARGILLS_Colombo_Pettah", child: Text("Colombo Pettah")),
+        const DropdownMenuItem(value: "CARGILLS_Kandy_Main", child: Text("Kandy Main")),
+        const DropdownMenuItem(value: "CARGILLS_Galle_Main", child: Text("Galle Main")),
+        const DropdownMenuItem(value: "CARGILLS_Matara_Main", child: Text("Matara Main")),
+        const DropdownMenuItem(value: "CARGILLS_Negombo_Main", child: Text("Negombo Main")),
+        const DropdownMenuItem(value: "CARGILLS_Kurunegala_Main", child: Text("Kurunegala Main")),
+        const DropdownMenuItem(value: "CARGILLS_Anuradhapura_Main", child: Text("Anuradhapura Main")),
+        const DropdownMenuItem(value: "CARGILLS_Jaffna_Main", child: Text("Jaffna Main")),
+      ];
+      
+    case "NTB": // Nations Trust Bank
+      return [
+        const DropdownMenuItem(value: "NTB_Colombo_Main", child: Text("Colombo Main")),
+        const DropdownMenuItem(value: "NTB_Colombo_Fort", child: Text("Colombo Fort")),
+        const DropdownMenuItem(value: "NTB_Colombo_Bambalapitiya", child: Text("Bambalapitiya")),
+        const DropdownMenuItem(value: "NTB_Colombo_Dehiwala", child: Text("Dehiwala")),
+        const DropdownMenuItem(value: "NTB_Kandy_Main", child: Text("Kandy Main")),
+        const DropdownMenuItem(value: "NTB_Galle_Main", child: Text("Galle Main")),
+        const DropdownMenuItem(value: "NTB_Matara_Main", child: Text("Matara Main")),
+        const DropdownMenuItem(value: "NTB_Negombo_Main", child: Text("Negombo Main")),
+        const DropdownMenuItem(value: "NTB_Kurunegala_Main", child: Text("Kurunegala Main")),
+        const DropdownMenuItem(value: "NTB_Anuradhapura_Main", child: Text("Anuradhapura Main")),
+        const DropdownMenuItem(value: "NTB_Jaffna_Main", child: Text("Jaffna Main")),
+      ];
+      
+    case "UNION": // Union Bank
+      return [
+        const DropdownMenuItem(value: "UNION_Colombo_Main", child: Text("Colombo Main")),
+        const DropdownMenuItem(value: "UNION_Colombo_Fort", child: Text("Colombo Fort")),
+        const DropdownMenuItem(value: "UNION_Kandy_Main", child: Text("Kandy Main")),
+        const DropdownMenuItem(value: "UNION_Galle_Main", child: Text("Galle Main")),
+        const DropdownMenuItem(value: "UNION_Matara_Main", child: Text("Matara Main")),
+        const DropdownMenuItem(value: "UNION_Negombo_Main", child: Text("Negombo Main")),
+        const DropdownMenuItem(value: "UNION_Kurunegala_Main", child: Text("Kurunegala Main")),
+        const DropdownMenuItem(value: "UNION_Anuradhapura_Main", child: Text("Anuradhapura Main")),
+        const DropdownMenuItem(value: "UNION_Jaffna_Main", child: Text("Jaffna Main")),
+      ];
+      
+    case "PAN_ASIA": // Pan Asia Bank
+      return [
+        const DropdownMenuItem(value: "PAN_ASIA_Colombo_Main", child: Text("Colombo Main")),
+        const DropdownMenuItem(value: "PAN_ASIA_Colombo_Fort", child: Text("Colombo Fort")),
+        const DropdownMenuItem(value: "PAN_ASIA_Kandy_Main", child: Text("Kandy Main")),
+        const DropdownMenuItem(value: "PAN_ASIA_Galle_Main", child: Text("Galle Main")),
+        const DropdownMenuItem(value: "PAN_ASIA_Matara_Main", child: Text("Matara Main")),
+        const DropdownMenuItem(value: "PAN_ASIA_Negombo_Main", child: Text("Negombo Main")),
+        const DropdownMenuItem(value: "PAN_ASIA_Kurunegala_Main", child: Text("Kurunegala Main")),
+        const DropdownMenuItem(value: "PAN_ASIA_Anuradhapura_Main", child: Text("Anuradhapura Main")),
+        const DropdownMenuItem(value: "PAN_ASIA_Jaffna_Main", child: Text("Jaffna Main")),
+      ];
+      
+    case "HABIB": // Habib Bank Limited
+      return [
+        const DropdownMenuItem(value: "HABIB_Colombo_Main", child: Text("Colombo Main - 2nd Cross Street")),
+        const DropdownMenuItem(value: "HABIB_Colombo_Fort", child: Text("Colombo Fort")),
+        const DropdownMenuItem(value: "HABIB_Kandy_Main", child: Text("Kandy Main")),
+        const DropdownMenuItem(value: "HABIB_Galle_Main", child: Text("Galle Main")),
+        const DropdownMenuItem(value: "HABIB_Negombo_Main", child: Text("Negombo Main")),
+      ];
+      
+    case "DEUTSCHE": // Deutsche Bank
+      return [
+        const DropdownMenuItem(value: "DEUTSCHE_Colombo_Main", child: Text("Colombo Main - Galle Road")),
+        const DropdownMenuItem(value: "DEUTSCHE_Colombo_Fort", child: Text("Colombo Fort")),
+      ];
+      
+    case "CITIBANK": // Citibank
+      return [
+        const DropdownMenuItem(value: "CITIBANK_Colombo_Main", child: Text("Colombo Main")),
+        const DropdownMenuItem(value: "CITIBANK_Colombo_Fort", child: Text("Colombo Fort")),
+      ];
+      
+    case "STANDARD_CHARTERED": // Standard Chartered Bank
+      return [
+        const DropdownMenuItem(value: "SC_Colombo_Main", child: Text("Colombo Main")),
+        const DropdownMenuItem(value: "SC_Colombo_Fort", child: Text("Colombo Fort")),
+        const DropdownMenuItem(value: "SC_Kandy_Main", child: Text("Kandy Main")),
+        const DropdownMenuItem(value: "SC_Galle_Main", child: Text("Galle Main")),
+        const DropdownMenuItem(value: "SC_Negombo_Main", child: Text("Negombo Main")),
+      ];
+      
+    case "HSBC": // HSBC Bank
+      return [
+        const DropdownMenuItem(value: "HSBC_Colombo_Main", child: Text("Colombo Main")),
+        const DropdownMenuItem(value: "HSBC_Colombo_Fort", child: Text("Colombo Fort")),
+      ];
+      
+    default:
+      return [];
   }
+}
 
   Widget _progressStep({required bool isActive}) {
     return Container(

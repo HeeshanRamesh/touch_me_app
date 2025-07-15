@@ -98,26 +98,26 @@ class _SplashScreenState extends State<SplashScreen>
               // ),
               const Spacer(),
               //const SizedBox(height: 18),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 24.0),
-                child: Text(
-                  'A product of VVH Solutions',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black54,
-                    letterSpacing: 1.1,
-                    shadows: [
-                      Shadow(
-                        blurRadius: 3,
-                        color: Colors.white,
-                        offset: Offset(0, 1),
-                      ),
-                    ],
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
+              // Padding(
+              //   padding: const EdgeInsets.only(bottom: 24.0),
+              //   child: Text(
+              //     'A product of VVH Solutions',
+              //     style: TextStyle(
+              //       fontSize: 12,
+              //       fontWeight: FontWeight.w600,
+              //       color: Colors.black54,
+              //       letterSpacing: 1.1,
+              //       shadows: [
+              //         Shadow(
+              //           blurRadius: 3,
+              //           color: Colors.white,
+              //           offset: Offset(0, 1),
+              //         ),
+              //       ],
+              //     ),
+              //     textAlign: TextAlign.center,
+              //   ),
+              // ),
             ],
           ),
         ),
