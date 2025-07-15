@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:touch_me/add_services_screen.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:touch_me/models/booking.dart'; // Import Booking model
 import 'package:touch_me/merchant_services_screen.dart';
 import 'package:touch_me/my_bookings_page.dart';
-
+import 'package:intl/intl.dart'; // For date comparison
 
 class SaloonDashboardScreen extends StatefulWidget {
-  const SaloonDashboardScreen({super.key});
+  final String userName;
+  const SaloonDashboardScreen({super.key, required this.userName});
 
   @override
   State<SaloonDashboardScreen> createState() => _SaloonDashboardScreenState();
@@ -15,72 +17,82 @@ class SaloonDashboardScreen extends StatefulWidget {
 
 class _SaloonDashboardScreenState extends State<SaloonDashboardScreen> {
   int _currentIndex = 0;
+  List<Booking> todayCompletedBookings = [];
+  final _storage = const FlutterSecureStorage();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTodayCompletedBookings(); // Load completed bookings for today
+  }
+
+  Future<String?> _getToken() async {
+    return await _storage.read(key: 'token');
+  }
+
+  Future<void> _loadTodayCompletedBookings() async {
+    final token = await _getToken();
+    if (token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No authentication token found. Please log in.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    try {
+      final fetchedBookings = await fetchMerchantBookings(token);
+      setState(() {
+        // Filter bookings for today that are completed
+        todayCompletedBookings =
+            fetchedBookings.where((booking) {
+              final bookingDate = DateTime.parse(booking.date);
+              final isToday = _isSameDay(bookingDate, DateTime.now());
+              return isToday && booking.status == 'Completed';
+            }).toList();
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error loading bookings: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<List<Booking>> fetchMerchantBookings(String token) async {
+    final url = Uri.parse('http://api.touchmeapp.com/api/bookings/my/bookings');
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final bookings = data['bookings'] as List<dynamic>;
+      return bookings.map((b) => Booking.fromJson(b)).toList();
+    } else {
+      throw Exception('Failed to fetch bookings: ${response.body}');
+    }
+  }
+
+  bool _isSameDay(DateTime date1, DateTime date2) {
+    return date1.year == date2.year &&
+        date1.month == date2.month &&
+        date1.day == date2.day;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        selectedItemColor: const Color(0xFF6A1B9A),
-        unselectedItemColor: Colors.grey,
-        onTap: (index) async {
-          if (index == 2) {
-            // Load merchantId from secure storage
-            final storage = const FlutterSecureStorage();
-            String? merchantId = await storage.read(key: "merchantId");
-
-            if (merchantId == null || merchantId.isEmpty) {
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("Merchant ID not found. Please login again."),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-              }
-              return;
-            }
-
-            if (context.mounted) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder:
-                      (_) => MerchantServicesScreen(merchantId: merchantId),
-                ),
-              );
-            }
-          } else if (index == 1) {
-            // Bookings tab
-            if (context.mounted) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const MyBookingsPage()),
-              );
-            }
-          } else {
-            setState(() {
-              _currentIndex = index;
-            });
-          }
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
-            label: "Bookings",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.design_services),
-            label: "Services",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: "Notifications",
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
-        ],
+      appBar: AppBar(
+        title: Text(widget.userName),
+        backgroundColor: const Color(0xFF6A1B9A),
+        elevation: 0,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -88,216 +100,224 @@ class _SaloonDashboardScreenState extends State<SaloonDashboardScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Greeting and Name
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
-                        "Good Morning",
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        child: const Text(
+                          "Home",
+                          style: TextStyle(
+                            color: Color(0xFF000000),
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                      SizedBox(height: 4),
-                      Text(
-                        "Arshan Sayed",
-                        style: TextStyle(fontWeight: FontWeight.w500),
-                      ),
                     ],
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Color(0xFFE0D7F6),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Text(
-                      "Kesbewa",
-                      style: TextStyle(color: Color(0xFF6A1B9A)),
-                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 20),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                height: 50,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF6A1B9A), Color(0xFFB71C9B)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(25),
-                ),
-                child: Row(
-                  children: const [
-                    Icon(Icons.search, color: Colors.white),
-                    SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        "Search Your Service",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 30),
-              const Center(
-                child: Text(
-                  "Dashboard",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Color(0xFFF9F9F9),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Column(
-                      children: const [
-                        Text(
-                          "Customers",
-                          style: TextStyle(fontWeight: FontWeight.w500),
-                        ),
-                        SizedBox(height: 6),
-                        Text(
-                          "120",
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
+              // Appointment Date Card
+              SizedBox(
+                height: 300,
+                width: 500,
+                child: Card(
+                  margin: const EdgeInsets.all(8.0),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Align(
+                          alignment: Alignment.topLeft,
+                          child: Text(
+                            'Appointment Date',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
                           ),
                         ),
-                        SizedBox(height: 4),
-                        Text(
-                          "100% completed",
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFFB71C9B),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(width: 10),
-                    SizedBox(
-                      width: 80,
-                      height: 80,
-                      child: PieChart(
-                        PieChartData(
-                          centerSpaceRadius: 30,
-                          sections: [
-                            PieChartSectionData(
-                              value: 100,
-                              color: Color(0xFFB71C9B),
-                              radius: 10,
-                              showTitle: false,
+                        const Spacer(),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Icon(Icons.history, size: 40),
+                            SizedBox(height: 10),
+                            Text(
+                              'No recent activity',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            SizedBox(height: 5),
+                            Text(
+                              'Visit the calendar section to add some appointments',
+                              textAlign: TextAlign.center,
                             ),
                           ],
                         ),
-                      ),
+                        const Spacer(),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
-              const SizedBox(height: 20),
-              const Text(
-                "Service Revenue",
-                style: TextStyle(fontWeight: FontWeight.w500),
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                "R\$ 85,000",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 30),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Color(0xFFF9F9F9),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Overall Customer Acquisition",
-                      style: TextStyle(fontWeight: FontWeight.bold),
+              // Your Schedule Card
+              SizedBox(
+                height: 300,
+                width: 500,
+                child: Card(
+                  margin: const EdgeInsets.all(8.0),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Align(
+                          alignment: Alignment.topLeft,
+                          child: Text(
+                            'Your Schedule',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                        const Spacer(),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Icon(Icons.bar_chart, size: 40),
+                            SizedBox(height: 10),
+                            Text(
+                              'Your schedule is empty',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            SizedBox(height: 5),
+                            Text(
+                              'Make some appointments to get started',
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                        const Spacer(),
+                      ],
                     ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      height: 200,
-                      child: BarChart(
-                        BarChartData(
-                          barGroups: List.generate(12, (index) {
-                            return BarChartGroupData(
-                              x: index,
-                              barRods: [
-                                BarChartRodData(
-                                  toY: (index + 5) * 5.0,
-                                  color: Color(0xFF6A1B9A),
-                                  width: 14,
-                                  borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+              // Today's Appointments Card
+              SizedBox(
+                height: 300,
+                width: 500,
+                child: Card(
+                  margin: const EdgeInsets.all(8.0),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Align(
+                          alignment: Alignment.topLeft,
+                          child: Text(
+                            "Today's Appointments",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                        const Spacer(),
+                        todayCompletedBookings.isEmpty
+                            ? Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: const [
+                                Icon(Icons.history, size: 40),
+                                SizedBox(height: 10),
+                                Text(
+                                  'No appointments today',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                SizedBox(height: 5),
+                                Text(
+                                  'Visit the calendar section to add some appointments',
+                                  textAlign: TextAlign.center,
                                 ),
                               ],
-                            );
-                          }),
-                          titlesData: FlTitlesData(
-                            bottomTitles: AxisTitles(
-                              sideTitles: SideTitles(
-                                showTitles: true,
-                                getTitlesWidget: (value, meta) {
-                                  const months = [
-                                    'JAN',
-                                    'FEB',
-                                    'MAR',
-                                    'APR',
-                                    'MAY',
-                                    'JUN',
-                                    'JUL',
-                                    'AUG',
-                                    'SEP',
-                                    'OCT',
-                                    'NOV',
-                                    'DEC',
-                                  ];
-                                  return Text(
-                                    months[value.toInt() % 12],
-                                    style: const TextStyle(fontSize: 10),
+                            )
+                            : Expanded(
+                              child: ListView.builder(
+                                shrinkWrap: true,
+                                itemCount: todayCompletedBookings.length,
+                                itemBuilder: (context, index) {
+                                  final booking = todayCompletedBookings[index];
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 8.0,
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Service: ${booking.serviceName}',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          'Customer: ${booking.customerName}',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey[600],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          'Time: ${booking.time}',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey[600],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          'Status: ${booking.status}',
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.green,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   );
                                 },
                               ),
                             ),
-                            leftTitles: AxisTitles(
-                              sideTitles: SideTitles(
-                                showTitles: true,
-                                reservedSize: 30,
-                              ),
-                            ),
-                            topTitles: AxisTitles(
-                              sideTitles: SideTitles(showTitles: false),
-                            ),
-                            rightTitles: AxisTitles(
-                              sideTitles: SideTitles(showTitles: false),
-                            ),
-                          ),
-                          gridData: FlGridData(show: false),
-                          borderData: FlBorderData(show: false),
-                        ),
-                      ),
+                        const Spacer(),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ],

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // Add this import
+import 'package:touch_me/merchant_page.dart';
 import 'package:touch_me/merchant_signup_main.dart';
 import 'package:touch_me/saloon_dashboard_screen.dart';
 import 'package:touch_me/services/merchant_auth_service.dart';
@@ -20,6 +23,9 @@ class _MerchantLoginPageState extends State<MerchantLoginPage> {
   String? _passwordError;
   final _usernameFocus = FocusNode();
   final _passwordFocus = FocusNode();
+  
+  // Add this line - declare storage
+  final storage = const FlutterSecureStorage();
 
   @override
   void initState() {
@@ -81,7 +87,10 @@ class _MerchantLoginPageState extends State<MerchantLoginPage> {
     });
 
     try {
-      final response = await MerchantAuthService().loginMerchant(username, password);
+      final response = await MerchantAuthService().loginMerchant(
+        username,
+        password,
+      );
 
       setState(() {
         _isLoading = false;
@@ -90,6 +99,31 @@ class _MerchantLoginPageState extends State<MerchantLoginPage> {
       if (!mounted) return;
 
       if (response['success']) {
+        // Debug line
+        print("Login full response: $response");
+
+        // Save merchant ID to storage
+        if (response['merchant'] != null && response['merchant']['_id'] != null) {
+          await storage.write(key: "merchantId", value: response['merchant']['_id']);
+          print("Merchant ID saved: ${response['merchant']['_id']}");
+        } else if (response['merchant'] != null && response['merchant']['id'] != null) {
+          // Try 'id' instead of '_id'
+          await storage.write(key: "merchantId", value: response['merchant']['id']);
+          print("Merchant ID saved: ${response['merchant']['id']}");
+        } else {
+          print("Warning: Merchant ID not found in response");
+          print("Merchant object: ${response['merchant']}");
+        }
+
+        // Get owner name from response['merchant']['owner']['name']
+        String ownerName = "Merchant";
+        if (response['merchant'] != null &&
+            response['merchant']['owner'] != null &&
+            response['merchant']['owner']['name'] != null &&
+            response['merchant']['owner']['name'].toString().isNotEmpty) {
+          ownerName = response['merchant']['owner']['name'];
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Login successful! Redirecting...'),
@@ -101,16 +135,18 @@ class _MerchantLoginPageState extends State<MerchantLoginPage> {
           ),
         );
 
-        print('Navigating to SaloonDashboardScreen');
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const SaloonDashboardScreen()),
+          MaterialPageRoute(
+            builder: (context) => MerchantPage(userName: ownerName),
+          ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              response['message'] ?? 'Authentication failed. Please check your credentials or account type.',
+              response['message'] ??
+                  'Authentication failed. Please check your credentials or account type.',
             ),
             backgroundColor: Colors.red.shade700,
             behavior: SnackBarBehavior.floating,
@@ -309,10 +345,10 @@ class _MerchantLoginPageState extends State<MerchantLoginPage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Image.network(
-                      'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/512px-Google_%22G%22_Logo.svg.png',
-                      height: 24,
-                      width: 24,
+                    const FaIcon(
+                      FontAwesomeIcons.google,
+                      color: Colors.red,
+                      size: 24,
                     ),
                     const SizedBox(width: 10),
                     const Text(

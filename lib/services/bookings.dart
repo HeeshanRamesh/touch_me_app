@@ -1,10 +1,11 @@
+// services/bookings.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:touch_me/models/booking.dart';
 
 Future<Map<String, dynamic>> bookService({
   required String customerId,
-  required String salonOwnerId,
+  required String merchantId, // Renamed from salonOwnerId
   required String saloonServiceId,
   required String date,
   required String time,
@@ -23,7 +24,7 @@ Future<Map<String, dynamic>> bookService({
       },
       body: jsonEncode({
         'customerId': customerId,
-        'salonOwnerId': salonOwnerId,
+        'merchantId': merchantId, // Updated to merchantId
         'saloonServiceId': saloonServiceId,
         'date': date,
         'time': time,
@@ -47,9 +48,8 @@ Future<Map<String, dynamic>> bookService({
   }
 }
 
-
 Future<List<Booking>> fetchMerchantBookings(String token) async {
-  final url = Uri.parse('http://192.168.157.109:6000/api/bookings/my/bookings');
+  final url = Uri.parse('http://api.touchmeapp.com/api/bookings/my/bookings');
   final response = await http.get(
     url,
     headers: {
@@ -63,5 +63,25 @@ Future<List<Booking>> fetchMerchantBookings(String token) async {
     return bookings.map((b) => Booking.fromJson(b)).toList();
   } else {
     throw Exception('Failed to fetch bookings');
+  }
+}
+
+Future<List<Booking>> fetchCustomerBookings(String token) async {
+  final url = Uri.parse(
+    'http://api.touchmeapp.com/api/bookings/my-customer-bookings',
+  );
+  final response = await http.get(
+    url,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    },
+  );
+  if (response.statusCode == 200) {
+    final data = jsonDecode(response.body);
+    final bookings = data['bookings'] as List<dynamic>;
+    return bookings.map((b) => Booking.fromJson(b)).toList();
+  } else {
+    throw Exception('Failed to fetch customer bookings');
   }
 }

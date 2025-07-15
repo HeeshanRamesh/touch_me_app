@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 
 // AuthService class to handle authentication-related operations
 class AuthService {
-  static const String baseUrl = 'http://api.touchmeapp.com/api/users';
+  static const String baseUrl = 'http://10.0.2.2:6000/api/users';
 
   // Method to register a new user
   Future<Map<String, dynamic>> register({
@@ -51,11 +51,10 @@ class AuthService {
   }
 
   // Method to handle user login
-  // auth_service.dart
   Future<Map<String, dynamic>> login(String email, String password) async {
     try {
       final response = await http.post(
-        Uri.parse('http://api.touchmeapp.com/api/auth/login'),
+        Uri.parse('http://10.0.2.2:6000/api/auth/login'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'email': email, 'password': password}),
       );
@@ -67,7 +66,7 @@ class AuthService {
           'success': true,
           'message': data['message'] ?? 'Login successful',
           'token': token,
-          'user': data['user'], // <-- Include the user map!
+          'user': data['user'], // Include the user map
         };
       } else {
         try {
@@ -84,6 +83,71 @@ class AuthService {
             'token': '',
           };
         }
+      }
+    } catch (e) {
+      throw Exception('Network error: $e');
+    }
+  }
+
+  // Method to get user profile
+  Future<Map<String, dynamic>> getUserProfile(
+    String userId,
+    String token,
+  ) async {
+    try {
+      final response = await http.get(
+        Uri.parse('http://10.0.2.2:6000/api/users/profile/$userId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return {'success': true, 'user': data};
+      } else {
+        final errorData = json.decode(response.body);
+        return {
+          'success': false,
+          'message': errorData['error']['message'] ?? 'Failed to load profile',
+        };
+      }
+    } catch (e) {
+      throw Exception('Network error: $e');
+    }
+  }
+
+  // Method to update user profile
+  Future<Map<String, dynamic>> updateUserProfile(
+    String userId,
+    String token,
+    Map<String, dynamic> profileData,
+  ) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/profile/$userId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode(profileData),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return {
+          'success': true,
+          'message': 'Profile updated successfully',
+          'user': data,
+        };
+      } else {
+        final errorData = json.decode(response.body);
+        return {
+          'success': false,
+          'message':
+              errorData['error']['message'] ?? 'Failed to update profile',
+        };
       }
     } catch (e) {
       throw Exception('Network error: $e');

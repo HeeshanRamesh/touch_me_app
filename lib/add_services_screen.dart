@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:retry/retry.dart';
@@ -16,11 +17,11 @@ class AddServiceScreen extends StatefulWidget {
   final String? merchantId; // Pass merchantId for add mode.
 
   const AddServiceScreen({
-    Key? key,
+    super.key,
     this.service,
     this.serviceId,
     this.merchantId, // Pass merchantId here for ADD mode
-  }) : super(key: key);
+  });
 
   @override
   State<AddServiceScreen> createState() => _AddServiceScreenState();
@@ -35,6 +36,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
   final storage = const FlutterSecureStorage();
   bool _isSubmitting = false;
   String? _imageUrl;
+  File? _selectedImage; // To store the picked image file for preview
 
   @override
   void initState() {
@@ -44,8 +46,6 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
       _descriptionController.text = widget.service!.serviceDescription;
       _priceController.text = widget.service!.price.toString();
       _imageUrl = widget.service!.image;
-    } else {
-      _imageUrl = 'https://example.com/images/massage.jpg';
     }
   }
 
@@ -76,18 +76,23 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
               backgroundColor: Colors.green,
             ),
           );
-          // Navigate to MerchantServicesScreen after success!
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-              builder:
-                  (context) =>
-                      MerchantServicesScreen(merchantId: widget.merchantId!),
-            ),
-            (Route<dynamic> route) => false,
-          );
+
+          // Get merchant ID for navigation
+          String? merchantId = widget.merchantId;
+          if (merchantId == null || merchantId.isEmpty) {
+            merchantId = await storage.read(key: "merchantId");
+          }
+
+          if (merchantId != null && merchantId.isNotEmpty) {
+            // Navigate to MerchantServicesScreen after success
+            Navigator.pop(context); // Close current screen
+          } else {
+            // If no merchant ID, go back to previous screen
+            Navigator.pop(context);
+          }
         } else if (response.statusCode == 401) {
           await storage.delete(key: "token");
+          await storage.delete(key: "merchantId"); // Also clear merchant ID
           if (mounted) {
             Navigator.pushAndRemoveUntil(
               context,
@@ -147,17 +152,24 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
     double price;
     try {
       price = double.parse(priceText);
-      if (price <= 0)
+      if (price <= 0) {
         throw const FormatException("Price must be greater than 0");
+      }
     } catch (e) {
       throw const FormatException("Invalid price format");
+    }
+
+    // Upload image if selected
+    String? uploadedImageUrl = _imageUrl;
+    if (_selectedImage != null) {
+      uploadedImageUrl = await _uploadImage(_selectedImage!);
     }
 
     final Map<String, dynamic> serviceData = {
       "serviceName": _serviceNameController.text.trim(),
       "serviceDescription": _descriptionController.text.trim(),
       "price": price,
-      "image": _imageUrl,
+      "image": uploadedImageUrl ?? '', // Send empty string if no image
       "isActive": true,
     };
 
@@ -166,15 +178,25 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
       endpoint = '/api/services/${widget.serviceId}';
       method = 'PUT';
     } else {
-      // Adding for a specific merchant
-      if (widget.merchantId == null || widget.merchantId!.isEmpty) {
-        throw Exception("Merchant ID not provided for adding a service.");
+      // Adding for a specific merchant - get merchant ID from widget or storage
+      String? merchantId = widget.merchantId;
+
+      if (merchantId == null || merchantId.isEmpty) {
+        // Try to get merchant ID from storage
+        merchantId = await storage.read(key: "merchantId");
+        print("Retrieved merchant ID from storage: $merchantId");
       }
-      endpoint = '/api/services/${widget.merchantId}';
+
+      if (merchantId == null || merchantId.isEmpty) {
+        throw Exception("Merchant ID not found. Please log in again.");
+      }
+
+      endpoint = '/api/services/$merchantId';
       method = 'POST';
     }
 
     final url = Uri.parse('$baseUrl$endpoint');
+    print("Making request to: $url");
 
     const retryOptions = RetryOptions(
       maxAttempts: 3,
@@ -198,7 +220,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
             .post(
               url,
               headers: {
-                'Authorization': 'Bearer $token',
+                'Authorization': ' Bearer $token',
                 'Content-Type': 'application/json',
               },
               body: jsonEncode(serviceData),
@@ -225,10 +247,10 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
       final pickedFile = await picker.pickImage(source: ImageSource.gallery);
       if (pickedFile != null && mounted) {
         setState(() {
-          _imageUrl = 'https://example.com/images/uploaded.jpg';
+          _selectedImage = File(pickedFile.path); // Store the file for preview
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Image selected (mock upload).")),
+          const SnackBar(content: Text("Image selected successfully.")),
         );
       }
     } catch (e) {
@@ -240,6 +262,27 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
           ),
         );
       }
+    }
+  }
+
+  Future<String> _uploadImage(File image) async {
+    // Replace with actual image upload logic
+    // Example: Upload to backend using multipart/form-data
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('http://api.touchmeapp.com/api/upload-image'), // Replace with your actual endpoint
+    );
+    String? token = await storage.read(key: "token");
+    if (token == null) throw Exception("Authentication token not found.");
+    request.headers['Authorization'] = 'Bearer $token';
+    request.files.add(await http.MultipartFile.fromPath('image', image.path));
+    final response = await request.send();
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final responseBody = await response.stream.bytesToString();
+      final json = jsonDecode(responseBody);
+      return json['imageUrl']; // Adjust based on your backend response
+    } else {
+      throw Exception("Failed to upload image: ${response.reasonPhrase}");
     }
   }
 
@@ -278,6 +321,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                 "Description",
                 _descriptionController,
                 maxLines: 3,
+                validator: null, // Make description optional
               ),
               _buildInputField(
                 "Price (LKR)",
@@ -289,8 +333,9 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                   ),
                 ],
                 validator: (value) {
-                  if (value == null || value.trim().isEmpty)
+                  if (value == null || value.trim().isEmpty) {
                     return 'Please enter price';
+                  }
                   try {
                     final price = double.parse(value.trim());
                     if (price <= 0) return 'Price must be greater than 0';
@@ -301,21 +346,63 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                 },
               ),
               const SizedBox(height: 16),
-              ElevatedButton.icon(
-                onPressed: _isSubmitting ? null : _pickImage,
-                icon: const Icon(Icons.image, color: Colors.white),
-                label: const Text(
-                  "Pick Image (Optional)",
-                  style: TextStyle(color: Colors.white),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF6A1B9A),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
-              ),
+              _selectedImage != null
+                  ? Column(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.file(
+                            _selectedImage!,
+                            width: 100,
+                            height: 100,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextButton(
+                          onPressed: _pickImage,
+                          child: const Text("Change Image"),
+                        ),
+                      ],
+                    )
+                  : _imageUrl != null && _imageUrl!.isNotEmpty
+                      ? Column(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.network(
+                                _imageUrl!,
+                                width: 100,
+                                height: 100,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => const Icon(
+                                  Icons.image_not_supported,
+                                  size: 42,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            TextButton(
+                              onPressed: _pickImage,
+                              child: const Text("Change Image"),
+                            ),
+                          ],
+                        )
+                      : ElevatedButton.icon(
+                          onPressed: _isSubmitting ? null : _pickImage,
+                          icon: const Icon(Icons.image, color: Colors.white),
+                          label: const Text(
+                            "Pick Image (Optional)",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF6A1B9A),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                        ),
               const SizedBox(height: 30),
               ElevatedButton(
                 onPressed: _isSubmitting ? null : handleSubmit,
@@ -326,15 +413,14 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                   ),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
-                child:
-                    _isSubmitting
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : Text(
-                          widget.serviceId != null
-                              ? "Update Service"
-                              : "Add Service",
-                          style: const TextStyle(color: Colors.white),
-                        ),
+                child: _isSubmitting
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : Text(
+                        widget.serviceId != null
+                            ? "Update Service"
+                            : "Add Service",
+                        style: const TextStyle(color: Colors.white),
+                      ),
               ),
             ],
           ),
@@ -358,14 +444,17 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
         keyboardType: inputType,
         inputFormatters: inputFormatters,
         maxLines: maxLines,
-        validator:
-            validator ??
-            (value) =>
-                value == null || value.trim().isEmpty
-                    ? 'Please enter $hint'
-                    : null,
+        validator: validator,
         decoration: InputDecoration(
-          hintText: hint,
+          labelText: widget.serviceId != null ? hint : null, // Show label only in edit mode
+          hintText: widget.serviceId != null ? null : hint, // Show hint only in add mode
+          floatingLabelBehavior: widget.serviceId != null
+              ? FloatingLabelBehavior.always
+              : FloatingLabelBehavior.never,
+          labelStyle: const TextStyle(
+            color: Color(0xFF6A1B9A),
+            fontWeight: FontWeight.w500,
+          ),
           hintStyle: const TextStyle(
             color: Color(0xFFB39DDB),
             fontWeight: FontWeight.w500,

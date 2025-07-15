@@ -231,7 +231,7 @@ class _SaloonOpeningHoursScreenState extends State<SaloonOpeningHoursScreen> {
                   ),
                 ),
               );
-            }).toList(),
+            }),
             const SizedBox(height: 20),
             Center(
               child: ElevatedButton(

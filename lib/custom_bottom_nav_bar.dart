@@ -2,133 +2,146 @@ import 'package:flutter/material.dart';
 
 class CustomBottomNavBar extends StatelessWidget {
   final int currentIndex;
-  final Function(int) onTap;
-  final VoidCallback? onSearchPressed;
+  final Function(int) onTabSelected;
 
   const CustomBottomNavBar({
     super.key,
     required this.currentIndex,
-    required this.onTap,
-    this.onSearchPressed,
+    required this.onTabSelected,
   });
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    const referenceWidth = 375.0;
-    final scaleFactor = screenWidth / referenceWidth;
+    final barHeight = 64.0;
+    final floatingDiameter = 68.0;
 
-    return BottomAppBar(
-      shape: const CircularNotchedRectangle(),
-      color: Colors.white,
-      child: SizedBox(
-        height: 70 * scaleFactor,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildNavItem(
-              icon: Icons.home,
-              label: 'Home',
-              index: 0,
-              isSelected: currentIndex == 0,
-              scaleFactor: scaleFactor,
+    return SizedBox(
+      height: barHeight + floatingDiameter / 2,
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.center,
+        children: [
+          // Background bar
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              height: barHeight,
+              margin: const EdgeInsets.symmetric(horizontal: 0),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  topRight: Radius.circular(24),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.07),
+                    blurRadius: 16,
+                    offset: const Offset(0, -2),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildBarItem(
+                    icon: Icons.home_rounded,
+                    label: 'Home',
+                    index: 0,
+                    selected: currentIndex == 0,
+                  ),
+                  _buildBarItem(
+                    icon: Icons.calendar_month_rounded,
+                    label: 'Calendar',
+                    index: 1,
+                    selected: currentIndex == 1,
+                  ),
+                  const SizedBox(width: 64), // Space for center button
+                  _buildBarItem(
+                    icon: Icons.favorite_rounded,
+                    label: 'Favorites',
+                    index: 2,
+                    selected: currentIndex == 2,
+                  ),
+                  _buildBarItem(
+                    icon: Icons.person_rounded,
+                    label: 'Profile',
+                    index: 3,
+                    selected: currentIndex == 3,
+                  ),
+                ],
+              ),
             ),
-            _buildNavItem(
-              icon: Icons.grid_view,
-              label: 'Appointments',
-              index: 1,
-              isSelected: currentIndex == 1,
-              scaleFactor: scaleFactor,
-            ),
-            SizedBox(width: 20 * scaleFactor),
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    IconButton(
-                      icon: Icon(
-                        currentIndex == 2 ? Icons.favorite : Icons.favorite_border,
-                        color: currentIndex == 2
-                            ? const Color(0xFF6A1B9A)
-                            : Colors.grey,
-                        size: 24 * scaleFactor,
-                      ),
-                      onPressed: () => onTap(2),
-                    ),
-                    Positioned(
-                      right: 5,
-                      top: 5,
-                      child: Container(
-                        width: 10 * scaleFactor,
-                        height: 10 * scaleFactor,
-                        decoration: const BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
+          ),
+
+          // Center Floating Button (Search)
+          Positioned(
+            bottom: barHeight - floatingDiameter / 2 - 4,
+            child: GestureDetector(
+              onTap: () => onTabSelected(4), // Index 4 for Search
+              child: Container(
+                width: floatingDiameter,
+                height: floatingDiameter,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2D1135), // Deep purple
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: const Color(0xFFEED8FF), // Soft lavender border
+                    width: 4,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
                     ),
                   ],
                 ),
-                Text(
-                  'Favorites',
-                  style: TextStyle(
-                    color: currentIndex == 2
-                        ? const Color(0xFF6A1B9A)
-                        : Colors.black,
-                    fontSize: 12 * scaleFactor,
-                  ),
+                child: Icon(
+                  Icons.search_rounded,
+                  color: Colors.white,
+                  size: 32,
                 ),
-              ],
+              ),
             ),
-            _buildNavItem(
-              icon: Icons.person_outline,
-              label: 'Profile',
-              index: 3,
-              isSelected: currentIndex == 3,
-              scaleFactor: scaleFactor,
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildNavItem({
+  Widget _buildBarItem({
     required IconData icon,
     required String label,
     required int index,
-    required bool isSelected,
-    required double scaleFactor,
+    required bool selected,
   }) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        IconButton(
-          icon: Icon(
-            icon,
-            color: isSelected ? const Color(0xFF6A1B9A) : Colors.grey,
-            size: 24 * scaleFactor,
-          ),
-          onPressed: () => onTap(index),
+    return GestureDetector(
+      onTap: () => onTabSelected(index),
+      child: SizedBox(
+        width: 60,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              color: selected ? const Color(0xFF2D1135) : Colors.grey,
+              size: 26,
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: selected ? const Color(0xFF2D1135) : Colors.grey,
+                fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
+          ],
         ),
-        Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? const Color(0xFF6A1B9A) : Colors.black,
-            fontSize: 12 * scaleFactor,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget getFloatingActionButton() {
-    return FloatingActionButton(
-      backgroundColor: const Color(0xFF6A1B9A),
-      onPressed: onSearchPressed ?? () {},
-      child: const Icon(Icons.search, color: Colors.white),
+      ),
     );
   }
 }

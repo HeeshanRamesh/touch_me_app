@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "672493454938",
+    "project_id": "touchmeapp-d3af9",
+    "storage_bucket": "touchmeapp-d3af9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:672493454938:android:bd0a8ef81fb5b28cadfa63",
+        "android_client_info": {
+          "package_name": "com.example.touch_me"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBdUF91LymNFeqxAdLz7ee1gw9F_OcSH0c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

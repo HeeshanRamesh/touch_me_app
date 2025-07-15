@@ -5,6 +5,7 @@ class Service {
   final int price;
   final String image;
   final bool isActive;
+  
 
   Service({
     required this.id,
@@ -28,6 +29,7 @@ class Service {
           json['serviceDescription']?.toString() ?? 'No description',
       price: (json['price'] is num) ? json['price'].toInt() : 0,
       image: json['image']?.toString() ?? '',
+      isActive: json['isActive'] ?? true,
     );
   }
 }

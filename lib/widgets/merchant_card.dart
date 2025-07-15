@@ -5,7 +5,7 @@ import '../models/merchant.dart';
 class MerchantCard extends StatelessWidget {
   final Merchant merchant;
   final String token;
-final String customerId;
+  final String customerId;
 
   const MerchantCard({
     super.key,
@@ -17,7 +17,7 @@ final String customerId;
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-     onTap: () {
+      onTap: () {
         if (merchant.id.isEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -26,18 +26,18 @@ final String customerId;
           );
           return;
         }
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => MerchantServiceListScreen(
-            merchantId: merchant.id,
-            outletName: merchant.outletName,
-            token: token,
-            customerId: customerId, // <--- good!
-            salonOwnerId: merchant.id, // <-- fix this if you want real owner id
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (_) => MerchantServiceListScreen(
+                  merchantId: merchant.id,
+                  outletName: merchant.outletName,
+                  token: token,
+                  customerId: customerId, // <--- good!
+                ),
           ),
-        ),
-      );
+        );
       },
 
       child: Card(

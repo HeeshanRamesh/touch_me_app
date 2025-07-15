@@ -3,8 +3,8 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class MerchantAuthService {
-  static const String baseUrl = 'http://api.touchmeapp.com/api/merchants/';
-  static const String loginUrl = 'http://api.touchmeapp.com/api/auth/login';
+  static const String baseUrl = 'http://10.0.2.2:6000/api/merchants/';
+  static const String loginUrl = 'http://10.0.2.2:6000/api/auth/login';
   static String? _token;
 
   final storage = const FlutterSecureStorage();
@@ -19,6 +19,8 @@ class MerchantAuthService {
     required String outletName,
     required String outletEmail,
     required String outletPhone,
+    required String outletPicture,
+    required String outletAddress,
     required String ownerName,
     required String ownerEmail,
     required String ownerPhone,
@@ -55,6 +57,8 @@ class MerchantAuthService {
         "name": outletName,
         "email": outletEmail,
         "phone": outletPhone,
+        "picture": outletPicture,
+        "address": outletAddress,
         "openingHours": openingHours,
       },
       "businessRegistration": {
@@ -152,11 +156,10 @@ class MerchantAuthService {
         setToken(responseData['token']);
         await storage.write(key: "token", value: responseData['token']);
 
-        // 🌟 SAVE MERCHANT ID TO STORAGE 🌟
+        // Save merchant ID to storage
         if (responseData['merchant'] != null &&
             (responseData['merchant']['id'] != null ||
                 responseData['merchant']['_id'] != null)) {
-          // Support both id and _id keys (just in case backend changes field name)
           String merchantId =
               responseData['merchant']['id'] ?? responseData['merchant']['_id'];
           await storage.write(key: "merchantId", value: merchantId);
@@ -168,6 +171,7 @@ class MerchantAuthService {
           'message': 'Login successful',
           'token': _token,
           'role': responseData['role'] ?? 'Merchant',
+          'merchant': responseData['merchant'], // Changed from 'user' to 'merchant'
         };
       } else if (response.statusCode == 401) {
         return {
@@ -195,6 +199,103 @@ class MerchantAuthService {
         'success': false,
         'message': 'Network error: ${e.toString()}',
         'token': null,
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> getMerchantProfile(String merchantId) async {
+    try {
+      final token = await storage.read(key: "token"); // Changed from "authToken" to "token"
+      if (token == null) {
+        return {
+          'success': false,
+          'message': 'No authentication token found',
+        };
+      }
+
+      final response = await http.get(
+        Uri.parse('$baseUrl$merchantId'), // Changed from profileUrl to baseUrl
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      print('Get Profile Response: Status=${response.statusCode}, Body=${response.body}');
+
+      final responseData = response.body.isNotEmpty ? jsonDecode(response.body) : {};
+
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'message': 'Profile retrieved successfully',
+          'merchant': responseData, // Changed from 'user' to 'merchant'
+        };
+      } else if (response.statusCode == 404) {
+        return {
+          'success': false,
+          'message': responseData['error']?['message'] ?? 'Profile not found',
+        };
+      } else {
+        return {
+          'success': false,
+          'message': responseData['error']?['message'] ?? 'Failed to retrieve profile: ${response.statusCode}',
+        };
+      }
+    } catch (e) {
+      print('Get Profile Error: $e');
+      return {
+        'success': false,
+        'message': 'Network error: ${e.toString()}',
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> updateMerchantProfile(String merchantId, Map<String, dynamic> updatedData) async {
+    try {
+      final token = await storage.read(key: "token"); // Changed from "authToken" to "token"
+      if (token == null) {
+        return {
+          'success': false,
+          'message': 'No authentication token found',
+        };
+      }
+
+      final response = await http.put(
+        Uri.parse('$baseUrl$merchantId'), // Changed from profileUrl to baseUrl
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(updatedData),
+      );
+
+      print('Update Profile Response: Status=${response.statusCode}, Body=${response.body}');
+
+      final responseData = response.body.isNotEmpty ? jsonDecode(response.body) : {};
+
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'message': 'Profile updated successfully',
+          'merchant': responseData, // Changed from 'user' to 'merchant'
+        };
+      } else if (response.statusCode == 400) {
+        return {
+          'success': false,
+          'message': responseData['error']?['message'] ?? 'Invalid data provided',
+        };
+      } else {
+        return {
+          'success': false,
+          'message': responseData['error']?['message'] ?? 'Failed to update profile: ${response.statusCode}',
+        };
+      }
+    } catch (e) {
+      print('Update Profile Error: $e');
+      return {
+        'success': false,
+        'message': 'Network error: ${e.toString()}',
       };
     }
   }

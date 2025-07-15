@@ -6,7 +6,7 @@ import 'package:touch_me/add_services_screen.dart';
 import '../models/service.dart';
 
 class MerchantServicesScreen extends StatefulWidget {
-  const MerchantServicesScreen({Key? key, required String merchantId}) : super(key: key);
+  const MerchantServicesScreen({super.key, required String merchantId});
 
   @override
   State<MerchantServicesScreen> createState() => _MerchantServicesScreenState();
@@ -129,7 +129,7 @@ class _MerchantServicesScreenState extends State<MerchantServicesScreen> {
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop();
-                  deleteService(service.id!);
+                  deleteService(service.id);
                 },
                 child: const Text(
                   'Delete',
@@ -178,13 +178,13 @@ class _MerchantServicesScreenState extends State<MerchantServicesScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add, color: Color(0xFF6A1B9A)),
-            onPressed: goToAdd,
-            tooltip: "Add Service",
-          ),
-        ],
+        // actions: [
+        //   IconButton(
+        //     icon: const Icon(Icons.add, color: Color(0xFF6A1B9A)),
+        //     onPressed: goToAdd,
+        //     tooltip: "Add Service",
+        //   ),
+        // ],
       ),
       body:
           _isLoading
@@ -206,11 +206,11 @@ class _MerchantServicesScreenState extends State<MerchantServicesScreen> {
                     margin: const EdgeInsets.only(bottom: 16),
                     child: ListTile(
                       leading:
-                          service.image != null && service.image!.isNotEmpty
+                          service.image.isNotEmpty
                               ? ClipRRect(
                                 borderRadius: BorderRadius.circular(12),
                                 child: Image.network(
-                                  service.image!,
+                                  service.image,
                                   width: 56,
                                   height: 56,
                                   fit: BoxFit.cover,

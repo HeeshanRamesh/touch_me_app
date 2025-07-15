@@ -1,13 +1,10 @@
-// Importing necessary libraries for Flutter UI and authentication service
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:touch_me/customer_home_content.dart';
+import 'package:touch_me/customer_home_scaffold.dart';
 import 'package:touch_me/signup_page.dart';
-import 'location_detector.dart';
 import 'package:touch_me/services/auth_service.dart';
-import 'package:touch_me/customer_home_screen.dart';
 
-// LoginPage widget to handle user login
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -22,28 +19,48 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
   String? _usernameError;
   String? _passwordError;
-  final AuthService _authService = AuthService(); // Updated to use AuthService
+  final AuthService _authService = AuthService();
   final _usernameFocus = FocusNode();
   final _passwordFocus = FocusNode();
-
-  Map<String, String>? _storedCredentials;
 
   @override
   void initState() {
     super.initState();
-    _storedCredentials = {'username': '', 'password': ''};
+    // Move argument handling to initState
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      if (args != null) {
+        setState(() {
+          _usernameController.text = args['email'] ?? ''; // Use 'email' instead of 'username'
+          _passwordController.text = args['password'] ?? '';
+        });
+        // Show welcome message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Welcome, ${args['email']}! Please login to continue.',
+            ),
+            backgroundColor: Colors.blue.shade700,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        );
+      }
+    });
     _usernameController.addListener(_validateUsername);
     _passwordController.addListener(_validatePassword);
   }
 
-  // Email validation: simple English letters, ends with @gmail.com
+  // Email validation: allow more flexible Gmail addresses
   void _validateUsername() {
     final username = _usernameController.text.trim();
     if (username.isEmpty) {
       setState(() {
         _usernameError = 'Email is required';
       });
-    } else if (!RegExp(r'^[a-zA-Z0-9]+@gmail\.com$').hasMatch(username)) {
+    } else if (!RegExp(r'^[a-zA-Z0-9._%+-]+@gmail\.com$').hasMatch(username)) {
       setState(() {
         _usernameError = 'Enter a valid Gmail address (e.g., example@gmail.com)';
       });
@@ -72,7 +89,7 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  // Handle focus change to enforce validation before moving
+  // Handle focus change
   void _handleFocusChange() {
     if (_usernameFocus.hasFocus) {
       _validateUsername();
@@ -92,7 +109,6 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  // login_page.dart (only the relevant _login method part)
   Future<void> _login() async {
     _validateUsername();
     _validatePassword();
@@ -112,6 +128,15 @@ class _LoginPageState extends State<LoginPage> {
       final response = await _authService.login(username, password);
 
       if (!mounted) return;
+          print('=== LOGIN RESPONSE DEBUG ===');
+    print('Success: ${response['success']}');
+    print('Token: ${response['token']}');
+    print('User data: ${response['user']}');
+    print('User type: ${response['user'].runtimeType}');
+    if (response['user'] != null) {
+      print('User keys: ${response['user'].keys.toList()}');
+    }
+    print('=== END DEBUG ===');
 
       if (response['success']) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -131,12 +156,11 @@ class _LoginPageState extends State<LoginPage> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder:
-                (context) => CustomerHomeContent(
-                  token: response['token'],
-                  customerId: response['user']?['id'] ?? '',
-                  user: response['user'] ?? {}, // Pass the full user map!
-                ),
+            builder: (context) => CustomerHomeScaffold(
+              token: response['token'],
+              customerId: response['user']?['id'] ?? '',
+              user: response['user'] ?? {},
+            ),
           ),
         );
       } else {
@@ -172,31 +196,8 @@ class _LoginPageState extends State<LoginPage> {
     });
   }
 
-
   @override
   Widget build(BuildContext context) {
-    final args = ModalRoute.of(context)?.settings.arguments;
-    if (args != null && args is Map<String, String>) {
-      _storedCredentials = args;
-      _usernameController.text = args['username'] ?? '';
-      _validateUsername();
-
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Welcome, ${args['username']}! Please login to continue.',
-            ),
-            backgroundColor: Colors.blue.shade700,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-        );
-      });
-    }
-
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -210,18 +211,13 @@ class _LoginPageState extends State<LoginPage> {
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: Colors.grey.shade300),
                 ),
-                child: Image.asset(
-                  'assets/app_icon.png',
-                  height: 80,
-                ),
+                child: Image.asset('assets/app_icon.png', height: 80),
               ),
               const SizedBox(height: 20),
               const Text(
                 'Welcome Back!',
                 style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Color.fromARGB(255, 127, 9, 143),
+                  fontSize: 24 ,fontWeight: FontWeight.bold ,color: Color.fromARGB(255, 127, 9, 143),
                 ),
               ),
               const SizedBox(height: 30),
@@ -245,6 +241,7 @@ class _LoginPageState extends State<LoginPage> {
                     borderSide: const BorderSide(color: Color(0xFF6A1B9A)),
                   ),
                 ),
+                keyboardType: TextInputType.emailAddress,
                 onSubmitted: (_) {
                   if (_usernameError == null) {
                     _passwordFocus.requestFocus();
@@ -262,7 +259,9 @@ class _LoginPageState extends State<LoginPage> {
                   errorText: _passwordError,
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                      _obscurePassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
                       color: Colors.grey,
                     ),
                     onPressed: () {
@@ -379,7 +378,9 @@ class _LoginPageState extends State<LoginPage> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const SignUpPage()),
+                        MaterialPageRoute(
+                          builder: (context) => const SignUpPage(),
+                        ),
                       );
                     },
                     child: const Text(

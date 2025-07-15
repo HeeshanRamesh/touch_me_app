@@ -1,3 +1,4 @@
+// models/booking.dart
 class Booking {
   final String id;
   final String customerName;
@@ -17,8 +18,10 @@ class Booking {
 
   factory Booking.fromJson(Map<String, dynamic> json) {
     return Booking(
-      id: json['_id'],
-      customerName: json['customerId']?['firstName'] ?? 'N/A',
+      id: json['_id'] ?? json['id'] ?? '',
+      customerName:
+          json['customerId']?['name'] ??
+          'N/A', // Changed from firstName to name
       serviceName: json['saloonServiceId']?['serviceName'] ?? 'N/A',
       date: json['date'] ?? '',
       time: json['time'] ?? '',

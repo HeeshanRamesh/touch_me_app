@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:touch_me/payment_page.dart';
 import 'credit_card_payment_screen.dart';
 import 'cash_payment_screen.dart';
 
@@ -36,6 +37,8 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
       );
     }
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -262,25 +265,66 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
                 ),
               ),
               const SizedBox(height: 30),
-              Center(
-                child: ElevatedButton(
-                  onPressed: _isCreditCardSelected != null ? _navigateToPaymentScreen : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _isCreditCardSelected != null ? const Color(0xFF6A1B9A) : Colors.grey,
-                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0),
+              // Button section with both Continue and Payment buttons
+              Column(
+                children: [
+                  // Continue button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _isCreditCardSelected != null ? _navigateToPaymentScreen : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _isCreditCardSelected != null ? const Color(0xFF6A1B9A) : Colors.grey,
+                        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                      ),
+                      child: const Text(
+                        'Continue',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ),
-                  child: const Text(
-                    'Continue',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
+                  const SizedBox(height: 16),
+                  // Payment button
+                  InkWell(
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const PaymentDetailsPage()),
+    );
+  },
+  child: Container(
+    width: double.infinity,
+    padding: const EdgeInsets.symmetric(vertical: 15),
+    decoration: BoxDecoration(
+      color: const Color(0xFF4CAF50),
+      borderRadius: BorderRadius.circular(8.0),
+    ),
+    child: const Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(Icons.payment, color: Colors.white, size: 20),
+        SizedBox(width: 8),
+        Text(
+          'Using PayPal',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    ),
+  ),
+),
+
+                ],
               ),
             ],
           ),

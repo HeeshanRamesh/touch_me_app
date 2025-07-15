@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:touch_me/customer_home_content.dart';
-import 'customer_home_screen.dart'; // Import InsideCategoryScreen
+// Import InsideCategoryScreen
 
 class LocationDetectorPage extends StatelessWidget {
   const LocationDetectorPage({super.key});

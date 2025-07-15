@@ -20,4 +20,10 @@ class Review {
     rating: json['rating'] ?? 0,
     createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
   );
+
+  get reviewerName => null;
+
+  get reviewerAvatarUrl => null;
+
+  get services => null;
 }

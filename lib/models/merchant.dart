@@ -3,37 +3,50 @@ class Merchant {
   final String outletName;
   final String outletPhone;
   final String logoUrl;
-  final String location;
+  final String outletPictureUrl; // NEW
   final String ownerName;
+  final String address;
+  final double? rating;
+  final int? reviews;
 
   Merchant({
     required this.id,
     required this.outletName,
     required this.outletPhone,
     required this.logoUrl,
-    required this.location,
+    required this.outletPictureUrl, // NEW
     required this.ownerName,
+    required this.address,
+    this.rating,
+    this.reviews,
   });
 
   factory Merchant.fromJson(Map<String, dynamic> json) {
-    // Debug print to inspect the incoming JSON
     print('ℹ️ Raw merchant JSON: ${json.toString()}');
 
-    // Handle ID extraction with multiple fallbacks
     final id = json['_id']?.toString() ?? json['id']?.toString() ?? '';
 
     if (id.isEmpty) {
       print('⚠️ Critical: Merchant ID is empty in JSON!');
     }
 
+    final outlet = json['outlet'] ?? {};
+    final businessRegistration = json['businessRegistration'] ?? {};
+    final owner = json['owner'] ?? {};
+
     return Merchant(
       id: id,
-      outletName: json['outlet']?['name'] ?? 'Unknown Outlet',
-      outletPhone: json['outlet']?['phone'] ?? 'N/A',
-      logoUrl: json['businessRegistration']?['logo'] ?? '',
-      location: json['outlet']?['location'] ?? 'Unknown Location',
-      ownerName: json['owner']?['name'] ?? 'Unknown Owner',
+      outletName: outlet['name'] ?? 'Unknown Outlet',
+      outletPhone: outlet['phone'] ?? 'N/A',
+      logoUrl: businessRegistration['logo'] ?? '',
+      outletPictureUrl: outlet['picture'] ?? '', // <-- NEW
+      ownerName: owner['name'] ?? 'Unknown Owner',
+      address: outlet['address'] ?? '',
+      rating:
+          (json['rating'] is int)
+              ? (json['rating'] as int).toDouble()
+              : (json['rating'] as double?) ?? 5.0,
+      reviews: json['reviews'] as int?,
     );
   }
-
 }

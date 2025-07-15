@@ -115,45 +115,45 @@ class _SelectCategoryPageState extends State<SelectCategoryPage> {
               SizedBox(height: screenHeight * 0.005),
 
               // Spa Owners
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.black, width: 1),
-                  borderRadius: BorderRadius.circular(8),
-                  color:
-                      _selectedCategory == 'Spa Owners'
-                          ? const Color.fromARGB(255, 147, 117, 165)
-                          : Colors.transparent,
-                ),
-                child: RadioListTile<String>(
-                  dense: true,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
-                  ),
-                  title: Text(
-                    'Spa Owners',
-                    style: TextStyle(fontSize: screenHeight * 0.02),
-                  ),
-                  subtitle: Text(
-                    'Those who have self service',
-                    style: TextStyle(fontSize: screenHeight * 0.016),
-                  ),
-                  value: 'Spa Owners',
-                  groupValue: _selectedCategory,
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedCategory = value!;
-                    });
-                  },
-                  activeColor: const Color(0xFF6A1B9A),
-                  secondary: Image.asset(
-                    'assets/spa_icon.png',
-                    height: screenHeight * 0.025,
-                    width: screenHeight * 0.025,
-                  ),
-                ),
-              ),
-              SizedBox(height: screenHeight * 0.005),
+              // Container(
+              //   decoration: BoxDecoration(
+              //     border: Border.all(color: Colors.black, width: 1),
+              //     borderRadius: BorderRadius.circular(8),
+              //     color:
+              //         _selectedCategory == 'Spa Owners'
+              //             ? const Color.fromARGB(255, 147, 117, 165)
+              //             : Colors.transparent,
+              //   ),
+              //   child: RadioListTile<String>(
+              //     dense: true,
+              //     contentPadding: const EdgeInsets.symmetric(
+              //       horizontal: 10,
+              //       vertical: 5,
+              //     ),
+              //     title: Text(
+              //       'Spa Owners',
+              //       style: TextStyle(fontSize: screenHeight * 0.02),
+              //     ),
+              //     subtitle: Text(
+              //       'Those who have self service',
+              //       style: TextStyle(fontSize: screenHeight * 0.016),
+              //     ),
+              //     value: 'Spa Owners',
+              //     groupValue: _selectedCategory,
+              //     onChanged: (value) {
+              //       setState(() {
+              //         _selectedCategory = value!;
+              //       });
+              //     },
+              //     activeColor: const Color(0xFF6A1B9A),
+              //     secondary: Image.asset(
+              //       'assets/spa_icon.png',
+              //       height: screenHeight * 0.025,
+              //       width: screenHeight * 0.025,
+              //     ),
+              //   ),
+              // ),
+              // SizedBox(height: screenHeight * 0.005),
 
               // Customer
               Container(
@@ -203,7 +203,7 @@ class _SelectCategoryPageState extends State<SelectCategoryPage> {
                   color: Colors.black,
                 ),
               ),
-              SizedBox(height: screenHeight * 0.03),
+               SizedBox(height: screenHeight * 0.03),
 
               // Next Button
               ElevatedButton(
