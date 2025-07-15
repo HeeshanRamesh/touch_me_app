@@ -456,30 +456,30 @@ class _MerchantProfilePageState extends State<MerchantProfilePage> {
                     const SizedBox(height: 20),
 
                     // Update Profile Button
-                    ElevatedButton(
-                      onPressed: _isLoading ||
-                              _ownerNameError != null ||
-                              _ownerPhoneError != null ||
-                              _outletNameError != null ||
-                              _outletPhoneError != null
-                          ? null
-                          : _updateProfile,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6A1B9A),
-                        minimumSize: const Size(double.infinity, 50),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: const Text(
-                        'Update Profile',
-                        style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    const SizedBox(height: 15),
+                    // ElevatedButton(
+                    //   onPressed: _isLoading ||
+                    //           _ownerNameError != null ||
+                    //           _ownerPhoneError != null ||
+                    //           _outletNameError != null ||
+                    //           _outletPhoneError != null
+                    //       ? null
+                    //       : _updateProfile,
+                    //   style: ElevatedButton.styleFrom(
+                    //     backgroundColor: const Color(0xFF6A1B9A),
+                    //     minimumSize: const Size(double.infinity, 50),
+                    //     shape: RoundedRectangleBorder(
+                    //       borderRadius: BorderRadius.circular(8),
+                    //     ),
+                    //   ),
+                    //   child: const Text(
+                    //     'Update Profile',
+                    //     style: TextStyle(
+                    //         fontSize: 18,
+                    //         color: Colors.white,
+                    //         fontWeight: FontWeight.bold),
+                    //   ),
+                    // ),
+                    // const SizedBox(height: 15),
 
                     // Logout Button
                     OutlinedButton(
