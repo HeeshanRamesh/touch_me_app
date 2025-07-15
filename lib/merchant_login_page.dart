@@ -72,101 +72,99 @@ class _MerchantLoginPageState extends State<MerchantLoginPage> {
   }
 
   Future<void> _login() async {
-    _validateUsername();
-    _validatePassword();
+  _validateUsername();
+  _validatePassword();
 
-    if (_usernameError != null || _passwordError != null) {
-      return;
-    }
+  if (_usernameError != null || _passwordError != null) {
+    return;
+  }
 
-    final username = _usernameController.text.trim();
-    final password = _passwordController.text.trim();
+  final username = _usernameController.text.trim();
+  final password = _passwordController.text.trim();
+
+  setState(() {
+    _isLoading = true;
+  });
+
+  try {
+    final response = await MerchantAuthService().loginMerchant(
+      username,
+      password,
+    );
 
     setState(() {
-      _isLoading = true;
+      _isLoading = false;
     });
 
-    try {
-      final response = await MerchantAuthService().loginMerchant(
-        username,
-        password,
-      );
+    if (!mounted) return;
 
-      setState(() {
-        _isLoading = false;
-      });
+    if (response['success']) {
+      // Debug line
+      print("Login full response: $response");
 
-      if (!mounted) return;
-
-      if (response['success']) {
-        // Debug line
-        print("Login full response: $response");
-
-        // Save merchant ID to storage
-        if (response['merchant'] != null && response['merchant']['_id'] != null) {
-          await storage.write(key: "merchantId", value: response['merchant']['_id']);
-          print("Merchant ID saved: ${response['merchant']['_id']}");
-        } else if (response['merchant'] != null && response['merchant']['id'] != null) {
-          // Try 'id' instead of '_id'
-          await storage.write(key: "merchantId", value: response['merchant']['id']);
-          print("Merchant ID saved: ${response['merchant']['id']}");
-        } else {
-          print("Warning: Merchant ID not found in response");
-          print("Merchant object: ${response['merchant']}");
-        }
-
-        // Get owner name from response['merchant']['owner']['name']
-        String ownerName = "Merchant";
-        if (response['merchant'] != null &&
-            response['merchant']['owner'] != null &&
-            response['merchant']['owner']['name'] != null &&
-            response['merchant']['owner']['name'].toString().isNotEmpty) {
-          ownerName = response['merchant']['owner']['name'];
-        }
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Login successful! Redirecting...'),
-            backgroundColor: Colors.green.shade700,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-        );
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => MerchantPage(userName: ownerName),
-          ),
-        );
+      // Save authentication token - THIS IS THE IMPORTANT PART
+      if (response['token'] != null) {
+        await storage.write(key: "authToken", value: response['token']);
+        print("Auth token saved: ${response['token']}");
+      } else if (response['accessToken'] != null) {
+        // Some APIs use 'accessToken' instead of 'token'
+        await storage.write(key: "authToken", value: response['accessToken']);
+        print("Auth token saved: ${response['accessToken']}");
+      } else if (response['jwt'] != null) {
+        // Some APIs use 'jwt' instead of 'token'
+        await storage.write(key: "authToken", value: response['jwt']);
+        print("Auth token saved: ${response['jwt']}");
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              response['message'] ??
-                  'Authentication failed. Please check your credentials or account type.',
-            ),
-            backgroundColor: Colors.red.shade700,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            duration: const Duration(seconds: 4),
-          ),
-        );
+        print("Warning: Auth token not found in response");
+        print("Available keys: ${response.keys.toList()}");
       }
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
 
-      if (!mounted) return;
+      // Save merchant ID to storage
+      if (response['merchant'] != null && response['merchant']['_id'] != null) {
+        await storage.write(key: "merchantId", value: response['merchant']['_id']);
+        print("Merchant ID saved: ${response['merchant']['_id']}");
+      } else if (response['merchant'] != null && response['merchant']['id'] != null) {
+        // Try 'id' instead of '_id'
+        await storage.write(key: "merchantId", value: response['merchant']['id']);
+        print("Merchant ID saved: ${response['merchant']['id']}");
+      } else {
+        print("Warning: Merchant ID not found in response");
+        print("Merchant object: ${response['merchant']}");
+      }
+
+      // Get owner name from response['merchant']['owner']['name']
+      String ownerName = "Merchant";
+      if (response['merchant'] != null &&
+          response['merchant']['owner'] != null &&
+          response['merchant']['owner']['name'] != null &&
+          response['merchant']['owner']['name'].toString().isNotEmpty) {
+        ownerName = response['merchant']['owner']['name'];
+      }
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Network error: ${e.toString()}'),
+          content: const Text('Login successful! Redirecting...'),
+          backgroundColor: Colors.green.shade700,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      );
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MerchantPage(userName: ownerName),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            response['message'] ??
+                'Authentication failed. Please check your credentials or account type.',
+          ),
           backgroundColor: Colors.red.shade700,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
@@ -176,7 +174,26 @@ class _MerchantLoginPageState extends State<MerchantLoginPage> {
         ),
       );
     }
+  } catch (e) {
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Network error: ${e.toString()}'),
+        backgroundColor: Colors.red.shade700,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        duration: const Duration(seconds: 4),
+      ),
+    );
   }
+}
 
   @override
   Widget build(BuildContext context) {

@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 
 // AuthService class to handle authentication-related operations
 class AuthService {
-  static const String baseUrl = 'http://10.0.2.2:6000/api/users';
+  static const String baseUrl = 'http://api.touchmeapp.com/api/users';
 
   // Method to register a new user
   Future<Map<String, dynamic>> register({
@@ -54,7 +54,7 @@ class AuthService {
   Future<Map<String, dynamic>> login(String email, String password) async {
     try {
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:6000/api/auth/login'),
+        Uri.parse('http://api.touchmeapp.com/api/auth/login'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'email': email, 'password': password}),
       );
@@ -96,7 +96,7 @@ class AuthService {
   ) async {
     try {
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:6000/api/users/profile/$userId'),
+        Uri.parse('http://api.touchmeapp.com/api/users/profile/$userId'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',

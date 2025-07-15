@@ -192,7 +192,7 @@ class _MerchantServicesScreenState extends State<MerchantServicesScreen> {
               : _isError
               ? const Center(child: Text("Failed to load services"))
               : _services.isEmpty
-              ? const Center(child: Text("No services found. Tap + to add."))
+              ? const Center(child: Text("No services found. Try to add."))
               : ListView.builder(
                 padding: const EdgeInsets.all(14),
                 itemCount: _services.length,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:touch_me/merchant_catalog_page.dart';
+import 'package:touch_me/merchant_notification.dart';
 import 'package:touch_me/merchant_profile_page.dart';
 import 'package:touch_me/merchant_services_screen.dart';
 import 'package:touch_me/merchant_setting_page.dart';
@@ -25,8 +26,9 @@ class _MerchantPageState extends State<MerchantPage> {
   String getGreeting() {
     final hour = DateTime.now().hour;
     if (hour < 12) return "Good Morning";
-    if (hour < 17) return "Good Afternoon";
-    return "Good Evening";
+    if (hour < 15) return "Good Afternoon";
+    if (hour < 19) return "Good Evening";
+    return "Good Night";
   }
 
   Widget _buildFeatureTile(
@@ -174,7 +176,7 @@ class _MerchantPageState extends State<MerchantPage> {
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => const NotificationsPage()),
+                            MaterialPageRoute(builder: (_) => const NotificationPage()),
                           );
                         },
                       ),
@@ -455,17 +457,17 @@ class ClientsPage extends StatelessWidget {
   }
 }
 
-class NotificationsPage extends StatelessWidget {
-  const NotificationsPage({super.key});
+// class NotificationsPage extends StatelessWidget {
+//   const NotificationsPage({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Notifications")),
-      body: const Center(child: Text("Notifications Page")),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(title: const Text("Notifications")),
+//       body: const Center(child: Text("Notifications Page")),
+//     );
+//   }
+// }
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});

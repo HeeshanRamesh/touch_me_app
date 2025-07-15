@@ -4,6 +4,7 @@ import 'package:touch_me/add_member_page.dart';
 import 'package:touch_me/merchant_page.dart';
 import 'package:touch_me/merchant_services_screen.dart';
 import 'package:touch_me/my_bookings_page.dart';
+import 'package:touch_me/show_member_page.dart';
 
 class TeamPage extends StatefulWidget {
   const TeamPage({Key? key}) : super(key: key);
@@ -67,7 +68,7 @@ class _TeamPageState extends State<TeamPage> {
                 children: [
                   ListTile(
                     leading: Icon(Icons.people),
-                    title: Text('Team Members'),
+                    title: Text('Add Team Members'),
                     trailing: Icon(Icons.chevron_right),
                      onTap: () {
                       Navigator.push(
@@ -78,9 +79,15 @@ class _TeamPageState extends State<TeamPage> {
                   ),
                   //Divider(height: 1),
                   ListTile(
-                    leading: Icon(Icons.schedule),
-                    title: Text('Schedule Shifts'),
+                    leading: Icon(Icons.group),
+                    title: Text('All Members'),
                     trailing: Icon(Icons.chevron_right),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => MemberListScreen()),
+                      );
+                    },
                   ),
                   //Divider(height: 1),
                   // ListTile(

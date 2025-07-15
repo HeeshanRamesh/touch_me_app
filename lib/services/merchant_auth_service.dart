@@ -3,8 +3,8 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class MerchantAuthService {
-  static const String baseUrl = 'http://10.0.2.2:6000/api/merchants/';
-  static const String loginUrl = 'http://10.0.2.2:6000/api/auth/login';
+  static const String baseUrl = 'http://api.touchmeapp.com/api/merchants/';
+  static const String loginUrl = 'http://api.touchmeapp.com/api/auth/login';
   static String? _token;
 
   final storage = const FlutterSecureStorage();
@@ -171,7 +171,8 @@ class MerchantAuthService {
           'message': 'Login successful',
           'token': _token,
           'role': responseData['role'] ?? 'Merchant',
-          'merchant': responseData['merchant'], // Changed from 'user' to 'merchant'
+          'merchant':
+              responseData['merchant'], // Changed from 'user' to 'merchant'
         };
       } else if (response.statusCode == 401) {
         return {
@@ -205,12 +206,11 @@ class MerchantAuthService {
 
   Future<Map<String, dynamic>> getMerchantProfile(String merchantId) async {
     try {
-      final token = await storage.read(key: "token"); // Changed from "authToken" to "token"
+      final token = await storage.read(
+        key: "token",
+      ); // Changed from "authToken" to "token"
       if (token == null) {
-        return {
-          'success': false,
-          'message': 'No authentication token found',
-        };
+        return {'success': false, 'message': 'No authentication token found'};
       }
 
       final response = await http.get(
@@ -221,9 +221,12 @@ class MerchantAuthService {
         },
       );
 
-      print('Get Profile Response: Status=${response.statusCode}, Body=${response.body}');
+      print(
+        'Get Profile Response: Status=${response.statusCode}, Body=${response.body}',
+      );
 
-      final responseData = response.body.isNotEmpty ? jsonDecode(response.body) : {};
+      final responseData =
+          response.body.isNotEmpty ? jsonDecode(response.body) : {};
 
       if (response.statusCode == 200) {
         return {
@@ -239,26 +242,27 @@ class MerchantAuthService {
       } else {
         return {
           'success': false,
-          'message': responseData['error']?['message'] ?? 'Failed to retrieve profile: ${response.statusCode}',
+          'message':
+              responseData['error']?['message'] ??
+              'Failed to retrieve profile: ${response.statusCode}',
         };
       }
     } catch (e) {
       print('Get Profile Error: $e');
-      return {
-        'success': false,
-        'message': 'Network error: ${e.toString()}',
-      };
+      return {'success': false, 'message': 'Network error: ${e.toString()}'};
     }
   }
 
-  Future<Map<String, dynamic>> updateMerchantProfile(String merchantId, Map<String, dynamic> updatedData) async {
+  Future<Map<String, dynamic>> updateMerchantProfile(
+    String merchantId,
+    Map<String, dynamic> updatedData,
+  ) async {
     try {
-      final token = await storage.read(key: "token"); // Changed from "authToken" to "token"
+      final token = await storage.read(
+        key: "token",
+      ); // Changed from "authToken" to "token"
       if (token == null) {
-        return {
-          'success': false,
-          'message': 'No authentication token found',
-        };
+        return {'success': false, 'message': 'No authentication token found'};
       }
 
       final response = await http.put(
@@ -270,9 +274,12 @@ class MerchantAuthService {
         body: jsonEncode(updatedData),
       );
 
-      print('Update Profile Response: Status=${response.statusCode}, Body=${response.body}');
+      print(
+        'Update Profile Response: Status=${response.statusCode}, Body=${response.body}',
+      );
 
-      final responseData = response.body.isNotEmpty ? jsonDecode(response.body) : {};
+      final responseData =
+          response.body.isNotEmpty ? jsonDecode(response.body) : {};
 
       if (response.statusCode == 200) {
         return {
@@ -283,20 +290,20 @@ class MerchantAuthService {
       } else if (response.statusCode == 400) {
         return {
           'success': false,
-          'message': responseData['error']?['message'] ?? 'Invalid data provided',
+          'message':
+              responseData['error']?['message'] ?? 'Invalid data provided',
         };
       } else {
         return {
           'success': false,
-          'message': responseData['error']?['message'] ?? 'Failed to update profile: ${response.statusCode}',
+          'message':
+              responseData['error']?['message'] ??
+              'Failed to update profile: ${response.statusCode}',
         };
       }
     } catch (e) {
       print('Update Profile Error: $e');
-      return {
-        'success': false,
-        'message': 'Network error: ${e.toString()}',
-      };
+      return {'success': false, 'message': 'Network error: ${e.toString()}'};
     }
   }
 }

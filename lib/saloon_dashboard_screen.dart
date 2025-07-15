@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:touch_me/models/booking.dart'; // Import Booking model
+import 'package:touch_me/models/booking.dart';
 import 'package:touch_me/merchant_services_screen.dart';
 import 'package:touch_me/my_bookings_page.dart';
-import 'package:intl/intl.dart'; // For date comparison
+import 'package:intl/intl.dart';
 
 class SaloonDashboardScreen extends StatefulWidget {
   final String userName;
@@ -18,19 +18,20 @@ class SaloonDashboardScreen extends StatefulWidget {
 class _SaloonDashboardScreenState extends State<SaloonDashboardScreen> {
   int _currentIndex = 0;
   List<Booking> todayCompletedBookings = [];
+  List<Booking> futureCompletedBookings = [];
   final _storage = const FlutterSecureStorage();
 
   @override
   void initState() {
     super.initState();
-    _loadTodayCompletedBookings(); // Load completed bookings for today
+    _loadCompletedBookings();
   }
 
   Future<String?> _getToken() async {
     return await _storage.read(key: 'token');
   }
 
-  Future<void> _loadTodayCompletedBookings() async {
+  Future<void> _loadCompletedBookings() async {
     final token = await _getToken();
     if (token == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -44,13 +45,17 @@ class _SaloonDashboardScreenState extends State<SaloonDashboardScreen> {
     try {
       final fetchedBookings = await fetchMerchantBookings(token);
       setState(() {
-        // Filter bookings for today that are completed
-        todayCompletedBookings =
-            fetchedBookings.where((booking) {
-              final bookingDate = DateTime.parse(booking.date);
-              final isToday = _isSameDay(bookingDate, DateTime.now());
-              return isToday && booking.status == 'Completed';
-            }).toList();
+        todayCompletedBookings = fetchedBookings.where((booking) {
+          final bookingDate = DateTime.parse(booking.date);
+          final isToday = _isSameDay(bookingDate, DateTime.now());
+          return isToday && booking.status == 'Completed';
+        }).toList();
+
+        futureCompletedBookings = fetchedBookings.where((booking) {
+          final bookingDate = DateTime.parse(booking.date);
+          final isFuture = bookingDate.isAfter(DateTime.now());
+          return isFuture && booking.status == 'Completed';
+        }).toList();
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -100,7 +105,6 @@ class _SaloonDashboardScreenState extends State<SaloonDashboardScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Greeting and Name
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
@@ -126,124 +130,24 @@ class _SaloonDashboardScreenState extends State<SaloonDashboardScreen> {
                 ],
               ),
               const SizedBox(height: 20),
-              // Appointment Date Card
-              SizedBox(
-                height: 300,
-                width: 500,
-                child: Card(
-                  margin: const EdgeInsets.all(8.0),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Align(
-                          alignment: Alignment.topLeft,
-                          child: Text(
-                            'Appointment Date',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-                        const Spacer(),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Icon(Icons.history, size: 40),
-                            SizedBox(height: 10),
-                            Text(
-                              'No recent activity',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            SizedBox(height: 5),
-                            Text(
-                              'Visit the calendar section to add some appointments',
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                        const Spacer(),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              // Your Schedule Card
-              SizedBox(
-                height: 300,
-                width: 500,
-                child: Card(
-                  margin: const EdgeInsets.all(8.0),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Align(
-                          alignment: Alignment.topLeft,
-                          child: Text(
-                            'Your Schedule',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-                        const Spacer(),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Icon(Icons.bar_chart, size: 40),
-                            SizedBox(height: 10),
-                            Text(
-                              'Your schedule is empty',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            SizedBox(height: 5),
-                            Text(
-                              'Make some appointments to get started',
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                        const Spacer(),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
               // Today's Appointments Card
-              SizedBox(
-                height: 300,
-                width: 500,
-                child: Card(
-                  margin: const EdgeInsets.all(8.0),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Align(
-                          alignment: Alignment.topLeft,
-                          child: Text(
-                            "Today's Appointments",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
+              Card(
+                margin: const EdgeInsets.all(8.0),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Today's Appointments",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
                         ),
-                        const Spacer(),
-                        todayCompletedBookings.isEmpty
-                            ? Column(
+                      ),
+                      const SizedBox(height: 10),
+                      todayCompletedBookings.isEmpty
+                          ? Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: const [
                                 Icon(Icons.history, size: 40),
@@ -262,59 +166,203 @@ class _SaloonDashboardScreenState extends State<SaloonDashboardScreen> {
                                 ),
                               ],
                             )
-                            : Expanded(
-                              child: ListView.builder(
-                                shrinkWrap: true,
-                                itemCount: todayCompletedBookings.length,
-                                itemBuilder: (context, index) {
-                                  final booking = todayCompletedBookings[index];
-                                  return Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 8.0,
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Service: ${booking.serviceName}',
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 14,
-                                          ),
+                          : ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: todayCompletedBookings.length,
+                              itemBuilder: (context, index) {
+                                final booking = todayCompletedBookings[index];
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 8.0,
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Service: ${booking.serviceName}',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 14,
                                         ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          'Customer: ${booking.customerName}',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.grey[600],
-                                          ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Customer: ${booking.customerName}',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey[600],
                                         ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          'Time: ${booking.time}',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.grey[600],
-                                          ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Time: ${booking.time}',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey[600],
                                         ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          'Status: ${booking.status}',
-                                          style: const TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.green,
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Status: ${booking.status}',
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.green,
+                                          fontWeight: FontWeight.bold,
                                         ),
-                                      ],
-                                    ),
-                                  );
-                                },
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                    ],
+                  ),
+                ),
+              ),
+              // Future Appointments Card
+              Card(
+                margin: const EdgeInsets.all(8.0),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Future Appointments',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      futureCompletedBookings.isEmpty
+                          ? Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: const [
+                                Icon(Icons.history, size: 40),
+                                SizedBox(height: 10),
+                                Text(
+                                  'No future completed appointments',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                SizedBox(height: 5),
+                                Text(
+                                  'Visit the calendar section to manage appointments',
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            )
+                          : ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: futureCompletedBookings.length,
+                              itemBuilder: (context, index) {
+                                final booking = futureCompletedBookings[index];
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 8.0,
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Service: ${booking.serviceName}',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Customer: ${booking.customerName}',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Date: ${booking.date}',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Time: ${booking.time}',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Status: ${booking.status}',
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.green,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                    ],
+                  ),
+                ),
+              ),
+              // Your Schedule Card with Navigation
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const MyBookingsPage(),
+                    ),
+                  );
+                },
+                child: Card(
+                  margin: const EdgeInsets.all(8.0),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Your Schedule',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Icon(Icons.bar_chart, size: 40),
+                            SizedBox(height: 10),
+                            Text(
+                              'Your schedule is empty',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
-                        const Spacer(),
+                            SizedBox(height: 5),
+                            Text(
+                              'Tap here to Make some appointments to get started',
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
