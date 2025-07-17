@@ -4,6 +4,7 @@ import 'package:touch_me/customer_home_content.dart';
 import 'package:touch_me/customer_home_scaffold.dart';
 import 'package:touch_me/signup_page.dart';
 import 'package:touch_me/services/auth_service.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -22,19 +23,18 @@ class _LoginPageState extends State<LoginPage> {
   final AuthService _authService = AuthService();
   final _usernameFocus = FocusNode();
   final _passwordFocus = FocusNode();
+  final _storage = const FlutterSecureStorage();
 
   @override
   void initState() {
     super.initState();
-    // Move argument handling to initState
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
       if (args != null) {
         setState(() {
-          _usernameController.text = args['email'] ?? ''; // Use 'email' instead of 'username'
+          _usernameController.text = args['email'] ?? '';
           _passwordController.text = args['password'] ?? '';
         });
-        // Show welcome message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -53,7 +53,6 @@ class _LoginPageState extends State<LoginPage> {
     _passwordController.addListener(_validatePassword);
   }
 
-  // Email validation: allow more flexible Gmail addresses
   void _validateUsername() {
     final username = _usernameController.text.trim();
     if (username.isEmpty) {
@@ -71,7 +70,6 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  // Password validation: at least 6 characters
   void _validatePassword() {
     final password = _passwordController.text.trim();
     if (password.isEmpty) {
@@ -89,7 +87,6 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  // Handle focus change
   void _handleFocusChange() {
     if (_usernameFocus.hasFocus) {
       _validateUsername();
@@ -128,17 +125,18 @@ class _LoginPageState extends State<LoginPage> {
       final response = await _authService.login(username, password);
 
       if (!mounted) return;
-          print('=== LOGIN RESPONSE DEBUG ===');
-    print('Success: ${response['success']}');
-    print('Token: ${response['token']}');
-    print('User data: ${response['user']}');
-    print('User type: ${response['user'].runtimeType}');
-    if (response['user'] != null) {
-      print('User keys: ${response['user'].keys.toList()}');
-    }
-    print('=== END DEBUG ===');
+      print('=== LOGIN RESPONSE DEBUG ===');
+      print('Success: ${response['success']}');
+      print('Token: ${response['token']}');
+      print('User data: ${response['user']}');
+      print('User type: ${response['user'].runtimeType}');
+      if (response['user'] != null) {
+        print('User keys: ${response['user'].keys.toList()}');
+      }
+      print('=== END DEBUG ===');
 
       if (response['success']) {
+        await _storage.write(key: 'auth_token', value: response['token']); // Ensure token is saved
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Login successful! Redirecting...'),
@@ -217,7 +215,9 @@ class _LoginPageState extends State<LoginPage> {
               const Text(
                 'Welcome Back!',
                 style: TextStyle(
-                  fontSize: 24 ,fontWeight: FontWeight.bold ,color: Color.fromARGB(255, 127, 9, 143),
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Color.fromARGB(255, 127, 9, 143),
                 ),
               ),
               const SizedBox(height: 30),

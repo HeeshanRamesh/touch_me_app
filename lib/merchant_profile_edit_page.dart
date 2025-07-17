@@ -4,8 +4,7 @@ import 'package:touch_me/merchant_login_page.dart';
 import 'package:touch_me/services/merchant_auth_service.dart';
 
 class MerchantProfileEditPage extends StatefulWidget {
-  //final String userName;
-  const MerchantProfileEditPage({super.key, });
+  const MerchantProfileEditPage({super.key});
 
   @override
   _MerchantProfileEditPageState createState() => _MerchantProfileEditPageState();
@@ -175,7 +174,9 @@ class _MerchantProfileEditPageState extends State<MerchantProfileEditPage> {
     _validateOutletPhone();
 
     if (_ownerNameError != null || _ownerPhoneError != null || 
-        _outletNameError != null || _outletPhoneError != null) {
+        _outletNameError != null || _outletPhoneError != null ||
+        _ownerEmailController.text.trim().isEmpty) {
+      _showErrorSnackBar('Please fill all required fields correctly');
       return;
     }
 
@@ -192,15 +193,18 @@ class _MerchantProfileEditPageState extends State<MerchantProfileEditPage> {
       final updatedData = {
         'owner': {
           'name': _ownerNameController.text.trim(),
+          'email': _ownerEmailController.text.trim(),
           'phone': _ownerPhoneController.text.trim(),
         },
         'outlet': {
           'name': _outletNameController.text.trim(),
+          'email': _outletEmailController.text.trim(),
           'phone': _outletPhoneController.text.trim(),
           'address': _outletAddressController.text.trim(),
         },
         'manager': {
           'name': _managerNameController.text.trim(),
+          'email': _managerEmailController.text.trim(),
           'phone': _managerPhoneController.text.trim(),
         },
         'bankDetails': {

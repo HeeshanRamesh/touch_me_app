@@ -345,64 +345,64 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                   }
                 },
               ),
-              const SizedBox(height: 16),
-              _selectedImage != null
-                  ? Column(
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.file(
-                            _selectedImage!,
-                            width: 100,
-                            height: 100,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        TextButton(
-                          onPressed: _pickImage,
-                          child: const Text("Change Image"),
-                        ),
-                      ],
-                    )
-                  : _imageUrl != null && _imageUrl!.isNotEmpty
-                      ? Column(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: Image.network(
-                                _imageUrl!,
-                                width: 100,
-                                height: 100,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => const Icon(
-                                  Icons.image_not_supported,
-                                  size: 42,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            TextButton(
-                              onPressed: _pickImage,
-                              child: const Text("Change Image"),
-                            ),
-                          ],
-                        )
-                      : ElevatedButton.icon(
-                          onPressed: _isSubmitting ? null : _pickImage,
-                          icon: const Icon(Icons.image, color: Colors.white),
-                          label: const Text(
-                            "Pick Image (Optional)",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF6A1B9A),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(25),
-                            ),
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                          ),
-                        ),
+              // const SizedBox(height: 16),
+              // _selectedImage != null
+              //     ? Column(
+              //         children: [
+              //           ClipRRect(
+              //             borderRadius: BorderRadius.circular(12),
+              //             child: Image.file(
+              //               _selectedImage!,
+              //               width: 100,
+              //               height: 100,
+              //               fit: BoxFit.cover,
+              //             ),
+              //           ),
+              //           const SizedBox(height: 8),
+              //           TextButton(
+              //             onPressed: _pickImage,
+              //             child: const Text("Change Image"),
+              //           ),
+              //         ],
+              //       )
+              //     : _imageUrl != null && _imageUrl!.isNotEmpty
+              //         ? Column(
+              //             children: [
+              //               ClipRRect(
+              //                 borderRadius: BorderRadius.circular(12),
+              //                 child: Image.network(
+              //                   _imageUrl!,
+              //                   width: 100,
+              //                   height: 100,
+              //                   fit: BoxFit.cover,
+              //                   errorBuilder: (_, __, ___) => const Icon(
+              //                     Icons.image_not_supported,
+              //                     size: 42,
+              //                   ),
+              //                 ),
+              //               ),
+              //               const SizedBox(height: 8),
+              //               TextButton(
+              //                 onPressed: _pickImage,
+              //                 child: const Text("Change Image"),
+              //               ),
+              //             ],
+              //           )
+              //         : ElevatedButton.icon(
+              //             onPressed: _isSubmitting ? null : _pickImage,
+              //             icon: const Icon(Icons.image, color: Colors.white),
+              //             label: const Text(
+              //               "Pick Image (Optional)",
+              //               style: TextStyle(color: Colors.white),
+              //             ),
+              //             style: ElevatedButton.styleFrom(
+              //               backgroundColor: const Color(0xFF6A1B9A),
+              //               shape: RoundedRectangleBorder(
+              //                 borderRadius: BorderRadius.circular(25),
+              //               ),
+              //               padding: const EdgeInsets.symmetric(vertical: 14),
+              //             ),
+              //           ),
               const SizedBox(height: 30),
               ElevatedButton(
                 onPressed: _isSubmitting ? null : handleSubmit,

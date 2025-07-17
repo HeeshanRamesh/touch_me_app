@@ -1,263 +1,219 @@
+
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class SaloonOpeningHoursScreen extends StatefulWidget {
-  const SaloonOpeningHoursScreen({super.key});
+  final Map<String, Map<String, String>> openingHours;
+
+  const SaloonOpeningHoursScreen({super.key, required this.openingHours});
 
   @override
   State<SaloonOpeningHoursScreen> createState() => _SaloonOpeningHoursScreenState();
 }
 
 class _SaloonOpeningHoursScreenState extends State<SaloonOpeningHoursScreen> {
-  // Map to store opening hours for each day
-  final Map<String, Map<String, dynamic>> _openingHours = {
-    'Monday': {'open': const TimeOfDay(hour: 9, minute: 0), 'close': const TimeOfDay(hour: 17, minute: 0), 'isClosed': false},
-    'Tuesday': {'open': const TimeOfDay(hour: 9, minute: 0), 'close': const TimeOfDay(hour: 17, minute: 0), 'isClosed': false},
-    'Wednesday': {'open': const TimeOfDay(hour: 9, minute: 0), 'close': const TimeOfDay(hour: 17, minute: 0), 'isClosed': false},
-    'Thursday': {'open': const TimeOfDay(hour: 9, minute: 0), 'close': const TimeOfDay(hour: 17, minute: 0), 'isClosed': false},
-    'Friday': {'open': const TimeOfDay(hour: 9, minute: 0), 'close': const TimeOfDay(hour: 17, minute: 0), 'isClosed': false},
-    'Saturday': {'open': const TimeOfDay(hour: 9, minute: 0), 'close': const TimeOfDay(hour: 17, minute: 0), 'isClosed': false},
-    'Sunday': {'open': const TimeOfDay(hour: 9, minute: 0), 'close': const TimeOfDay(hour: 17, minute: 0), 'isClosed': true},
-  };
+  late Map<String, Map<String, String>> _openingHours;
 
-  bool _isSubmitting = false;
-
-  // Format TimeOfDay to "HH:mm" string
-  String _formatTimeOfDay(TimeOfDay time) {
-    final hour = time.hour.toString().padLeft(2, '0');
-    final minute = time.minute.toString().padLeft(2, '0');
-    return '$hour:$minute';
+  @override
+  void initState() {
+    super.initState();
+    // Initialize with provided hours or default
+    _openingHours = Map.from(widget.openingHours.isNotEmpty
+        ? widget.openingHours
+        : {
+            "monday": {"open": "08:00", "close": "18:00"},
+            "tuesday": {"open": "08:00", "close": "18:00"},
+            "wednesday": {"open": "08:00", "close": "18:00"},
+            "thursday": {"open": "08:00", "close": "18:00"},
+            "friday": {"open": "08:00", "close": "18:00"},
+            "saturday": {"open": "09:00", "close": "15:00"},
+            "sunday": {"open": "", "close": ""},
+          });
   }
 
-  // Show time picker and update the selected time
-  Future<void> _selectTime(BuildContext context, String day, bool isOpenTime) async {
-    if (_openingHours[day]!['isClosed']) {
-      final TimeOfDay? picked = await showTimePicker(
-        context: context,
-        initialTime: isOpenTime ? _openingHours[day]!['open'] : _openingHours[day]!['close'],
-      );
-      if (picked != null && mounted) {
-        setState(() {
-          if (isOpenTime) {
-            _openingHours[day]!['open'] = picked;
-          } else {
-            _openingHours[day]!['close'] = picked;
-          }
-        });
-      }
-    }
-  }
-
-  // Handle form submission
-  Future<void> _handleSubmit() async {
-    setState(() {
-      _isSubmitting = true;
-    });
-
-    try {
-      // Convert opening hours to the format expected by signupMerchant
-      final Map<String, Map<String, String>> formattedHours = {};
-      _openingHours.forEach((day, times) {
-        if (times['isClosed']) {
-          formattedHours[day] = {'open': 'closed', 'close': 'closed'};
-        } else {
-          formattedHours[day] = {
-            'open': _formatTimeOfDay(times['open']),
-            'close': _formatTimeOfDay(times['close']),
-          };
-        }
+  Future<void> _selectTime(BuildContext context, String day, String type) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay(
+        hour: _parseHour(_openingHours[day]![type] ?? "08:00"),
+        minute: _parseMinute(_openingHours[day]![type] ?? "08:00"),
+      ),
+    );
+    if (picked != null) {
+      setState(() {
+        final formattedTime = DateFormat('HH:mm').format(
+          DateTime(2025, 1, 1, picked.hour, picked.minute),
+        );
+        _openingHours[day]![type] = formattedTime;
       });
-
-      // For now, print the formatted hours; integrate with MerchantAuthService in actual use
-      print('Formatted Opening Hours: $formattedHours');
-
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Opening hours saved successfully!"),
-          backgroundColor: Colors.green,
-        ),
-      );
-
-      // Navigate back or to the next step (e.g., Owner Information)
-      Navigator.pop(context, formattedHours);
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Error saving opening hours: $e"),
-          backgroundColor: Colors.red,
-        ),
-      );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isSubmitting = false;
-        });
-      }
     }
+  }
+
+  int _parseHour(String time) {
+    if (time.isEmpty) return 8;
+    return int.parse(time.split(':')[0]);
+  }
+
+  int _parseMinute(String time) {
+    if (time.isEmpty) return 0;
+    return int.parse(time.split(':')[1]);
+  }
+
+  Widget _buildFieldLabel(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6, top: 12),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontWeight: FontWeight.w600,
+          color: Color(0xFF6A1B9A),
+        ),
+      ),
+    );
+  }
+
+  BoxDecoration _fieldDecoration() {
+    return BoxDecoration(
+      border: Border.all(color: const Color(0xFF6A1B9A), width: 1.2),
+      borderRadius: BorderRadius.circular(25),
+      color: const Color(0xFFF3E5F5),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final DateTime currentDateTime = DateTime.now();
+    final String formattedDateTime = DateFormat(
+      'hh:mm a Z \'on\' EEEE, MMMM d, yyyy',
+    ).format(currentDateTime.toUtc().add(const Duration(hours: 5, minutes: 30)));
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
-        title: const Text(
-          "Saloon Opening Hours - Step 2 of 4",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
-        ),
+        title: const Text("Set Opening Hours"),
+        backgroundColor: const Color(0xFF6A1B9A),
+        foregroundColor: Colors.white,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: ListView(
-          children: [
-            const Text(
-              "Set Opening Hours",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF6A1B9A),
-              ),
-            ),
-            const SizedBox(height: 16),
-            ..._openingHours.keys.map((day) {
-              return Card(
-                elevation: 2,
-                margin: const EdgeInsets.symmetric(vertical: 8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: ListView(
+            children: [
+              const SizedBox(height: 20),
+              const Center(
+                child: Text(
+                  "Set Opening Hours",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFFB71C9B),
+                  ),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            day,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF6A1B9A),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Text(
+                  formattedDateTime,
+                  style: const TextStyle(fontSize: 14, color: Color(0xFF6A1B9A)),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 20),
+              ..._openingHours.keys.map((day) {
+                final isClosed = _openingHours[day]!['open']!.isEmpty &&
+                    _openingHours[day]!['close']!.isEmpty;
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildFieldLabel(day.capitalize()),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: isClosed ? null : () => _selectTime(context, day, 'open'),
+                            child: Container(
+                              decoration: _fieldDecoration(),
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                              child: Text(
+                                isClosed ? 'Closed' : (_openingHours[day]!['open'] ?? 'Select time'),
+                                style: TextStyle(
+                                  color: isClosed ? Colors.grey : const Color(0xFF6A1B9A),
+                                ),
+                              ),
                             ),
-                          ),
-                          Switch(
-                            value: _openingHours[day]!['isClosed'],
-                            onChanged: (value) {
-                              setState(() {
-                                _openingHours[day]!['isClosed'] = value;
-                              });
-                            },
-                            activeColor: Colors.red,
-                            inactiveThumbColor: Colors.green,
-                          ),
-                        ],
-                      ),
-                      if (!_openingHours[day]!['isClosed']) ...[
-                        const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  "Open",
-                                  style: TextStyle(color: Colors.grey),
-                                ),
-                                const SizedBox(height: 4),
-                                GestureDetector(
-                                  onTap: () => _selectTime(context, day, true),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 12,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      border: Border.all(color: const Color(0xFF6A1B9A)),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: Text(
-                                      _formatTimeOfDay(_openingHours[day]!['open']),
-                                      style: const TextStyle(fontSize: 16),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  "Close",
-                                  style: TextStyle(color: Colors.grey),
-                                ),
-                                const SizedBox(height: 4),
-                                GestureDetector(
-                                  onTap: () => _selectTime(context, day, false),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 12,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      border: Border.all(color: const Color(0xFF6A1B9A)),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: Text(
-                                      _formatTimeOfDay(_openingHours[day]!['close']),
-                                      style: const TextStyle(fontSize: 16),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ] else
-                        const Padding(
-                          padding: EdgeInsets.only(top: 8),
-                          child: Text(
-                            "Closed",
-                            style: TextStyle(color: Colors.red, fontStyle: FontStyle.italic),
                           ),
                         ),
-                    ],
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: isClosed ? null : () => _selectTime(context, day, 'close'),
+                            child: Container(
+                              decoration: _fieldDecoration(),
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                              child: Text(
+                                isClosed ? 'Closed' : (_openingHours[day]!['close'] ?? 'Select time'),
+                                style: TextStyle(
+                                  color: isClosed ? Colors.grey : const Color(0xFF6A1B9A),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Checkbox(
+                          value: isClosed,
+                          onChanged: (value) {
+                            setState(() {
+                              if (value!) {
+                                _openingHours[day]!['open'] = '';
+                                _openingHours[day]!['close'] = '';
+                              } else {
+                                _openingHours[day]!['open'] = '08:00';
+                                _openingHours[day]!['close'] = '18:00';
+                              }
+                            });
+                          },
+                          activeColor: const Color(0xFF6A1B9A),
+                        ),
+                        const Text('Closed'),
+                      ],
+                    ),
+                  ],
+                );
+              }).toList(),
+              const SizedBox(height: 20),
+              Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context, _openingHours);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF6A1B9A),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    elevation: 5,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 60,
+                      vertical: 14,
+                    ),
+                  ),
+                  child: const Text(
+                    "Save",
+                    style: TextStyle(color: Colors.white),
                   ),
                 ),
-              );
-            }),
-            const SizedBox(height: 20),
-            Center(
-              child: ElevatedButton(
-                onPressed: _isSubmitting ? null : _handleSubmit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF6A1B9A),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 60,
-                    vertical: 14,
-                  ),
-                ),
-                child: _isSubmitting
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text(
-                        "Save Opening Hours",
-                        style: TextStyle(color: Colors.white, fontSize: 16),
-                      ),
               ),
-            ),
-            const SizedBox(height: 20),
-          ],
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     );
+  }
+}
+
+extension StringExtension on String {
+  String capitalize() {
+    return "${this[0].toUpperCase()}${substring(1).toLowerCase()}";
   }
 }

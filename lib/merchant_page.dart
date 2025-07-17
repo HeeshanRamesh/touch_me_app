@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:touch_me/client_page.dart';
 import 'package:touch_me/merchant_catalog_page.dart';
 import 'package:touch_me/merchant_notification.dart';
 import 'package:touch_me/merchant_profile_page.dart';
@@ -33,7 +34,8 @@ class _MerchantPageState extends State<MerchantPage> {
 
   Widget _buildFeatureTile(
     BuildContext context, {
-    required IconData icon,
+    IconData? icon,
+    String? imagePath, // Added for optional image
     required String title,
     required Color color,
     required VoidCallback onTap,
@@ -49,7 +51,15 @@ class _MerchantPageState extends State<MerchantPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 40, color: color),
+            if (imagePath != null)
+              Image.asset(
+                imagePath,
+                width: 50,
+                height: 45,
+                color: color, // Optional: to tint the image with the color
+              )
+            else if (icon != null)
+              Icon(icon, size: 40, color: color),
             const SizedBox(height: 10),
             Text(
               title,
@@ -65,7 +75,12 @@ class _MerchantPageState extends State<MerchantPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 234, 229, 229), // Updated to a light gray background
+      backgroundColor: const Color.fromARGB(
+        255,
+        234,
+        229,
+        229,
+      ), // Updated to a light gray background
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         selectedItemColor: const Color(0xFF6A1B9A),
@@ -92,7 +107,8 @@ class _MerchantPageState extends State<MerchantPage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => MerchantServicesScreen(merchantId: merchantId),
+                  builder:
+                      (_) => MerchantServicesScreen(merchantId: merchantId),
                 ),
               );
             }
@@ -109,7 +125,9 @@ class _MerchantPageState extends State<MerchantPage> {
             if (context.mounted) {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const MerchantProfilePage(userName: '',)),
+                MaterialPageRoute(
+                  builder: (_) => const MerchantProfilePage(userName: ''),
+                ),
               );
             }
           } else {
@@ -119,7 +137,10 @@ class _MerchantPageState extends State<MerchantPage> {
           }
         },
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.category), label: "Categories"),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.category),
+            label: "Categories",
+          ),
           BottomNavigationBarItem(
             icon: Icon(Icons.calendar_today),
             label: "Bookings",
@@ -128,10 +149,6 @@ class _MerchantPageState extends State<MerchantPage> {
             icon: Icon(Icons.design_services),
             label: "Services",
           ),
-          // BottomNavigationBarItem(
-          //   icon: Icon(Icons.notifications),
-          //   label: "Notifications",
-          // ),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
         ],
       ),
@@ -156,27 +173,21 @@ class _MerchantPageState extends State<MerchantPage> {
                         ),
                       ),
                       const SizedBox(width: 4),
-                      
                     ],
-                    
                   ),
                   Row(
                     children: [
-                      // Container(
-                      //   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      //   decoration: BoxDecoration(
-                      //     color: const Color(0xFFE0D7F6),
-                      //     borderRadius: BorderRadius.circular(20),
-                      //   ),
-                        
-                      // ),
-
-                       IconButton(
-                        icon: const Icon(Icons.notifications, color: Color(0xFF6A1B9A)),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.notifications,
+                          color: Color(0xFF6A1B9A),
+                        ),
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => const NotificationPage()),
+                            MaterialPageRoute(
+                              builder: (_) => const NotificationPage(),
+                            ),
                           );
                         },
                       ),
@@ -185,23 +196,16 @@ class _MerchantPageState extends State<MerchantPage> {
                         radius: 20,
                         backgroundColor: Colors.purple,
                         child: Text(
-                          widget.userName.isNotEmpty ? widget.userName[0].toUpperCase() : '?',
+                          widget.userName.isNotEmpty
+                              ? widget.userName[0].toUpperCase()
+                              : '?',
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
                           ),
                         ),
-                      ),              
-                      // IconButton(
-                      //   icon: const Icon(Icons.person, color: Color(0xFF6A1B9A)),
-                      //   onPressed: () {
-                      //     Navigator.push(
-                      //       context,
-                      //       MaterialPageRoute(builder: (_) => const ProfilePage()),
-                      //     );
-                      //   },
-                      // ),
+                      ),
                     ],
                   ),
                 ],
@@ -251,69 +255,70 @@ class _MerchantPageState extends State<MerchantPage> {
                 children: [
                   _buildFeatureTile(
                     context,
-                    icon: Icons.home
-
-,
+                    icon: Icons.home,
                     title: "Home",
                     color: const Color(0xFF6A1B9A),
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const SaloonDashboardScreen(userName: '',)),
+                        MaterialPageRoute(
+                          builder:
+                              (_) => const SaloonDashboardScreen(userName: ''),
+                        ),
                       );
                     },
                   ),
                   _buildFeatureTile(
                     context,
-                    icon: Icons.face_2,
+                    imagePath:
+                        'assets/target-audience.png', // Use the PNG image path
+                    //icon: Icons.people,
                     title: "Clients",
                     color: const Color(0xFF6A1B9A),
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const ClientsPage()),
+                        MaterialPageRoute(
+                          builder: (_) => const CompletedBookingsPage(),
+                        ),
                       );
                     },
                   ),
                   _buildFeatureTile(
                     context,
-                    icon: Icons.calendar_today,
+                    imagePath: 'assets/booking.png', // Use the PNG image path
+                    //icon: Icons.calendar_today,
                     title: "Online Booking",
                     color: const Color(0xFFB71C9B),
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const OnlineBookingShowPage()),
+                        MaterialPageRoute(
+                          builder: (_) => const OnlineBookingShowPage(),
+                        ),
                       );
                     },
                   ),
-                  // _buildFeatureTile(
-                  //   context,
-                  //   icon: Icons.store,
-                  //   title: "Catalog",
-                  //   color: const Color(0xFF6A1B9A),
-                  //   onTap: () {
-                  //     Navigator.push(
-                  //       context,
-                  //       MaterialPageRoute(builder: (_) => const MerchantCatalogPage()),
-                  //     );
-                  //   },
-                  // ),
                   _buildFeatureTile(
                     context,
-                    icon: Icons.design_services,
+                    imagePath: 'assets/consulting.png',
+
+                    //icon: Icons.handshake,
                     title: "Services",
                     color: const Color(0xFFB71C9B),
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const ServiceMerchantPage()),
+                        MaterialPageRoute(
+                          builder: (_) => const ServiceMerchantPage(),
+                        ),
                       );
                     },
                   ),
                   _buildFeatureTile(
                     context,
-                    icon: Icons.description,
+                    imagePath: 'assets/result.png',
+                    //icon: Icons.insert_chart,
                     title: "Reports",
                     color: const Color(0xFF6A1B9A),
                     onTap: () {
@@ -325,29 +330,37 @@ class _MerchantPageState extends State<MerchantPage> {
                   ),
                   _buildFeatureTile(
                     context,
-                    icon: Icons.settings,
+                    imagePath: 'assets/settings.png', // Use the PNG image path
                     title: "Settings",
-                    color: const Color(0xFF6A1B9A),
+                    color: const Color(0xFF6A1B9A), // Purple color
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const MerchantSettingPage()),
+                        MaterialPageRoute(
+                          builder: (_) => const MerchantSettingPage(),
+                        ),
                       );
                     },
                   ),
                   _buildFeatureTile(
                     context,
-                    icon: Icons.group,
+                    imagePath:
+                        'assets/group-chat.png', // Use the PNG image path
+                    //icon: Icons.group,
                     title: "Team",
                     color: const Color(0xFFB71C9B),
                     onTap: () async {
                       final storage = const FlutterSecureStorage();
-                      String? merchantId = await storage.read(key: "merchantId");
+                      String? merchantId = await storage.read(
+                        key: "merchantId",
+                      );
                       if (merchantId == null || merchantId.isEmpty) {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text("Merchant ID not found. Please login again."),
+                              content: Text(
+                                "Merchant ID not found. Please login again.",
+                              ),
                               backgroundColor: Colors.red,
                             ),
                           );
@@ -357,9 +370,7 @@ class _MerchantPageState extends State<MerchantPage> {
                       if (context.mounted) {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (_) => TeamPage(),
-                          ),
+                          MaterialPageRoute(builder: (_) => TeamPage()),
                         );
                       }
                     },
@@ -367,75 +378,6 @@ class _MerchantPageState extends State<MerchantPage> {
                 ],
               ),
               const SizedBox(height: 30),
-              // Customer Acquisition Chart
-              // Container(
-              //   padding: const EdgeInsets.all(16),
-              //   decoration: BoxDecoration(
-              //     color: const Color(0xFFF9F9F9),
-              //     borderRadius: BorderRadius.circular(20),
-              //   ),
-              //   child: Column(
-              //     crossAxisAlignment: CrossAxisAlignment.start,
-              //     children: [
-              //       const Text(
-              //         "Overall Customer Acquisition",
-              //         style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              //       ),
-              //       const SizedBox(height: 20),
-              //       SizedBox(
-              //         height: 200,
-              //         child: BarChart(
-              //           BarChartData(
-              //             barGroups: List.generate(12, (index) {
-              //               return BarChartGroupData(
-              //                 x: index,
-              //                 barRods: [
-              //                   BarChartRodData(
-              //                     toY: (index + 5) * 5.0,
-              //                     color: const Color(0xFF6A1B9A),
-              //                     width: 14,
-              //                     borderRadius: BorderRadius.circular(4),
-              //                   ),
-              //                 ],
-              //               );
-              //             }),
-              //             titlesData: FlTitlesData(
-              //               bottomTitles: AxisTitles(
-              //                 sideTitles: SideTitles(
-              //                   showTitles: true,
-              //                   getTitlesWidget: (value, meta) {
-              //                     const months = [
-              //                       'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
-              //                       'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC',
-              //                     ];
-              //                     return Text(
-              //                       months[value.toInt() % 12],
-              //                       style: const TextStyle(fontSize: 10),
-              //                     );
-              //                   },
-              //                 ),
-              //               ),
-              //               leftTitles: AxisTitles(
-              //                 sideTitles: SideTitles(
-              //                   showTitles: true,
-              //                   reservedSize: 30,
-              //                 ),
-              //               ),
-              //               topTitles: const AxisTitles(
-              //                 sideTitles: SideTitles(showTitles: false),
-              //               ),
-              //               rightTitles: const AxisTitles(
-              //                 sideTitles: SideTitles(showTitles: false),
-              //               ),
-              //             ),
-              //             gridData: const FlGridData(show: false),
-              //             borderData: FlBorderData(show: false),
-              //           ),
-              //         ),
-              //       ),
-              //     ],
-              //   ),
-              // ),
             ],
           ),
         ),
@@ -457,18 +399,6 @@ class ClientsPage extends StatelessWidget {
   }
 }
 
-// class NotificationsPage extends StatelessWidget {
-//   const NotificationsPage({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(title: const Text("Notifications")),
-//       body: const Center(child: Text("Notifications Page")),
-//     );
-//   }
-// }
-
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
@@ -480,7 +410,6 @@ class ProfilePage extends StatelessWidget {
     );
   }
 }
-
 
 class ReportsPage extends StatelessWidget {
   const ReportsPage({super.key});

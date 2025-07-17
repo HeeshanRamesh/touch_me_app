@@ -19,7 +19,9 @@ class MerchantListScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(serviceName),
+        title: Text(serviceName,
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: const Color(0xFF6A1B9A),
       ),
       body: FutureBuilder<List<Merchant>>(

@@ -61,7 +61,7 @@ class _CustomerHomeScaffoldState extends State<CustomerHomeScaffold> {
         body =  const AppointmentScreen();
         break;
       case 2:
-        body = const FavouriteScreen();
+        body = const FavouriteScreen(token: '', customerId: '',);
         break;
       case 3:
         body = const ProfileScreen();

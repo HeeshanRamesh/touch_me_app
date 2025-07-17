@@ -22,12 +22,12 @@ class Merchant {
   });
 
   factory Merchant.fromJson(Map<String, dynamic> json) {
-    print('ℹ️ Raw merchant JSON: ${json.toString()}');
+    print('ℹ Raw merchant JSON: ${json.toString()}');
 
     final id = json['_id']?.toString() ?? json['id']?.toString() ?? '';
 
     if (id.isEmpty) {
-      print('⚠️ Critical: Merchant ID is empty in JSON!');
+      print('⚠ Critical: Merchant ID is empty in JSON!');
     }
 
     final outlet = json['outlet'] ?? {};

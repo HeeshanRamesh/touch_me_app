@@ -290,40 +290,6 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  // Payment button
-                  InkWell(
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const PaymentDetailsPage()),
-    );
-  },
-  child: Container(
-    width: double.infinity,
-    padding: const EdgeInsets.symmetric(vertical: 15),
-    decoration: BoxDecoration(
-      color: const Color(0xFF4CAF50),
-      borderRadius: BorderRadius.circular(8.0),
-    ),
-    child: const Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(Icons.payment, color: Colors.white, size: 20),
-        SizedBox(width: 8),
-        Text(
-          'Using PayPal',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ],
-    ),
-  ),
-),
-
                 ],
               ),
             ],

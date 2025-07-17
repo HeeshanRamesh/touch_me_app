@@ -1,117 +1,114 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../models/merchant.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'merchant_service_list_screen.dart'; // Import for navigation
 
 class FavouriteScreen extends StatefulWidget {
-  const FavouriteScreen({super.key});
+  final String token; // Add token for navigation
+  final String customerId; // Add customerId for navigation
+
+  const FavouriteScreen({
+    super.key,
+    required this.token,
+    required this.customerId,
+  });
 
   @override
   _FavouriteScreenState createState() => _FavouriteScreenState();
 }
 
 class _FavouriteScreenState extends State<FavouriteScreen> {
-  // Sample list of favorite salons and spas
-  final List<Map<String, dynamic>> _favoriteSalons = [
-    {
-      'name': 'Crazy & Windy',
-      'rating': 5.0,
-      'reviews': 127,
-      'location': 'No 6/1, Main Street',
-      'imagePath': 'assets/favourites/crazy_windy.png',
-      'isFavorite': true,
-    },
-    {
-      'name': 'Miro & Miro',
-      'rating': 5.0,
-      'reviews': 127,
-      'location': 'No 6/1, Main Street',
-      'imagePath': 'assets/favourites/miro_miro.png',
-      'isFavorite': true,
-    },
-    {
-      'name': 'Saloon & Spa by William',
-      'rating': 5.0,
-      'reviews': 127,
-      'location': 'No 6/1, Main Street',
-      'imagePath': 'assets/favourites/saloon_spa_william.png',
-      'isFavorite': true,
-    },
-    {
-      'name': 'BNY Saloon',
-      'rating': 5.0,
-      'reviews': 127,
-      'location': 'No 6/1, Main Street',
-      'imagePath': 'assets/favourites/bny_saloon.png',
-      'isFavorite': true,
-    },
-    {
-      'name': 'sny Saloon',
-      'rating': 4.5,
-      'reviews': 127,
-      'location': 'No 6/1, Main Street',
-      'imagePath': 'assets/favourites/sny_spa.png',
-      'isFavorite': true,
-    },
-    {
-      'name': 'scy Saloon',
-      'rating': 4.0,
-      'reviews': 127,
-      'location': 'No 6/1, Main Street',
-      'imagePath': 'assets/favourites/scy_spa.png',
-      'isFavorite': true,
-    },
-    {
-      'name': 'Ladies Magic',
-      'rating': 5.0,
-      'reviews': 127,
-      'location': 'No 6/1, Main Street',
-      'imagePath': 'assets/favourites/ladies_magic.png',
-      'isFavorite': true,
-    },
-  ];
-
-  String _selectedFilter = 'All'; // Track the selected filter
-  List<Map<String, dynamic>> _filteredSalons = []; // Filtered list
+  String _selectedFilter = 'All';
+  List<Map<String, dynamic>> _filteredSalons = [];
+  List<Merchant> _favoriteMerchants = [];
 
   @override
   void initState() {
     super.initState();
-    _filteredSalons = _favoriteSalons; // Initially show all
+    _loadFavoriteMerchants();
   }
 
-  void _toggleFavorite(int index) {
+  // Load favorite merchants from SharedPreferences and fetch their details
+  Future<void> _loadFavoriteMerchants() async {
+    final prefs = await SharedPreferences.getInstance();
+    final favoriteIds = prefs.getStringList('favorite_salons') ?? [];
+    if (favoriteIds.isEmpty) {
+      setState(() {
+        _filteredSalons = [];
+        _favoriteMerchants = [];
+      });
+      return;
+    }
+
+    // Fetch merchant details from API
+    final merchants = await _fetchMerchants(favoriteIds);
     setState(() {
-      _filteredSalons[index]['isFavorite'] = !_filteredSalons[index]['isFavorite'];
-      if (!_filteredSalons[index]['isFavorite']) {
-        _filteredSalons.removeAt(index);
-        // Update the original list as well
-        final salonName = _filteredSalons[index]['name'];
-        final originalIndex = _favoriteSalons.indexWhere((salon) => salon['name'] == salonName);
-        if (originalIndex != -1) {
-          _favoriteSalons[originalIndex]['isFavorite'] = false;
-        }
-      }
-      // Reapply the filter after toggling favorite
+      _favoriteMerchants = merchants;
       _applyFilter(_selectedFilter);
     });
   }
 
+  // Fetch merchant details from API
+  Future<List<Merchant>> _fetchMerchants(List<String> ids) async {
+    try {
+      final response = await http.get(
+        Uri.parse('http://api.touchmeapp.com/api/merchants?ids=${ids.join(',')}'),
+        headers: {'Content-Type': 'application/json'},
+      );
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        return data.map((json) => Merchant.fromJson(json)).toList();
+      } else {
+        debugPrint('Failed to fetch merchants: ${response.statusCode}');
+        return [];
+      }
+    } catch (e) {
+      debugPrint('Error fetching merchants: $e');
+      return [];
+    }
+  }
+
+  // Toggle favorite status and save to SharedPreferences
+  Future<void> _toggleFavorite(int index) async {
+    final prefs = await SharedPreferences.getInstance();
+    final favorites = prefs.getStringList('favorite_salons') ?? [];
+    final merchantId = _filteredSalons[index]['merchantId'];
+
+    setState(() {
+      favorites.remove(merchantId);
+      prefs.setStringList('favorite_salons', favorites);
+      _filteredSalons.removeAt(index);
+      _favoriteMerchants.removeWhere((merchant) => merchant.id == merchantId);
+      _applyFilter(_selectedFilter); // Re-apply filter to update UI
+    });
+  }
+
+  // Apply filter to _filteredSalons
   void _applyFilter(String filter) {
+    final prefs = SharedPreferences.getInstance();
     setState(() {
       _selectedFilter = filter;
-      if (filter == 'All') {
-        _filteredSalons = _favoriteSalons.where((salon) => salon['isFavorite']).toList();
-      } else if (filter == 'Salons') {
-        _filteredSalons = _favoriteSalons
-            .where((salon) =>
-                salon['isFavorite'] &&
-                (salon['name'].toString().toLowerCase().contains('saloon') ||
-                    salon['name'].toString().toLowerCase().contains('salon')))
-            .toList();
-      } else if (filter == 'Spas') {
-        _filteredSalons = _favoriteSalons
-            .where((salon) =>
-                salon['isFavorite'] && salon['name'].toString().toLowerCase().contains('spa'))
-            .toList();
-      }
+      _filteredSalons = _favoriteMerchants
+          .where((merchant) {
+            if (filter == 'All') return true;
+            if (filter == 'Salons') {
+              return merchant.outletName.toLowerCase().contains('saloon') ||
+                  merchant.outletName.toLowerCase().contains('salon');
+            }
+            return false;
+          })
+          .map((merchant) => {
+                'name': merchant.outletName,
+                'rating': 5.0, // Static rating for consistency
+                'reviews': 127, // Static reviews for consistency
+                'location': '12/214, ${merchant.outletPhone}',
+                'imagePath': merchant.logoUrl,
+                'isFavorite': true, // All merchants here are favorites
+                'merchantId': merchant.id,
+              })
+          .toList();
     });
   }
 
@@ -119,7 +116,7 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 244, 244, 245), // Light grey color
+        backgroundColor: const Color.fromARGB(255, 244, 244, 245),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
@@ -136,7 +133,6 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
       ),
       body: Column(
         children: [
-          // Filter Buttons
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Row(
@@ -144,16 +140,15 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
               children: [
                 _buildFilterButton('All', _selectedFilter == 'All'),
                 _buildFilterButton('Salons', _selectedFilter == 'Salons'),
-                _buildFilterButton('Spas', _selectedFilter == 'Spas'),
+                // _buildFilterButton('Spas', _selectedFilter == 'Spas'),
               ],
             ),
           ),
-          // Salon/Spa List
           Expanded(
             child: _filteredSalons.isEmpty
                 ? const Center(
                     child: Text(
-                      'No favorite salons or spas yet.',
+                      'No favorite salons yet.',
                       style: TextStyle(fontSize: 16, color: Colors.grey),
                     ),
                   )
@@ -162,14 +157,30 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
                     itemCount: _filteredSalons.length,
                     itemBuilder: (context, index) {
                       final salon = _filteredSalons[index];
-                      return _buildSalonCard(
-                        salon['name'],
-                        salon['rating'],
-                        salon['reviews'],
-                        salon['location'],
-                        salon['imagePath'],
-                        salon['isFavorite'],
-                        index,
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => MerchantServiceListScreen(
+                                merchantId: salon['merchantId'],
+                                outletName: salon['name'],
+                                token: widget.token,
+                                customerId: widget.customerId,
+                                profileImageUrl: salon['imagePath'],
+                              ),
+                            ),
+                          );
+                        },
+                        child: _buildSalonCard(
+                          salon['name'],
+                          salon['rating'],
+                          salon['reviews'],
+                          salon['location'],
+                          salon['imagePath'],
+                          salon['isFavorite'],
+                          index,
+                        ),
                       );
                     },
                   ),
@@ -216,7 +227,6 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
       ),
       child: Row(
         children: [
-          // Image
           Container(
             width: 100,
             height: 100,
@@ -226,16 +236,14 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
                 bottomLeft: Radius.circular(12),
               ),
               image: DecorationImage(
-                image: AssetImage(imagePath),
+                image: NetworkImage(imagePath),
                 fit: BoxFit.cover,
                 onError: (exception, stackTrace) {
                   debugPrint('Error loading $imagePath: $exception');
                 },
               ),
             ),
-            child: null,
           ),
-          // Details
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(12.0),
@@ -245,11 +253,13 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        name,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                      Expanded(
+                        child: Text(
+                          name,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                       IconButton(
@@ -274,6 +284,7 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
                     ],
                   ),
                   const SizedBox(height: 4),
+                  
                   Row(
                     children: [
                       const Icon(Icons.location_pin, color: Colors.grey, size: 16),

@@ -85,7 +85,7 @@ class _TeamPageState extends State<TeamPage> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => MemberListScreen()),
+                        MaterialPageRoute(builder: (context) => GetMembersScreen()),
                       );
                     },
                   ),
