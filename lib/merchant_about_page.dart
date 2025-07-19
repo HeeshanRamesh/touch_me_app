@@ -13,6 +13,30 @@ class MerchantAboutScreen extends StatelessWidget {
     }
   }
 
+  Future<void> _launchEmail(String email) async {
+    final Uri emailUri = Uri(
+      scheme: 'mailto',
+      path: email,
+    );
+    if (await canLaunchUrl(emailUri)) {
+      await launchUrl(emailUri);
+    } else {
+      throw 'Could not launch email';
+    }
+  }
+
+  Future<void> _launchPhone(String phone) async {
+    final Uri phoneUri = Uri(
+      scheme: 'tel',
+      path: phone,
+    );
+    if (await canLaunchUrl(phoneUri)) {
+      await launchUrl(phoneUri);
+    } else {
+      throw 'Could not launch phone';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -149,14 +173,45 @@ class MerchantAboutScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          '📧 Email: touchme.bookings@outlook.com\n'
-                          '📞 Hotline: +94 77 763 5225',
+                          '📧 Email:',
                           style: TextStyle(
                             fontSize: 16,
                             color: Colors.black54,
                           ),
                         ),
                         const SizedBox(height: 4),
+                        GestureDetector(
+                          onTap: () => _launchEmail('touchme.bookings@outlook.com'),
+                          child: const Text(
+                            'touchme.bookings@outlook.com',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.blue,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          '📞 Hotline:',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.black54,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        GestureDetector(
+                          onTap: () => _launchPhone('+94777635225'),
+                          child: const Text(
+                            '+94 77 763 5225',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.blue,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
                         const Text(
                           '🌐 Website:',
                           style: TextStyle(

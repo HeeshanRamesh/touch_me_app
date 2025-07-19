@@ -248,13 +248,7 @@ class _MerchantServicesScreenState extends State<MerchantServicesScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add, color: Color(0xFF6A1B9A)),
-            onPressed: goToAdd,
-            tooltip: "Add Service",
-          ),
-        ],
+        
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
