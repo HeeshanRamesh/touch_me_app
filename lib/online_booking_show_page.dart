@@ -6,7 +6,8 @@ import 'package:touch_me/my_bookings_page.dart';
 import 'package:touch_me/merchant_services_screen.dart';
 
 class OnlineBookingShowPage extends StatefulWidget {
-  const OnlineBookingShowPage({Key? key}) : super(key: key);
+  final String userName;
+  const OnlineBookingShowPage({Key? key, required this.userName}) : super(key: key);
 
   @override
   State<OnlineBookingShowPage> createState() => _OnlineBookingShowPageState();
@@ -28,7 +29,6 @@ class _OnlineBookingShowPageState extends State<OnlineBookingShowPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Greeting and Name
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
@@ -36,13 +36,10 @@ class _OnlineBookingShowPageState extends State<OnlineBookingShowPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        child: const Text(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        child: Text(
                           "Booking Details",
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Color(0xFF000000),
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -54,7 +51,6 @@ class _OnlineBookingShowPageState extends State<OnlineBookingShowPage> {
                 ],
               ),
               const SizedBox(height: 20),
-              // Appointment Date Card
               Card(
                 margin: const EdgeInsets.all(16.0),
                 shape: RoundedRectangleBorder(
@@ -67,24 +63,24 @@ class _OnlineBookingShowPageState extends State<OnlineBookingShowPage> {
                   padding: const EdgeInsets.all(8.0),
                   children: [
                     ListTile(
-                      leading: Icon(Icons.calendar_month),
-                      title: Text('Booking Calender'),
-                      trailing: Icon(Icons.chevron_right),
+                      leading: const Icon(Icons.calendar_month),
+                      title: const Text('Booking Calendar'),
+                      trailing: const Icon(Icons.chevron_right),
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => AppointmentBookingPage()),
+                          MaterialPageRoute(builder: (context) => const AppointmentBookingPage()),
                         );
                       },
                     ),
                     ListTile(
-                      leading: Icon(Icons.schedule),
-                      title: Text('My Appointments'),
-                      trailing: Icon(Icons.chevron_right),
+                      leading: const Icon(Icons.schedule),
+                      title: const Text('My Appointments'),
+                      trailing: const Icon(Icons.chevron_right),
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => MyBookingsPage()),
+                          MaterialPageRoute(builder: (context) => const MyBookingsPage()),
                         );
                       },
                     ),
@@ -101,10 +97,8 @@ class _OnlineBookingShowPageState extends State<OnlineBookingShowPage> {
         unselectedItemColor: Colors.grey,
         onTap: (index) async {
           if (index == 2) {
-            // Load merchantId from secure storage
             final storage = const FlutterSecureStorage();
             String? merchantId = await storage.read(key: "merchantId");
-
             if (merchantId == null || merchantId.isEmpty) {
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -116,7 +110,6 @@ class _OnlineBookingShowPageState extends State<OnlineBookingShowPage> {
               }
               return;
             }
-
             if (context.mounted) {
               Navigator.push(
                 context,
@@ -126,15 +119,13 @@ class _OnlineBookingShowPageState extends State<OnlineBookingShowPage> {
               );
             }
           } else if (index == 0) {
-            // Bookings tab
             if (context.mounted) {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const MerchantPage(userName: 'userName',)),
+                MaterialPageRoute(builder: (_) => MerchantPage(userName: widget.userName)),
               );
             }
           } else if (index == 1) {
-            // Bookings tab
             if (context.mounted) {
               Navigator.push(
                 context,
@@ -149,18 +140,8 @@ class _OnlineBookingShowPageState extends State<OnlineBookingShowPage> {
         },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.category), label: "Categories"),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
-            label: "Bookings",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.design_services),
-            label: "Services",
-          ),
-          // BottomNavigationBarItem(
-          //   icon: Icon(Icons.notifications),
-          //   label: "Notifications",
-          // ),
+          BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: "Bookings"),
+          BottomNavigationBarItem(icon: Icon(Icons.design_services), label: "Services"),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
         ],
       ),

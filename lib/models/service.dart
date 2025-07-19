@@ -5,6 +5,7 @@ class Service {
   final int price;
   final String image;
   final bool isActive;
+  final String? duration; 
   
 
   Service({
@@ -14,6 +15,7 @@ class Service {
     required this.price,
     required this.image,
     this.isActive = true,
+    this.duration,
   });
 
   factory Service.fromJson(Map<String, dynamic> json) {
@@ -30,6 +32,7 @@ class Service {
       price: (json['price'] is num) ? json['price'].toInt() : 0,
       image: json['image']?.toString() ?? '',
       isActive: json['isActive'] ?? true,
+      duration: json['duration']?.toString() ?? '',
     );
   }
 }

@@ -9,13 +9,13 @@ import 'package:touch_me/merchant_setting_page.dart';
 import 'package:touch_me/my_bookings_page.dart';
 import 'package:touch_me/online_booking_show_page.dart';
 import 'package:touch_me/report_page.dart';
-import 'package:touch_me/saloon_dashboard_screen.dart';
 import 'package:touch_me/service_merchant_page.dart';
 import 'package:touch_me/team_page.dart';
+import 'package:touch_me/saloon_dashboard_screen.dart';
 
 class MerchantPage extends StatefulWidget {
-  final String userName;
-  const MerchantPage({super.key, required this.userName});
+  final String? userName; // Make userName nullable
+  const MerchantPage({super.key, this.userName});
 
   @override
   State<MerchantPage> createState() => _MerchantPageState();
@@ -23,6 +23,21 @@ class MerchantPage extends StatefulWidget {
 
 class _MerchantPageState extends State<MerchantPage> {
   int _currentIndex = 0;
+  String _displayName = ''; // Store the display name
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserName();
+  }
+
+  Future<void> _loadUserName() async {
+    final storage = const FlutterSecureStorage();
+    String? storedUserName = await storage.read(key: "userName");
+    setState(() {
+      _displayName = storedUserName ?? widget.userName ?? 'Unknown';
+    });
+  }
 
   String getGreeting() {
     final hour = DateTime.now().hour;
@@ -75,22 +90,15 @@ class _MerchantPageState extends State<MerchantPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(
-        255,
-        234,
-        229,
-        229,
-      ), // Updated to a light gray background
+      backgroundColor: const Color.fromARGB(255, 234, 229, 229),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         selectedItemColor: const Color(0xFF6A1B9A),
         unselectedItemColor: Colors.grey,
         onTap: (index) async {
           if (index == 2) {
-            // Load merchantId from secure storage
             final storage = const FlutterSecureStorage();
             String? merchantId = await storage.read(key: "merchantId");
-
             if (merchantId == null || merchantId.isEmpty) {
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -102,18 +110,15 @@ class _MerchantPageState extends State<MerchantPage> {
               }
               return;
             }
-
             if (context.mounted) {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder:
-                      (_) => MerchantServicesScreen(merchantId: merchantId),
+                  builder: (_) => MerchantServicesScreen(merchantId: merchantId),
                 ),
               );
             }
           } else if (index == 1) {
-            // Bookings tab
             if (context.mounted) {
               Navigator.push(
                 context,
@@ -121,12 +126,11 @@ class _MerchantPageState extends State<MerchantPage> {
               );
             }
           } else if (index == 3) {
-            // Bookings tab
             if (context.mounted) {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => const MerchantProfilePage(userName: ''),
+                  builder: (_) => MerchantProfilePage(userName: _displayName),
                 ),
               );
             }
@@ -137,18 +141,9 @@ class _MerchantPageState extends State<MerchantPage> {
           }
         },
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.category),
-            label: "Categories",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
-            label: "Bookings",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.design_services),
-            label: "Services",
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.category), label: "Categories"),
+          BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: "Bookings"),
+          BottomNavigationBarItem(icon: Icon(Icons.design_services), label: "Services"),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
         ],
       ),
@@ -158,7 +153,6 @@ class _MerchantPageState extends State<MerchantPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header: Greeting, Name, Location, and Profile/Notifications
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -178,16 +172,11 @@ class _MerchantPageState extends State<MerchantPage> {
                   Row(
                     children: [
                       IconButton(
-                        icon: const Icon(
-                          Icons.notifications,
-                          color: Color(0xFF6A1B9A),
-                        ),
+                        icon: const Icon(Icons.notifications, color: Color(0xFF6A1B9A)),
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(
-                              builder: (_) => const NotificationPage(),
-                            ),
+                            MaterialPageRoute(builder: (_) => const NotificationPage()),
                           );
                         },
                       ),
@@ -196,9 +185,7 @@ class _MerchantPageState extends State<MerchantPage> {
                         radius: 20,
                         backgroundColor: Colors.purple,
                         child: Text(
-                          widget.userName.isNotEmpty
-                              ? widget.userName[0].toUpperCase()
-                              : '?',
+                          _displayName.isNotEmpty ? _displayName[0].toUpperCase() : '?',
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -211,7 +198,6 @@ class _MerchantPageState extends State<MerchantPage> {
                 ],
               ),
               const SizedBox(height: 20),
-              // Search Bar
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 height: 50,
@@ -244,7 +230,6 @@ class _MerchantPageState extends State<MerchantPage> {
                 ),
               ),
               const SizedBox(height: 50),
-              // Feature Tiles Grid
               GridView.count(
                 crossAxisCount: 3,
                 crossAxisSpacing: 10,
@@ -261,64 +246,49 @@ class _MerchantPageState extends State<MerchantPage> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder:
-                              (_) => const SaloonDashboardScreen(userName: ''),
-                        ),
+                        MaterialPageRoute(builder: (_) => const SaloonDashboardScreen(userName: '')),
                       );
                     },
                   ),
                   _buildFeatureTile(
                     context,
-                    imagePath:
-                        'assets/target-audience.png', // Use the PNG image path
-                    //icon: Icons.people,
+                    imagePath: 'assets/target-audience.png',
                     title: "Clients",
                     color: const Color(0xFF6A1B9A),
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (_) => const CompletedBookingsPage(),
-                        ),
+                        MaterialPageRoute(builder: (_) => const CompletedBookingsPage()),
                       );
                     },
                   ),
                   _buildFeatureTile(
                     context,
-                    imagePath: 'assets/booking.png', // Use the PNG image path
-                    //icon: Icons.calendar_today,
+                    imagePath: 'assets/booking.png',
                     title: "Online Booking",
                     color: const Color(0xFFB71C9B),
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (_) => const OnlineBookingShowPage(),
-                        ),
+                        MaterialPageRoute(builder: (_) =>  OnlineBookingShowPage(userName: _displayName,)),
                       );
                     },
                   ),
                   _buildFeatureTile(
                     context,
                     imagePath: 'assets/consulting.png',
-
-                    //icon: Icons.handshake,
                     title: "Services",
                     color: const Color(0xFFB71C9B),
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (_) => const ServiceMerchantPage(),
-                        ),
+                        MaterialPageRoute(builder: (_) => ServiceMerchantPage(userName: _displayName,)),
                       );
                     },
                   ),
                   _buildFeatureTile(
                     context,
                     imagePath: 'assets/result.png',
-                    //icon: Icons.insert_chart,
                     title: "Reports",
                     color: const Color(0xFF6A1B9A),
                     onTap: () {
@@ -330,37 +300,29 @@ class _MerchantPageState extends State<MerchantPage> {
                   ),
                   _buildFeatureTile(
                     context,
-                    imagePath: 'assets/settings.png', // Use the PNG image path
+                    imagePath: 'assets/settings.png',
                     title: "Settings",
-                    color: const Color(0xFF6A1B9A), // Purple color
+                    color: const Color(0xFF6A1B9A),
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (_) => const MerchantSettingPage(),
-                        ),
+                        MaterialPageRoute(builder: (_) => const MerchantSettingPage()),
                       );
                     },
                   ),
                   _buildFeatureTile(
                     context,
-                    imagePath:
-                        'assets/group-chat.png', // Use the PNG image path
-                    //icon: Icons.group,
+                    imagePath: 'assets/group-chat.png',
                     title: "Team",
                     color: const Color(0xFFB71C9B),
                     onTap: () async {
                       final storage = const FlutterSecureStorage();
-                      String? merchantId = await storage.read(
-                        key: "merchantId",
-                      );
+                      String? merchantId = await storage.read(key: "merchantId");
                       if (merchantId == null || merchantId.isEmpty) {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text(
-                                "Merchant ID not found. Please login again.",
-                              ),
+                              content: Text("Merchant ID not found. Please login again."),
                               backgroundColor: Colors.red,
                             ),
                           );
@@ -370,7 +332,7 @@ class _MerchantPageState extends State<MerchantPage> {
                       if (context.mounted) {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => TeamPage()),
+                          MaterialPageRoute(builder: (_) => TeamPage(userName: _displayName)),
                         );
                       }
                     },
@@ -446,3 +408,4 @@ class SettingsPage extends StatelessWidget {
     );
   }
 }
+                    

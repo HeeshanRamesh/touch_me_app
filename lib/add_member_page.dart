@@ -174,7 +174,7 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add New Member'),
+        title: const Text('Add Members'),
         backgroundColor: const Color(0xFF6A1B9A),
         foregroundColor: Colors.white,
       ),
@@ -297,17 +297,17 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
               ),
               onPressed: _addMember,
               child: const Text(
-                'Add Member',
+                'Add Team Member',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
             const SizedBox(height: 16),
 
             // Required fields note
-            const Text(
-              '* Required fields',
-              style: TextStyle(color: Colors.grey, fontSize: 12),
-            ),
+            // const Text(
+            //   '* Required fields',
+            //   style: TextStyle(color: Colors.grey, fontSize: 12),
+            // ),
           ],
         ),
       ),
