@@ -31,7 +31,7 @@ class MerchantAuthService {
     required String managerPassword,
     required String beneficiaryName,
     required String accountNumber,
-    required String bankPhone,
+    //required String bankPhone,
     required String bankName,
     required String bankBranch,
     required String businessRegImage,
@@ -69,13 +69,16 @@ class MerchantAuthService {
       "bankDetails": {
         "beneficiaryName": beneficiaryName,
         "accountNumber": accountNumber,
-        "phone": bankPhone,
+        //"phone": bankPhone,
         "bankName": bankName,
         "bankBranch": bankBranch,
       },
     };
 
+    
+
     try {
+      print('Signup Request Body: ${jsonEncode(merchantData)}');
       final response = await http.post(
         Uri.parse(baseUrl),
         headers: {'Content-Type': 'application/json'},

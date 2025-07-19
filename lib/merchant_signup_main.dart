@@ -80,7 +80,7 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
   // State for uploads and selections
   String? _phoneNumber;
   String? _managerPhoneNumber;
-  String? _bankPhoneNumber;
+  //String? _bankPhoneNumber;
   bool _taxRegistered = false;
   bool _nicFrontUploaded = false;
   bool _nicBackUploaded = false;
@@ -179,16 +179,16 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
         break;
       case 3:
         isValid = _bankInfoFormKey.currentState?.validate() ?? false;
-        if (isValid) isValid = _validateBankInfoStep();
-        if (isValid && _bankPhoneNumber == null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Please enter a valid bank phone number"),
-              backgroundColor: Colors.red,
-            ),
-          );
-          isValid = false;
-        }
+       if (isValid) isValid = _validateBankInfoStep();
+        // if (isValid && _bankPhoneNumber == null) {
+        //   ScaffoldMessenger.of(context).showSnackBar(
+        //     const SnackBar(
+        //       content: Text("Please enter a valid bank phone number"),
+        //       backgroundColor: Colors.red,
+        //     ),
+        //   );
+        //   isValid = false;
+        // }
         // if (!_termsAccepted) {
         //   ScaffoldMessenger.of(context).showSnackBar(
         //     const SnackBar(
@@ -313,8 +313,8 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
     if (!_bankInfoFormKey.currentState!.validate()) return;
     if (!_validateBankInfoStep()) return;
     if (_phoneNumber == null ||
-        _managerPhoneNumber == null ||
-        _bankPhoneNumber == null) {
+        _managerPhoneNumber == null){
+        //_bankPhoneNumber == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Please ensure all phone numbers are provided"),
@@ -364,7 +364,7 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
         managerPassword: _managerPasswordController.text.trim(),
         beneficiaryName: _beneficiaryNameController.text.trim(),
         accountNumber: _accountNumberController.text.trim(),
-        bankPhone: _bankPhoneNumber!,
+        //bankPhone: _bankPhoneNumber!,
         bankName: _selectedBank!,
         bankBranch: _selectedBranch!,
         businessRegImage: _businessRegImageUrl!,
@@ -374,25 +374,95 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
         openingHours: _openingHours,
       );
 
-      if (result['success'] == true) {
-        if (mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (_) => MerchantLoginPage()
-            ),
-          );
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                result['message'] ?? 'Registration completed successfully! A copy of the Terms & Conditions has been sent to your email.',
+      // Option 1: Show success dialog instead of immediately navigating
+if (result['success'] == true) {
+  if (mounted) {
+    // Show success dialog first
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Prevent dismissing by tapping outside
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Success icon
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Theme.of(context).primaryColor,
+                    width: 3,
+                  ),
+                ),
+                child: Icon(
+                  Icons.check,
+                  size: 40,
+                  color: Theme.of(context).primaryColor,
+                ),
               ),
-              backgroundColor: Colors.green,
-              duration: const Duration(seconds: 3),
-            ),
-          );
-        }
-      } else {
+              const SizedBox(height: 20),
+              // Success message
+              const Text(
+                'Registration successfully completed',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'as a merchant',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 30),
+              // OK button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close dialog
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => MerchantLoginPage(),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).primaryColor,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  child: const Text(
+                    'OK',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+    } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -560,41 +630,45 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  "TouchMe - Terms & Conditions and Refund Policy for Merchants\n\n"
-                  "Effective Date: July 01, 2025\n\n"
-                  "By registering as a merchant on the TouchMe platform, you agree to the following Terms & Conditions, including our refund and cancellation policies. These terms govern your relationship with SmartTouch Digital Solutions (P) Ltd.\n\n"
-                  "1. Acceptance of Terms\n\n"
-                  "By using TouchMe, you confirm that you agree to these Terms. If you do not agree, you must not register as a merchant.\n\n"
-                  "2. Merchant Responsibilities\n\n"
-                  "- Maintain accurate service listings, pricing, and availability.\n"
-                  "- Honor all confirmed bookings, or notify clients promptly of unavoidable changes.\n"
-                  "- Provide services at a professional standard.\n\n"
-                  "3. Booking and Cancellation Policy\n\n"
-                  "- You must define your cancellation policy during onboarding.\n"
-                  "- Customers may cancel within your defined window without penalty.\n"
-                  "- You may charge a 'no-show fee' if a client cancels too late or does not show up.\n\n"
-                  "4. Refund Policy\n\n"
-                  "- Refunds will only be provided for missed services, duplicate payments, or technical issues.\n"
-                  "- Requests for refunds must be submitted within 48 hours of the appointment.\n"
-                  "- Refunds will be processed through TouchMe and may take 5-7 business days.\n\n"
-                  "5. Dispute Resolution\n\n"
-                  "- TouchMe will act as a neutral party in disputes.\n"
-                  "- We will evaluate both sides and issue a fair resolution.\n"
-                  "- The final decision rests with TouchMe's support team.\n\n"
-                  "6. Service Fees and Payouts\n\n"
-                  "- Commissions will be deducted per the agreed terms.\n"
-                  "- Payouts are made weekly, net of fees.\n\n"
-                  "7. Termination\n\n"
-                  "- Breach of terms may result in account suspension or termination.\n"
-                  "- Merchants may exit the platform with 7 days' notice.\n\n"
-                  "8. Changes to Terms\n\n"
-                  "- We reserve the right to update these terms. Continued use of the app indicates acceptance.\n\n"
-                  "For support or questions, contact:\n\n"
-                  "Email: digitaltouch@outlook.com\n"
-                  "Hotline: +94 777 763 5225\n\n"
-                  "© 2025 SmartTouch Digital Solutions (Pvt) Ltd. All rights reserved.",
-                  style: TextStyle(fontSize: 14),
-                ),
+                          "TouchMe - Terms & Conditions and Refund Policy for Merchants\n\n"
+                          "Effective Date: July 01, 2025\n\n"
+                          "By registering as a merchant on the TouchMe platform, you agree to the following Terms & Conditions, including our refund and cancellation policies. These terms govern your relationship with SmartTouch Digital Solutions (P) Ltd.\n\n"
+                          "1. Acceptance of Terms\n\n"
+                          "By using TouchMe, you confirm that you agree to these Terms. If you do not agree, you must not register as a merchant.\n\n"
+                          "2. Merchant Responsibilities\n\n"
+                          "- Maintain accurate service listings, pricing, and availability.\n"
+                          "- Honor all confirmed bookings, or notify clients promptly of unavoidable changes.\n"
+                          "- Provide services at a professional standard.\n\n"
+                          "3. Booking and Cancellation Policy\n\n"
+                          "- You must define your cancellation policy during onboarding.\n"
+                          "- Customers may cancel within your defined window without penalty.\n"
+                          "- You may charge a 'no-show fee' if a client cancels too late or does not show up.\n\n"
+                          "4. Refund Policy\n\n"
+                          "- Refunds will only be provided for missed services, duplicate payments, or technical issues.\n"
+                          "- Requests for refunds must be submitted within 48 hours of the appointment.\n"
+                          "- Refunds will be processed through TouchMe and may take 5-7 business days.\n\n"
+                          "5. Dispute Resolution\n\n"
+                          "- TouchMe will act as a neutral party in disputes.\n"
+                          "- We will evaluate both sides and issue a fair resolution.\n"
+                          "- The final decision rests with TouchMe's support team.\n\n"
+                          "6. Service Fees and Payouts\n\n"
+                          "- Commissions will be deducted per the agreed terms.\n"
+                          "- Payouts are made weekly, net of fees.\n\n"
+                          "7. Privacy & Data Protection\n\n"
+                          "TouchMe is committed to protecting the privacy and confidentiality of all users, including both clients and merchants. All personal information and data collected through the TouchMe app, including but not limited to names, contact details, appointment history, and business information, will be stored securely and treated with strict confidentiality.\n\n"
+                          "We hereby assure you that your data will not be shared, sold, rented, or disclosed to any third parties without your explicit consent, except as required by law or to comply with legal obligations. Our systems are designed with appropriate security measures to safeguard your data against unauthorized access, misuse, or disclosure.\n\n"
+                          "By using the TouchMe app, you agree to our commitment to maintaining your privacy and trust.\n\n"
+                          "8. Termination\n\n"
+                          "- Breach of terms may result in account suspension or termination.\n"
+                          "- Merchants may exit the platform with 7 days' notice.\n\n"
+                          "9. Changes to Terms\n\n"
+                          "- We reserve the right to update these terms. Continued use of the app indicates acceptance.\n\n"
+                          "For support or questions, contact:\n\n"
+                          "Email: digitaltouch@outlook.com\n"
+                          "Hotline: +94 777 763 5225\n\n"
+                          "© 2025 SmartTouch Digital Solutions (Pvt) Ltd. All rights reserved.",
+                          style: TextStyle(fontSize: 14),
+                        ),
               ],
             ),
           ),
@@ -1994,24 +2068,24 @@ GestureDetector(
                   dropdownColor: const Color(0xFFF3E5F5), // Match your theme
 
             ),
-            _buildFieldLabel("Bank Phone Number *"),
-            Container(
-              decoration: _fieldDecoration(),
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: IntlPhoneField(
-                decoration: const InputDecoration(
-                  hintText: 'Bank Phone Number',
-                  border: InputBorder.none,
-                  errorBorder: InputBorder.none,
-                  filled: true,
-                  fillColor: Color(0xFFF3E5F5),
-                ),
-                initialCountryCode: 'LK',
-                onChanged: (phone) => _bankPhoneNumber = phone.completeNumber,
-                validator: (p) => _validatePhoneNumber(p?.number),
-              ),
-            ),
-            const SizedBox(height: 20),
+            // _buildFieldLabel("Bank Phone Number *"),
+            // Container(
+            //   decoration: _fieldDecoration(),
+            //   padding: const EdgeInsets.symmetric(horizontal: 12),
+            //   child: IntlPhoneField(
+            //     decoration: const InputDecoration(
+            //       hintText: 'Bank Phone Number',
+            //       border: InputBorder.none,
+            //       errorBorder: InputBorder.none,
+            //       filled: true,
+            //       fillColor: Color(0xFFF3E5F5),
+            //     ),
+            //     initialCountryCode: 'LK',
+            //     onChanged: (phone) => _bankPhoneNumber = phone.completeNumber,
+            //     validator: (p) => _validatePhoneNumber(p?.number),
+            //   ),
+            // ),
+            // const SizedBox(height: 20),
             Center(child: _buildFieldLabel("Soft Copy of the Bank Statement Or\n Passbook *",
             
             )),

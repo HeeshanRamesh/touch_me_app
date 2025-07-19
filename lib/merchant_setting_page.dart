@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:touch_me/about_screen.dart';
+import 'package:touch_me/merchant_about_page.dart';
 import 'package:touch_me/merchant_profile_edit_page.dart';
 
 class MerchantSettingPage extends StatefulWidget {
@@ -80,7 +81,7 @@ class _MerchantSettingPageState extends State<MerchantSettingPage> {
                      onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => AboutScreen()),
+                        MaterialPageRoute(builder: (context) => MerchantAboutScreen()),
                       );
                     },
                   ),

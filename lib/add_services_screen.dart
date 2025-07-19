@@ -578,9 +578,9 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF6A1B9A),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(25),
+                borderRadius: BorderRadius.circular(12),
               ),
-              padding: const EdgeInsets.symmetric(vertical: 14),
+              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 69),
             ),
           ),
       ],
