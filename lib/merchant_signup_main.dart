@@ -796,7 +796,7 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
                   ),
                 ),
                 child: const Text(
-                  "Pick Location",
+                  "Set Location",
                   style: TextStyle(color: Colors.white),
                 ),
               ),
