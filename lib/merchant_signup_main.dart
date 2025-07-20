@@ -80,7 +80,7 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
   // State for uploads and selections
   String? _phoneNumber;
   String? _managerPhoneNumber;
-  //String? _bankPhoneNumber;
+  String? _bankPhoneNumber;
   bool _taxRegistered = false;
   bool _nicFrontUploaded = false;
   bool _nicBackUploaded = false;
@@ -180,24 +180,24 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
       case 3:
         isValid = _bankInfoFormKey.currentState?.validate() ?? false;
        if (isValid) isValid = _validateBankInfoStep();
-        // if (isValid && _bankPhoneNumber == null) {
-        //   ScaffoldMessenger.of(context).showSnackBar(
-        //     const SnackBar(
-        //       content: Text("Please enter a valid bank phone number"),
-        //       backgroundColor: Colors.red,
-        //     ),
-        //   );
-        //   isValid = false;
-        // }
-        // if (!_termsAccepted) {
-        //   ScaffoldMessenger.of(context).showSnackBar(
-        //     const SnackBar(
-        //       content: Text("You must agree to the Terms & Conditions"),
-        //       backgroundColor: Colors.red,
-        //     ),
-        //   );
-        //   isValid = false;
-        // }
+        if (isValid && _bankPhoneNumber == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Please enter a valid bank phone number"),
+              backgroundColor: Colors.red,
+            ),
+          );
+          isValid = false;
+        }
+        if (!_termsAccepted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("You must agree to the Terms & Conditions"),
+              backgroundColor: Colors.red,
+            ),
+          );
+          isValid = false;
+        }
         break;
     }
 
@@ -364,7 +364,7 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
         managerPassword: _managerPasswordController.text.trim(),
         beneficiaryName: _beneficiaryNameController.text.trim(),
         accountNumber: _accountNumberController.text.trim(),
-        //bankPhone: _bankPhoneNumber!,
+        bankPhone: _bankPhoneNumber!,
         bankName: _selectedBank!,
         bankBranch: _selectedBranch!,
         businessRegImage: _businessRegImageUrl!,
@@ -2068,24 +2068,24 @@ GestureDetector(
                   dropdownColor: const Color(0xFFF3E5F5), // Match your theme
 
             ),
-            // _buildFieldLabel("Bank Phone Number *"),
-            // Container(
-            //   decoration: _fieldDecoration(),
-            //   padding: const EdgeInsets.symmetric(horizontal: 12),
-            //   child: IntlPhoneField(
-            //     decoration: const InputDecoration(
-            //       hintText: 'Bank Phone Number',
-            //       border: InputBorder.none,
-            //       errorBorder: InputBorder.none,
-            //       filled: true,
-            //       fillColor: Color(0xFFF3E5F5),
-            //     ),
-            //     initialCountryCode: 'LK',
-            //     onChanged: (phone) => _bankPhoneNumber = phone.completeNumber,
-            //     validator: (p) => _validatePhoneNumber(p?.number),
-            //   ),
-            // ),
-            // const SizedBox(height: 20),
+            _buildFieldLabel("Bank Phone Number *"),
+            Container(
+              decoration: _fieldDecoration(),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: IntlPhoneField(
+                decoration: const InputDecoration(
+                  hintText: 'Bank Phone Number',
+                  border: InputBorder.none,
+                  errorBorder: InputBorder.none,
+                  filled: true,
+                  fillColor: Color(0xFFF3E5F5),
+                ),
+                initialCountryCode: 'LK',
+                onChanged: (phone) => _bankPhoneNumber = phone.completeNumber,
+                validator: (p) => _validatePhoneNumber(p?.number),
+              ),
+            ),
+            const SizedBox(height: 20),
             Center(child: _buildFieldLabel("Soft Copy of the Bank Statement Or\n Passbook *",
             
             )),

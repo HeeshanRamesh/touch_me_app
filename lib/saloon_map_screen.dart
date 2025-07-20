@@ -182,10 +182,9 @@ class _SaloonMapScreenState extends State<SaloonMapScreen> {
             padding: const EdgeInsets.all(16.0),
             child: ElevatedButton(
               onPressed: () {
-                Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const MerchantSignupMain()),
-      );
+                      Navigator.pop(context);
+
+
               
               },
               style: ElevatedButton.styleFrom(
