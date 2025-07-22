@@ -8,6 +8,8 @@ class Merchant {
   final String address;
   final double? rating;
   final int? reviews;
+  final double latitude; // NEW
+  final double longitude; // NEW
 
   Merchant({
     required this.id,
@@ -19,6 +21,8 @@ class Merchant {
     required this.address,
     this.rating,
     this.reviews,
+    required this.latitude, // NEW
+    required this.longitude, // NEW
   });
 
   factory Merchant.fromJson(Map<String, dynamic> json) {
@@ -47,6 +51,8 @@ class Merchant {
               ? (json['rating'] as int).toDouble()
               : (json['rating'] as double?) ?? 5.0,
       reviews: json['reviews'] as int?,
+      latitude: outlet['latitude']?.toDouble() ?? 0.0, // NEW
+      longitude: outlet['longitude']?.toDouble() ?? 0.0, // NEW
     );
   }
 }

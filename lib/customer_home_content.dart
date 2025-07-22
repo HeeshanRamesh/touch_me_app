@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:touch_me/merchant_service_list_screen.dart';
 import 'package:touch_me/one_saloon_inside_screen.dart';
 import 'package:touch_me/service_filter_page.dart';
 import 'merchant_list_screen.dart';
@@ -23,7 +26,7 @@ class CustomerHomeHeader extends StatelessWidget {
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [ Color(0xFF9D1E96), Color(0xFF7E1878)],
+          colors: [Color(0xFF9D1E96), Color(0xFF7E1878)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -56,7 +59,7 @@ class CustomerHomeHeader extends StatelessWidget {
                   ],
                 ),
                 child: ClipRRect(
-                 // borderRadius: BorderRadius.circular(12),
+                  // borderRadius: BorderRadius.circular(12),
                   child: Image.asset(
                     'assets/touch_logo.png',
                     fit: BoxFit.contain,
@@ -90,25 +93,6 @@ class CustomerHomeHeader extends StatelessWidget {
                   ],
                 ),
               ),
-              // Container(
-              //   // decoration: BoxDecoration(
-              //   //   color: Colors.white,
-              //   //   borderRadius: BorderRadius.circular(20),
-              //   // ),
-              //   padding: const EdgeInsets.symmetric(
-              //     horizontal: 14,
-              //     vertical: 6,
-              //   ),
-              //   child: Row(
-              //     children: [
-              //       const Icon(
-              //         Icons.notifications,
-              //         color: Color(0xFF6A1B9A),
-              //         size: 18,
-              //       ),                   
-              //     ],
-              //   ),
-              // ),
             ],
           ),
           const SizedBox(height: 30),
@@ -157,7 +141,7 @@ class CustomerHomeHeader extends StatelessWidget {
   }
 }
 
-class CustomerHomeContent extends StatelessWidget {
+class CustomerHomeContent extends StatefulWidget {
   final String token;
   final String customerId;
   final Map<String, dynamic> user;
@@ -168,6 +152,93 @@ class CustomerHomeContent extends StatelessWidget {
     required this.customerId,
     required this.user,
   });
+
+  @override
+  State<CustomerHomeContent> createState() => _CustomerHomeContentState();
+}
+
+class _CustomerHomeContentState extends State<CustomerHomeContent> {
+  Position? _userPosition;
+  double getDistanceFromUser(Position userPos, Merchant merchant) {
+    return Geolocator.distanceBetween(
+      userPos.latitude,
+      userPos.longitude,
+      merchant.latitude,
+      merchant.longitude,
+    );
+  }
+
+  String _currentLocation = "Loading...";
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchLocation();
+  }
+
+  Future<void> _fetchLocation() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Check service
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      setState(() {
+        _currentLocation = "Location off";
+      });
+      return;
+    }
+
+    // Check permissions
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+    if (permission == LocationPermission.deniedForever) {
+      setState(() {
+        _currentLocation = "Permission denied";
+      });
+      return;
+    }
+
+    // Get position
+    _userPosition = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
+    // Reverse geocode to get readable location
+    if (_userPosition != null) {
+      final placemarks = await placemarkFromCoordinates(
+        _userPosition!.latitude,
+        _userPosition!.longitude,
+      );
+
+      if (placemarks.isNotEmpty) {
+        final place = placemarks.first;
+        setState(() {
+          _currentLocation = place.locality ?? place.subAdministrativeArea ?? "Unknown";
+        });
+      } else {
+        setState(() {
+          _currentLocation = "Unknown";
+        });
+      }
+    }
+  }
+
+  Future<List<Merchant>> fetchNearestMerchants() async {
+    final allMerchants = await fetchMerchants(widget.token);
+
+    if (_userPosition == null) return allMerchants; // Return unsorted if no position
+
+    allMerchants.sort((a, b) {
+      final distA = getDistanceFromUser(_userPosition!, a);
+      final distB = getDistanceFromUser(_userPosition!, b);
+      return distA.compareTo(distB);
+    });
+
+    return allMerchants;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -205,9 +276,9 @@ class CustomerHomeContent extends StatelessWidget {
     return Column(
       children: [
         CustomerHomeHeader(
-          userName: user['first_name'] ?? user['email'] ?? '',
-          location: 'Kesbewa',
-          token: token,
+          userName: widget.user['first_name'] ?? widget.user['email'] ?? '',
+          location: _currentLocation,
+          token: widget.token,
         ),
         Expanded(
           child: SingleChildScrollView(
@@ -233,8 +304,7 @@ class CustomerHomeContent extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => ServicesScreen(
-                              ),
+                              builder: (_) => ServicesScreen(),
                             ),
                           );
                         },
@@ -261,12 +331,11 @@ class CustomerHomeContent extends StatelessWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder:
-                                    (_) => MerchantListScreen(
-                                      serviceName: service['name']!,
-                                      token: token,
-                                      customerId: customerId,
-                                    ),
+                                builder: (_) => MerchantListScreen(
+                                  serviceName: service['name']!,
+                                  token: widget.token,
+                                  customerId: widget.customerId,
+                                ),
                               ),
                             );
                           },
@@ -295,7 +364,6 @@ class CustomerHomeContent extends StatelessWidget {
                                   ),
                                 ),
                                 SizedBox(height: 8 * scaleFactor),
-
                                 Expanded(
                                   child: Text(
                                     service['name']!,
@@ -317,7 +385,6 @@ class CustomerHomeContent extends StatelessWidget {
                       },
                     ),
                   ),
-                  //SizedBox(height:5),
                   // Saloons Section (dynamic)
                   Text(
                     "Recommended",
@@ -330,17 +397,15 @@ class CustomerHomeContent extends StatelessWidget {
                   SizedBox(
                     height: 170 * scaleFactor,
                     child: FutureBuilder<List<Merchant>>(
-                      future: fetchMerchants(token),
+                      future: fetchMerchants(widget.token),
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
                           return const Center(
                             child: CircularProgressIndicator(),
                           );
                         } else if (snapshot.hasError) {
                           return const Text('Failed to load saloons');
-                        } else if (!snapshot.hasData ||
-                            snapshot.data!.isEmpty) {
+                        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                           return const Text('No saloons found');
                         } else {
                           final merchants = snapshot.data!;
@@ -351,27 +416,27 @@ class CustomerHomeContent extends StatelessWidget {
                               final merchant = merchants[index];
                               return GestureDetector(
                                 onTap: () {
-                                  // Navigator.push(
-                                  //   context,
-                                  //   MaterialPageRoute(
-                                  //     builder: (_) => OneSaloonInsideScreen(
-                                  //        saloonName: '${merchant.outletName}', location: '', rating: 0, reviews: 0, discount: '', imagePath: '',
-                                  //     ),
-                                  //   ),
-                                  // );
+                                  Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => MerchantServiceListScreen(
+                                            merchantId: merchant.id,
+                                            outletName: merchant.outletName,
+                                            token: widget.token,
+                                            customerId: widget.customerId,
+                                            profileImageUrl: merchant.logoUrl,
+                                          ),
+                                        ),
+                                      );
                                 },
                                 child: Container(
                                   width: 180 * scaleFactor,
-                                  margin: EdgeInsets.only(
-                                    right: 12 * scaleFactor,
-                                  ),
+                                  margin: EdgeInsets.only(right: 12 * scaleFactor),
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       ClipRRect(
-                                        borderRadius: BorderRadius.circular(
-                                          12 * scaleFactor,
-                                        ),
+                                        borderRadius: BorderRadius.circular(12 * scaleFactor),
                                         child: Image.asset(
                                           'assets/saloonservice.jpg',
                                           height: 100 * scaleFactor,
@@ -431,7 +496,7 @@ class CustomerHomeContent extends StatelessWidget {
                     ),
                   ),
                   SizedBox(height: 24 * scaleFactor),
-                  // Nearest Saloon Section (dummy)
+                  // Nearest Saloon Section
                   Text(
                     "Nearest Saloon",
                     style: TextStyle(
@@ -440,34 +505,58 @@ class CustomerHomeContent extends StatelessWidget {
                     ),
                   ),
                   SizedBox(height: 8),
-                  ListView.builder(
-                    itemCount: 3,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemBuilder: (context, index) {
-                      return ListTile(
-                        leading: const CircleAvatar(
-                          backgroundImage: AssetImage(
-                            'assets/saloons/lotas_saloon_image.png',
-                          ),
-                        ),
-                        title: const Text('Lotas Saloon'),
-                        subtitle: const Text('Colombo Havelock Road'),
-                        trailing: ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color.fromARGB(
-                              255,
-                              133,
-                              18,
-                              179,
+                  FutureBuilder<List<Merchant>>(
+                    future: fetchNearestMerchants(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (snapshot.hasError || !snapshot.hasData) {
+                        return const Text('No nearest saloons found');
+                      }
+
+                      final nearestMerchants = snapshot.data!;
+                      return ListView.builder(
+                        itemCount: 3, // show top 3 nearest
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemBuilder: (context, index) {
+                          final merchant = nearestMerchants[index];
+                          final distanceInKm = (_userPosition != null)
+                              ? (getDistanceFromUser(_userPosition!, merchant) / 1000).toStringAsFixed(2)
+                              : 'N/A';
+
+                          return ListTile(
+                            leading:  CircleAvatar(
+                               backgroundImage: merchant.logoUrl.isNotEmpty
+                                ? NetworkImage(merchant.logoUrl)
+                                :  AssetImage('assets/images/default_logo.jpg') as ImageProvider,
+                            backgroundColor: Colors.grey[200],
                             ),
-                          ),
-                          child: const Text('Book Now',
-                            style: TextStyle(color: Colors.white),
-                          
-                          ),
-                        ),
+                            title: Text(merchant.outletName),
+                            subtitle: Text('${merchant.address}'),
+                            trailing: ElevatedButton(
+                              onPressed: () {
+                                // Navigation logic here
+                                Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => MerchantServiceListScreen(
+                                            merchantId: merchant.id,
+                                            outletName: merchant.outletName,
+                                            token: widget.token,
+                                            customerId: widget.customerId,
+                                            profileImageUrl: merchant.logoUrl,
+                                          ),
+                                        ),
+                                      );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color.fromARGB(255, 133, 18, 179),
+                              ),
+                              child: const Text('Visit Now', style: TextStyle(color: Colors.white)),
+                            ),
+                          );
+                        },
                       );
                     },
                   ),
