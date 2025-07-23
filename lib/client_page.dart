@@ -66,7 +66,9 @@ class _CompletedBookingsPageState extends State<CompletedBookingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Completed Bookings')),
+      appBar: AppBar(title: const Text('Completed Bookings'),
+              iconTheme: const IconThemeData(color: Colors.white),
+      ),
       body: _futureCompletedBookings == null
           ? const Center(child: CircularProgressIndicator())
           : FutureBuilder<List<Booking>>(

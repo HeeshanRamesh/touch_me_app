@@ -22,6 +22,7 @@ class _ServiceMerchantPageState extends State<ServiceMerchantPage> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF6A1B9A),
         elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SafeArea(
         child: SingleChildScrollView(

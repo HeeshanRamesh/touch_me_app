@@ -533,7 +533,7 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
                             backgroundColor: Colors.grey[200],
                             ),
                             title: Text(merchant.outletName),
-                            subtitle: Text('${merchant.address}'),
+                            subtitle: Text('${merchant.address}, $distanceInKm km away'),
                             trailing: ElevatedButton(
                               onPressed: () {
                                 // Navigation logic here

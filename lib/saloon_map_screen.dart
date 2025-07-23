@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:touch_me/merchant_signup_main.dart';
 
 class SaloonMapScreen extends StatefulWidget {
@@ -14,7 +15,7 @@ class _SaloonMapScreenState extends State<SaloonMapScreen> {
   final List<Map<String, String>> latestPosts = [
     {
       'name': 'Amy Liu ',
-      'location': 'Latest in New York',
+      'location': 'Latest in Your Area',
       'imageUrl': 'assets/coffee_shop.png', // Replace with your image asset
       'description': 'Maybe Coffee shop - 2.8km',
       'time': '2 days ago',
@@ -22,26 +23,113 @@ class _SaloonMapScreenState extends State<SaloonMapScreen> {
   ];
 
   // Google Maps Controller
-  late GoogleMapController _mapController;
+  GoogleMapController? _mapController;
 
-  // Initial position (New York coordinates)
-  static const LatLng _initialPosition = LatLng(40.7128, -74.0060); // New York
+  // Current position (will be set dynamically)
+  LatLng? _currentPosition;
+  
+  // Default position (fallback if location services fail)
+  static const LatLng _defaultPosition = LatLng(40.7128, -74.0060);
 
-  // Set of markers (one marker for the coffee shop)
-  final Set<Marker> _markers = {
-    const Marker(
-      markerId: MarkerId('coffee_shop'),
-      position: _initialPosition,
-      infoWindow: InfoWindow(
-        title: 'Maybe Coffee Shop',
-        snippet: '2.8km away',
-      ),
-    ),
-  };
+  // Set of markers
+  Set<Marker> _markers = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _getCurrentLocation();
+  }
+
+  // Get current location
+  Future<void> _getCurrentLocation() async {
+    try {
+      // Check if location services are enabled
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        // Location services are not enabled
+        _setDefaultLocation();
+        return;
+      }
+
+      // Check location permissions
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          // Permissions are denied
+          _setDefaultLocation();
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        // Permissions are permanently denied
+        _setDefaultLocation();
+        return;
+      }
+
+      // Get current position
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      setState(() {
+        _currentPosition = LatLng(position.latitude, position.longitude);
+        _updateMarkers();
+      });
+
+      // Move camera to current location
+      if (_mapController != null) {
+        _mapController!.animateCamera(
+          CameraUpdate.newLatLng(_currentPosition!),
+        );
+      }
+    } catch (e) {
+      print('Error getting location: $e');
+      _setDefaultLocation();
+    }
+  }
+
+  // Set default location if current location fails
+  void _setDefaultLocation() {
+    setState(() {
+      _currentPosition = _defaultPosition;
+      _updateMarkers();
+    });
+  }
+
+  // Update markers based on current position
+  void _updateMarkers() {
+    if (_currentPosition != null) {
+      _markers = {
+        Marker(
+          markerId: const MarkerId('current_location'),
+          position: _currentPosition!,
+          infoWindow: const InfoWindow(
+            title: 'Your Location',
+            snippet: 'You are here',
+          ),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+        ),
+        // You can add more markers for nearby saloons here
+        Marker(
+          markerId: const MarkerId('coffee_shop'),
+          position: LatLng(
+            _currentPosition!.latitude + 0.01, // Slightly offset from current location
+            _currentPosition!.longitude + 0.01,
+          ),
+          infoWindow: const InfoWindow(
+            title: 'Maybe Coffee Shop',
+            snippet: '2.8km away',
+          ),
+        ),
+      };
+    }
+  }
 
   @override
   void dispose() {
-    _mapController.dispose();
+    _mapController?.dispose();
     super.dispose();
   }
 
@@ -91,24 +179,30 @@ class _SaloonMapScreenState extends State<SaloonMapScreen> {
                     // Handle voice search
                   },
                 ),
+                IconButton(
+                  icon: const Icon(Icons.my_location, color: Colors.black),
+                  onPressed: _getCurrentLocation,
+                ),
               ],
             ),
           ),
           // Google Map
           SizedBox(
             height: 200.0,
-            child: GoogleMap(
-              initialCameraPosition: const CameraPosition(
-                target: _initialPosition,
-                zoom: 12.0,
-              ),
-              markers: _markers,
-              onMapCreated: (GoogleMapController controller) {
-                _mapController = controller;
-              },
-              myLocationEnabled: true, // Optional: Show user's location
-              myLocationButtonEnabled: true, // Optional: Show location button
-            ),
+            child: _currentPosition == null
+                ? const Center(child: CircularProgressIndicator())
+                : GoogleMap(
+                    initialCameraPosition: CameraPosition(
+                      target: _currentPosition!,
+                      zoom: 15.0,
+                    ),
+                    markers: _markers,
+                    onMapCreated: (GoogleMapController controller) {
+                      _mapController = controller;
+                    },
+                    myLocationEnabled: true,
+                    myLocationButtonEnabled: false, // We added our own button
+                  ),
           ),
           // Latest Posts Section
           Expanded(
@@ -182,10 +276,7 @@ class _SaloonMapScreenState extends State<SaloonMapScreen> {
             padding: const EdgeInsets.all(16.0),
             child: ElevatedButton(
               onPressed: () {
-                      Navigator.pop(context);
-
-
-              
+                Navigator.pop(context);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF6A1B9A),

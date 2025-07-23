@@ -66,9 +66,9 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
   final TextEditingController _ownerNameController = TextEditingController();
   final TextEditingController _ownerEmailController = TextEditingController();
   final TextEditingController _ownerPasswordController = TextEditingController();
-  final TextEditingController _managerNameController = TextEditingController();
-  final TextEditingController _managerEmailController = TextEditingController();
-  final TextEditingController _managerPasswordController = TextEditingController();
+  // final TextEditingController _managerNameController = TextEditingController();
+  // final TextEditingController _managerEmailController = TextEditingController();
+  // final TextEditingController _managerPasswordController = TextEditingController();
   final TextEditingController _beneficiaryNameController = TextEditingController();
   final TextEditingController _accountNumberController = TextEditingController();
 
@@ -79,8 +79,8 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
 
   // State for uploads and selections
   String? _phoneNumber;
-  String? _managerPhoneNumber;
-  String? _bankPhoneNumber;
+  //String? _managerPhoneNumber;
+  //String? _bankPhoneNumber;
   bool _taxRegistered = false;
   bool _nicFrontUploaded = false;
   bool _nicBackUploaded = false;
@@ -120,9 +120,9 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
     _ownerNameController.dispose();
     _ownerEmailController.dispose();
     _ownerPasswordController.dispose();
-    _managerNameController.dispose();
-    _managerEmailController.dispose();
-    _managerPasswordController.dispose();
+    // _managerNameController.dispose();
+    // _managerEmailController.dispose();
+    // _managerPasswordController.dispose();
     _beneficiaryNameController.dispose();
     _accountNumberController.dispose();
     _controller.dispose();
@@ -163,32 +163,33 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
         }
         break;
       case 1:
-        isValid = _contactInfoFormKey.currentState?.validate() ?? false;
-        if (isValid && _managerPhoneNumber == null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Please enter a valid manager phone number"),
-              backgroundColor: Colors.red,
-            ),
-          );
-          isValid = false;
-        }
+      
+        // isValid = _contactInfoFormKey.currentState?.validate() ?? false;
+        // if (isValid && _ownerPhoneNumber == null) {
+        //   ScaffoldMessenger.of(context).showSnackBar(
+        //     const SnackBar(
+        //       content: Text("Please enter a valid Owner phone number"),
+        //       backgroundColor: Colors.red,
+        //     ),
+        //   );
+        //   isValid = false;
+        // }
         break;
       case 2:
         isValid = _validateBusinessInfoStep();
         break;
       case 3:
-        isValid = _bankInfoFormKey.currentState?.validate() ?? false;
-       if (isValid) isValid = _validateBankInfoStep();
-        if (isValid && _bankPhoneNumber == null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Please enter a valid bank phone number"),
-              backgroundColor: Colors.red,
-            ),
-          );
-          isValid = false;
-        }
+      //   isValid = _bankInfoFormKey.currentState?.validate() ?? false;
+      //  if (isValid) isValid = _validateBankInfoStep();
+      //   if (isValid && _bankPhoneNumber == null) {
+      //     ScaffoldMessenger.of(context).showSnackBar(
+      //       const SnackBar(
+      //         content: Text("Please enter a valid bank phone number"),
+      //         backgroundColor: Colors.red,
+      //       ),
+      //     );
+      //     isValid = false;
+      //   }
         if (!_termsAccepted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -312,8 +313,8 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
   Future<void> _submitForm() async {
     if (!_bankInfoFormKey.currentState!.validate()) return;
     if (!_validateBankInfoStep()) return;
-    if (_phoneNumber == null ||
-        _managerPhoneNumber == null){
+    if (_phoneNumber == null){
+        //_OwnerPhoneNumber == null){
         //_bankPhoneNumber == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -358,13 +359,13 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
         ownerEmail: _ownerEmailController.text.trim(),
         ownerPhone: _phoneNumber!,
         ownerPassword: _ownerPasswordController.text.trim(),
-        managerName: _managerNameController.text.trim(),
-        managerEmail: _managerEmailController.text.trim(),
-        managerPhone: _managerPhoneNumber!,
-        managerPassword: _managerPasswordController.text.trim(),
+        // managerName: _managerNameController.text.trim(),
+        // managerEmail: _managerEmailController.text.trim(),
+        // managerPhone: _managerPhoneNumber!,
+        // managerPassword: _managerPasswordController.text.trim(),
         beneficiaryName: _beneficiaryNameController.text.trim(),
         accountNumber: _accountNumberController.text.trim(),
-        bankPhone: _bankPhoneNumber!,
+        //bankPhone: _bankPhoneNumber!,
         bankName: _selectedBank!,
         bankBranch: _selectedBranch!,
         businessRegImage: _businessRegImageUrl!,
@@ -778,6 +779,17 @@ if (result['success'] == true) {
               validator: (value) => _validateRequired(value, "outlet name"),
               textAlign: TextAlign.center,
             ),
+             _buildFieldLabel("Outlet Address *"),
+            TextFormField(
+              controller: _outletAddressController,
+              decoration: _inputDecoration(
+                "Outlet Address",
+                icon: Icons.location_on,
+
+              ),
+              validator: (value) => _validateRequired(value, "outlet address"),
+              textAlign: TextAlign.center,
+            ),
             _buildFieldLabel("E-mail Address *"),
             TextFormField(
               controller: _emailController,
@@ -803,17 +815,6 @@ if (result['success'] == true) {
                 validator: (p) => _validatePhoneNumber(p?.number),
                 
               ),
-            ),
-            _buildFieldLabel("Outlet Address *"),
-            TextFormField(
-              controller: _outletAddressController,
-              decoration: _inputDecoration(
-                "Outlet Address",
-                icon: Icons.location_on,
-
-              ),
-              validator: (value) => _validateRequired(value, "outlet address"),
-              textAlign: TextAlign.center,
             ),
             _buildFieldLabel("Outlet Picture *"),
             _purpleUploadButton(
@@ -1573,50 +1574,50 @@ if (result['success'] == true) {
               validator: (value) => _validateRequired(value, "owner password"),
               textAlign: TextAlign.center,
             ),
-            _buildFieldLabel("Manager Name *"),
-            TextFormField(
-              controller: _managerNameController,
-              decoration: _inputDecoration("Manager Name", icon: Icons.person),
-              validator: (value) => _validateRequired(value, "manager name"),
-              textAlign: TextAlign.center,
-            ),
-            _buildFieldLabel("Manager Email *"),
-            TextFormField(
-              controller: _managerEmailController,
-              decoration: _inputDecoration("Manager Email", icon: Icons.email),
-              keyboardType: TextInputType.emailAddress,
-              validator: _validateEmail,
-              textAlign: TextAlign.center,
-            ),
-            _buildFieldLabel("Manager Password *"),
-            TextFormField(
-              controller: _managerPasswordController,
-              decoration: _inputDecoration(
-                "Manager Password",
-                icon: Icons.lock,
-              ),
-              obscureText: true,
-              validator: (value) => _validateRequired(value, "manager password"),
-              textAlign: TextAlign.center,
-            ),
-            _buildFieldLabel("Manager Phone Number *"),
-            Container(
-              decoration: _fieldDecoration(),
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: IntlPhoneField(
-                decoration: const InputDecoration(
-                  hintText: 'Manager Phone Number',
-                  border: InputBorder.none,
-                  errorBorder: InputBorder.none,
-                  filled: true,
-                  fillColor: Color(0xFFF3E5F5),
-                ),
-                initialCountryCode: 'LK',
-                onChanged: (phone) => _managerPhoneNumber = phone.completeNumber,
-                validator: (p) => _validatePhoneNumber(p?.number),
+            // _buildFieldLabel("Manager Name *"),
+            // TextFormField(
+            //   controller: _managerNameController,
+            //   decoration: _inputDecoration("Manager Name", icon: Icons.person),
+            //   validator: (value) => _validateRequired(value, "manager name"),
+            //   textAlign: TextAlign.center,
+            // ),
+            // _buildFieldLabel("Manager Email *"),
+            // TextFormField(
+            //   controller: _managerEmailController,
+            //   decoration: _inputDecoration("Manager Email", icon: Icons.email),
+            //   keyboardType: TextInputType.emailAddress,
+            //   validator: _validateEmail,
+            //   textAlign: TextAlign.center,
+            // ),
+            // _buildFieldLabel("Manager Password *"),
+            // TextFormField(
+            //   controller: _managerPasswordController,
+            //   decoration: _inputDecoration(
+            //     "Manager Password",
+            //     icon: Icons.lock,
+            //   ),
+            //   obscureText: true,
+            //   validator: (value) => _validateRequired(value, "manager password"),
+            //   textAlign: TextAlign.center,
+            // ),
+            // _buildFieldLabel("Manager Phone Number *"),
+            // Container(
+            //   decoration: _fieldDecoration(),
+            //   padding: const EdgeInsets.symmetric(horizontal: 12),
+            //   child: IntlPhoneField(
+            //     decoration: const InputDecoration(
+            //       hintText: 'Manager Phone Number',
+            //       border: InputBorder.none,
+            //       errorBorder: InputBorder.none,
+            //       filled: true,
+            //       fillColor: Color(0xFFF3E5F5),
+            //     ),
+            //     initialCountryCode: 'LK',
+            //     onChanged: (phone) => _managerPhoneNumber = phone.completeNumber,
+            //     validator: (p) => _validatePhoneNumber(p?.number),
                 
-              ),
-            ),
+            //   ),
+            // ),
             const SizedBox(height: 30),
             Container(
             decoration: _fieldDecoration(),
@@ -2068,23 +2069,23 @@ GestureDetector(
                   dropdownColor: const Color(0xFFF3E5F5), // Match your theme
 
             ),
-            _buildFieldLabel("Bank Phone Number *"),
-            Container(
-              decoration: _fieldDecoration(),
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: IntlPhoneField(
-                decoration: const InputDecoration(
-                  hintText: 'Bank Phone Number',
-                  border: InputBorder.none,
-                  errorBorder: InputBorder.none,
-                  filled: true,
-                  fillColor: Color(0xFFF3E5F5),
-                ),
-                initialCountryCode: 'LK',
-                onChanged: (phone) => _bankPhoneNumber = phone.completeNumber,
-                validator: (p) => _validatePhoneNumber(p?.number),
-              ),
-            ),
+            // _buildFieldLabel("Bank Phone Number *"),
+            // Container(
+            //   decoration: _fieldDecoration(),
+            //   padding: const EdgeInsets.symmetric(horizontal: 12),
+            //   child: IntlPhoneField(
+            //     decoration: const InputDecoration(
+            //       hintText: 'Bank Phone Number',
+            //       border: InputBorder.none,
+            //       errorBorder: InputBorder.none,
+            //       filled: true,
+            //       fillColor: Color(0xFFF3E5F5),
+            //     ),
+            //     initialCountryCode: 'LK',
+            //     onChanged: (phone) => _bankPhoneNumber = phone.completeNumber,
+            //     validator: (p) => _validatePhoneNumber(p?.number),
+            //   ),
+            // ),
             const SizedBox(height: 20),
             Center(child: _buildFieldLabel("Soft Copy of the Bank Statement Or\n Passbook *",
             

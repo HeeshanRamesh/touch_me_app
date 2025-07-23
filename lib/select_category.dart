@@ -25,7 +25,7 @@ class _SelectCategoryPageState extends State<SelectCategoryPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Register your Saloon | SPA now',
+                'Create Your Account',
                 style: TextStyle(
                   fontSize: screenHeight * 0.032,
                   fontWeight: FontWeight.bold,
@@ -90,11 +90,11 @@ class _SelectCategoryPageState extends State<SelectCategoryPage> {
                     vertical: 5,
                   ),
                   title: Text(
-                    'Saloon Owners',
+                    'Register your Saloon | SPA',
                     style: TextStyle(fontSize: screenHeight * 0.02),
                   ),
                   subtitle: Text(
-                    'Those who have the shop',
+                    'Saloon and Spa Owaners',
                     style: TextStyle(fontSize: screenHeight * 0.016),
                   ),
                   value: 'Saloon Owners',
@@ -156,44 +156,44 @@ class _SelectCategoryPageState extends State<SelectCategoryPage> {
               // SizedBox(height: screenHeight * 0.005),
 
               // Customer
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.black, width: 1),
-                  borderRadius: BorderRadius.circular(8),
-                  color:
-                      _selectedCategory == 'Customer'
-                          ? const Color.fromARGB(255, 147, 117, 165)
-                          : Colors.transparent,
-                ),
-                child: RadioListTile<String>(
-                  dense: true,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
-                  ),
-                  title: Text(
-                    'Customer',
-                    style: TextStyle(fontSize: screenHeight * 0.02),
-                  ),
-                  subtitle: Text(
-                    'Those who need Service',
-                    style: TextStyle(fontSize: screenHeight * 0.016),
-                  ),
-                  value: 'Customer',
-                  groupValue: _selectedCategory,
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedCategory = value;
-                    });
-                  },
-                  activeColor: const Color(0xFF6A1B9A),
-                  secondary: Image.asset(
-                    'assets/customer_icon.png',
-                    height: screenHeight * 0.025,
-                    width: screenHeight * 0.025,
-                  ),
-                ),
-              ),
+              // Container(
+              //   decoration: BoxDecoration(
+              //     border: Border.all(color: Colors.black, width: 1),
+              //     borderRadius: BorderRadius.circular(8),
+              //     color:
+              //         _selectedCategory == 'Customer'
+              //             ? const Color.fromARGB(255, 147, 117, 165)
+              //             : Colors.transparent,
+              //   ),
+              //   child: RadioListTile<String>(
+              //     dense: true,
+              //     contentPadding: const EdgeInsets.symmetric(
+              //       horizontal: 10,
+              //       vertical: 5,
+              //     ),
+              //     title: Text(
+              //       'Customer',
+              //       style: TextStyle(fontSize: screenHeight * 0.02),
+              //     ),
+              //     subtitle: Text(
+              //       'Those who need Service',
+              //       style: TextStyle(fontSize: screenHeight * 0.016),
+              //     ),
+              //     value: 'Customer',
+              //     groupValue: _selectedCategory,
+              //     onChanged: (value) {
+              //       setState(() {
+              //         _selectedCategory = value;
+              //       });
+              //     },
+              //     activeColor: const Color(0xFF6A1B9A),
+              //     secondary: Image.asset(
+              //       'assets/customer_icon.png',
+              //       height: screenHeight * 0.025,
+              //       width: screenHeight * 0.025,
+              //     ),
+              //   ),
+              // ),
               SizedBox(height: screenHeight * 0.02),
 
               Text(

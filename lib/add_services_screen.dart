@@ -7,21 +7,21 @@ import 'package:retry/retry.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart'; // Add this import
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:touch_me/merchant_services_screen.dart';
 import 'login_page.dart';
 import '../models/service.dart';
 
 class AddServiceScreen extends StatefulWidget {
-  final Service? service; // Pass service for edit mode
-  final String? serviceId; // Pass ID for edit mode
-  final String? merchantId; // Pass merchantId for add mode.
+  final Service? service;
+  final String? serviceId;
+  final String? merchantId;
 
   const AddServiceScreen({
     super.key,
     this.service,
     this.serviceId,
-    this.merchantId, // Pass merchantId here for ADD mode
+    this.merchantId,
   });
 
   @override
@@ -39,17 +39,48 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
   bool _isSubmitting = false;
   bool _isUploadingImage = false;
   String? _imageUrl;
-  File? _selectedImage; // To store the picked image file for preview
+  File? _selectedImage;
+  
+  String? _selectedServiceCategory;
+  bool _isCustomService = false;
+  
+  final List<String> _serviceCategories = [
+    'Haircut & Styling - Ladies',
+    'Haircut & Styling - Gents',
+    'Haircut & Styling - Kids',
+    'Haircut & Styling - Adults',
+    'Massage',
+    'Bridal',
+    'Tattoo & Piercing',
+    'Facials & Skincare',
+    'Hair Removal',
+    'Nails',
+    'Eyebrow & EyeLashes',
+    'Injectable & Fillers',
+    'Makeup',
+    'Dressing',
+    'Pedicure & Manicure',
+    'Door Step Service',
+    'Custom Service',
+  ];
 
   @override
   void initState() {
     super.initState();
     if (widget.service != null) {
-      _serviceNameController.text = widget.service!.serviceName;
+      String serviceName = widget.service!.serviceName;
+      if (_serviceCategories.contains(serviceName)) {
+        _selectedServiceCategory = serviceName;
+        _isCustomService = false;
+      } else {
+        _selectedServiceCategory = 'Custom Service';
+        _isCustomService = true;
+        _serviceNameController.text = serviceName;
+      }
+      
       _descriptionController.text = widget.service!.serviceDescription;
       _priceController.text = widget.service!.price.toString();
-      _durationController.text =
-          widget.service!.duration ?? ''; // Initialize duration
+      _durationController.text = widget.service!.duration ?? '';
       _imageUrl = widget.service!.image;
     }
   }
@@ -63,31 +94,42 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
     super.dispose();
   }
 
-  // Upload image to Firebase Storage
+  void _onServiceCategoryChanged(String? value) {
+    setState(() {
+      _selectedServiceCategory = value;
+      if (value == 'Custom Service') {
+        _isCustomService = true;
+        _serviceNameController.clear();
+      } else {
+        _isCustomService = false;
+        _serviceNameController.text = value ?? '';
+      }
+    });
+  }
+
+  String _getCurrentServiceName() {
+    if (_isCustomService) {
+      return _serviceNameController.text.trim();
+    } else {
+      return _selectedServiceCategory ?? '';
+    }
+  }
+
   Future<String?> _uploadImageToFirebase(File imageFile) async {
     try {
       setState(() => _isUploadingImage = true);
 
-      // Generate a unique filename
       String fileName = 'service_${DateTime.now().millisecondsSinceEpoch}.jpg';
-
-      // Create a reference to the Firebase Storage location
       Reference storageRef = FirebaseStorage.instance
           .ref()
           .child('service_images')
           .child(fileName);
 
-      // Upload the file
       UploadTask uploadTask = storageRef.putFile(imageFile);
-
-      // Wait for the upload to complete
       TaskSnapshot snapshot = await uploadTask;
-
-      // Get the download URL
       String downloadUrl = await snapshot.ref.getDownloadURL();
 
       print('Image uploaded successfully! Download URL: $downloadUrl');
-
       return downloadUrl;
     } catch (e) {
       print('Error uploading image to Firebase: $e');
@@ -109,14 +151,11 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
     if (_formKey.currentState!.validate()) {
       setState(() => _isSubmitting = true);
       try {
-        // If a new image is selected, upload it to Firebase first
-        String? uploadedImageUrl =
-            _imageUrl; // Keep existing URL if no new image
+        String? uploadedImageUrl = _imageUrl;
 
         if (_selectedImage != null) {
           uploadedImageUrl = await _uploadImageToFirebase(_selectedImage!);
           if (uploadedImageUrl == null) {
-            // Image upload failed, stop the process
             return;
           }
         }
@@ -137,22 +176,19 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
             ),
           );
 
-          // Get merchant ID for navigation
           String? merchantId = widget.merchantId;
           if (merchantId == null || merchantId.isEmpty) {
             merchantId = await storage.read(key: "merchantId");
           }
 
           if (merchantId != null && merchantId.isNotEmpty) {
-            // Navigate to MerchantServicesScreen after success
-            Navigator.pop(context); // Close current screen
+            Navigator.pop(context);
           } else {
-            // If no merchant ID, go back to previous screen
             Navigator.pop(context);
           }
         } else if (response.statusCode == 401) {
           await storage.delete(key: "token");
-          await storage.delete(key: "merchantId"); // Also clear merchant ID
+          await storage.delete(key: "merchantId");
           if (mounted) {
             Navigator.pushAndRemoveUntil(
               context,
@@ -197,7 +233,6 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
     }
   }
 
-  // Modified to accept imageUrl parameter
   Future<http.Response> _sendServiceToBackend(String? imageUrl) async {
     const String baseUrl = 'http://api.touchmeapp.com';
     String endpoint = '';
@@ -223,14 +258,13 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
     final durationText = _durationController.text.trim();
     if (durationText.isEmpty)
       throw const FormatException("Duration cannot be empty");
-    final durationRegex = RegExp(r'^\d+\s*(minutes?|hours?)$');
+    final durationRegex = RegExp(r'^\d+hour:\d+minutes:\d+seconds$');
     if (!durationRegex.hasMatch(durationText)) {
       throw const FormatException(
-        "Invalid duration format. Use e.g., '30 minutes' or '1 hour'",
+        "Invalid duration format. Use Xhour:Yminutes:Zseconds (e.g., 1hour:30minutes:0seconds)",
       );
     }
 
-    // Determine endpoint
     if (widget.serviceId != null) {
       endpoint = '/api/services/${widget.serviceId}';
       method = 'PUT';
@@ -253,9 +287,13 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
       delayFactor: Duration(seconds: 1),
     );
 
-    // Prepare service data with Firebase image URL
+    String currentServiceName = _getCurrentServiceName();
+    if (currentServiceName.isEmpty) {
+      throw const FormatException("Please select or enter a service name");
+    }
+
     final Map<String, dynamic> serviceData = {
-      "serviceName": _serviceNameController.text.trim(),
+      "serviceName": currentServiceName,
       "serviceDescription": _descriptionController.text.trim(),
       "price": price,
       "duration": durationText,
@@ -263,7 +301,6 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
       "image": imageUrl,
     };
 
-    // Include image URL if available
     if (imageUrl != null && imageUrl.isNotEmpty) {
       serviceData["image"] = imageUrl;
       print('Sending image URL to backend: $imageUrl');
@@ -369,12 +406,16 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              _buildInputField("Service Name", _serviceNameController),
+              
+              _buildServiceCategoryDropdown(),
+              
+              if (_isCustomService) _buildCustomServiceNameField(),
+              
               _buildInputField(
                 "Description",
                 _descriptionController,
                 maxLines: 3,
-                validator: null, // Make description optional
+                validator: null,
               ),
               _buildInputField(
                 "Price (LKR)",
@@ -399,22 +440,21 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                 },
               ),
               _buildInputField(
-                "Duration (e.g., 30 minutes, 1 hour)",
+                "Duration (e.g., 1hour:30minutes:0seconds)",
                 _durationController,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'Please enter duration';
                   }
-                  final durationRegex = RegExp(r'^\d+\s*(minutes?|hours?)$');
+                  final durationRegex = RegExp(r'^\d+hour:\d+minutes:\d+seconds$');
                   if (!durationRegex.hasMatch(value.trim())) {
-                    return 'Please enter a valid duration (e.g., 30 minutes, 1 hour)';
+                    return 'Please enter duration in Xhour:Yminutes:Zseconds format (e.g., 1hour:30minutes:0seconds)';
                   }
                   return null;
                 },
               ),
               const SizedBox(height: 16),
 
-              // Image upload section
               _buildImageSection(),
 
               const SizedBox(height: 30),
@@ -460,6 +500,131 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
     );
   }
 
+  Widget _buildServiceCategoryDropdown() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: DropdownButtonFormField<String>(
+        value: _selectedServiceCategory,
+        decoration: InputDecoration(
+          labelText: widget.serviceId != null ? "Service Category" : null,
+          hintText: widget.serviceId != null ? null : "Select Service Category",
+          floatingLabelBehavior:
+              widget.serviceId != null
+                  ? FloatingLabelBehavior.always
+                  : FloatingLabelBehavior.never,
+          labelStyle: const TextStyle(
+            color: Color(0xFF6A1B9A),
+            fontWeight: FontWeight.w500,
+          ),
+          hintStyle: const TextStyle(
+            color: Color(0xFFB39DDB),
+            fontWeight: FontWeight.w500,
+          ),
+          filled: true,
+          fillColor: Colors.white,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 18,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderSide: const BorderSide(color: Color(0xFF6A1B9A), width: 1.4),
+            borderRadius: BorderRadius.circular(30),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderSide: const BorderSide(color: Color(0xFF6A1B9A), width: 2),
+            borderRadius: BorderRadius.circular(30),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderSide: const BorderSide(color: Colors.red, width: 1.4),
+            borderRadius: BorderRadius.circular(30),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderSide: const BorderSide(color: Colors.red, width: 2),
+            borderRadius: BorderRadius.circular(30),
+          ),
+        ),
+        items: _serviceCategories.map((String category) {
+          return DropdownMenuItem<String>(
+            value: category,
+            child: Text(
+              category,
+              style: const TextStyle(
+                color: Colors.black87,
+                fontSize: 14,
+              ),
+            ),
+          );
+        }).toList(),
+        onChanged: _onServiceCategoryChanged,
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please select a service category';
+          }
+          return null;
+        },
+        icon: const Icon(
+          Icons.arrow_drop_down,
+          color: Color(0xFF6A1B9A),
+        ),
+        isExpanded: true,
+        dropdownColor: Colors.white,
+      ),
+    );
+  }
+
+  Widget _buildCustomServiceNameField() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: TextFormField(
+        controller: _serviceNameController,
+        decoration: InputDecoration(
+          labelText: widget.serviceId != null ? "Custom Service Name" : null,
+          hintText: widget.serviceId != null ? null : "Enter custom service name",
+          floatingLabelBehavior:
+              widget.serviceId != null
+                  ? FloatingLabelBehavior.always
+                  : FloatingLabelBehavior.never,
+          labelStyle: const TextStyle(
+            color: Color(0xFF6A1B9A),
+            fontWeight: FontWeight.w500,
+          ),
+          hintStyle: const TextStyle(
+            color: Color(0xFFB39DDB),
+            fontWeight: FontWeight.w500,
+          ),
+          filled: true,
+          fillColor: Colors.white,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 18,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderSide: const BorderSide(color: Color(0xFF6A1B9A), width: 1.4),
+            borderRadius: BorderRadius.circular(30),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderSide: const BorderSide(color: Color(0xFF6A1B9A), width: 2),
+            borderRadius: BorderRadius.circular(30),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderSide: const BorderSide(color: Colors.red, width: 1.4),
+            borderRadius: BorderRadius.circular(30),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderSide: const BorderSide(color: Colors.red, width: 2),
+            borderRadius: BorderRadius.circular(30),
+          ),
+        ),
+        validator: (value) {
+          if (_isCustomService && (value == null || value.trim().isEmpty)) {
+            return 'Please enter a custom service name';
+          }
+          return null;
+        },
+      ),
+    );
+  }
+
   Widget _buildImageSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -475,7 +640,6 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
         const SizedBox(height: 8),
 
         if (_selectedImage != null)
-          // Show selected image preview
           Column(
             children: [
               Container(
@@ -526,7 +690,6 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
             ],
           )
         else if (_imageUrl != null && _imageUrl!.isNotEmpty)
-          // Show existing image from URL
           Column(
             children: [
               Container(
@@ -567,7 +730,6 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
             ],
           )
         else
-          // Show upload button
           ElevatedButton.icon(
             onPressed: _isUploadingImage ? null : _pickImage,
             icon: const Icon(Icons.cloud_upload, color: Colors.white),
@@ -607,11 +769,11 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
           labelText:
               widget.serviceId != null
                   ? hint
-                  : null, // Show label only in edit mode
+                  : null,
           hintText:
               widget.serviceId != null
                   ? null
-                  : hint, // Show hint only in add mode
+                  : hint,
           floatingLabelBehavior:
               widget.serviceId != null
                   ? FloatingLabelBehavior.always

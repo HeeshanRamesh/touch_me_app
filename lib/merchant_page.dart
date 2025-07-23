@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:touch_me/client_page.dart';
 import 'package:touch_me/merchant_catalog_page.dart';
+import 'package:touch_me/merchant_login_page.dart';
 import 'package:touch_me/merchant_notification.dart';
 import 'package:touch_me/merchant_profile_page.dart';
 import 'package:touch_me/merchant_services_screen.dart';
@@ -181,17 +182,80 @@ class _MerchantPageState extends State<MerchantPage> {
                         },
                       ),
                       const SizedBox(width: 10),
-                      CircleAvatar(
-                        radius: 20,
-                        backgroundColor: Colors.purple,
-                        child: Text(
-                          _displayName.isNotEmpty ? _displayName[0].toUpperCase() : '?',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
+                      PopupMenuButton<String>(
+                        offset: const Offset(0, 50), // Positions the popup below the CircleAvatar
+                        child: CircleAvatar(
+                          radius: 20,
+                          backgroundColor: Colors.purple,
+                          child: Text(
+                            _displayName.isNotEmpty ? _displayName[0].toUpperCase() : '?',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
                           ),
                         ),
+                        onSelected: (value) async {
+                          if (value == 'logout') {
+                            // Clear stored data
+                            final storage = const FlutterSecureStorage();
+                            await storage.delete(key: "userName");
+                            await storage.delete(key: "merchantId");
+                            //await storage.delete(key: "userEmail");
+                            if (context.mounted) {
+                              // Navigate to login page
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(builder: (_) => const MerchantLoginPage()),
+                              );
+                            }
+                          }
+                        },
+                        itemBuilder: (BuildContext context) {
+                          return [
+                            PopupMenuItem<String>(
+                              enabled: false, // Disable selection for name and email
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _displayName.isNotEmpty ? _displayName : 'Unknown',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                  // const SizedBox(height: 4),
+                                  // FutureBuilder<String?>(
+                                  //   future: const FlutterSecureStorage().read(key: "userEmail"),
+                                  //   builder: (context, snapshot) {
+                                  //     return Text(
+                                  //       snapshot.data ?? 'No email available',
+                                  //       style: const TextStyle(
+                                  //         fontSize: 14,
+                                  //         color: Colors.grey,
+                                  //       ),
+                                  //     );
+                                  //   },
+                                  // ),
+                                ],
+                              ),
+                            ),
+                            const PopupMenuDivider(),
+                            PopupMenuItem<String>(
+                              value: 'logout',
+                              child: Row(
+                                children: const [
+                                  Icon(Icons.logout, color: Colors.red),
+                                  SizedBox(width: 8),
+                                  Text('Logout', style: TextStyle(color: Colors.red)),
+                                ],
+                              ),
+                            ),
+                          ];
+                        },
                       ),
                     ],
                   ),
@@ -265,12 +329,12 @@ class _MerchantPageState extends State<MerchantPage> {
                   _buildFeatureTile(
                     context,
                     imagePath: 'assets/booking.png',
-                    title: "Online Booking",
+                    title: "Bookings",
                     color: const Color(0xFFB71C9B),
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) =>  OnlineBookingShowPage(userName: _displayName,)),
+                        MaterialPageRoute(builder: (_) => OnlineBookingShowPage(userName: _displayName)),
                       );
                     },
                   ),
@@ -282,7 +346,7 @@ class _MerchantPageState extends State<MerchantPage> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => ServiceMerchantPage(userName: _displayName,)),
+                        MaterialPageRoute(builder: (_) => ServiceMerchantPage(userName: _displayName)),
                       );
                     },
                   ),
@@ -408,4 +472,3 @@ class SettingsPage extends StatelessWidget {
     );
   }
 }
-                    
