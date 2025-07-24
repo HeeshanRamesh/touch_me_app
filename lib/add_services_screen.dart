@@ -33,6 +33,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
   final TextEditingController _durationController = TextEditingController();
+  final TextEditingController _specialOfferController = TextEditingController();
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final storage = const FlutterSecureStorage();
@@ -80,7 +81,24 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
       
       _descriptionController.text = widget.service!.serviceDescription;
       _priceController.text = widget.service!.price.toString();
-      _durationController.text = widget.service!.duration ?? '';
+      
+      // Handle duration - convert to minutes if it's in string format
+      if (widget.service!.duration != null) {
+        if (widget.service!.duration!.contains('hour:')) {
+          // Convert from string format to minutes
+          try {
+            int minutes = _parseStringDurationToMinutes(widget.service!.duration!);
+            _durationController.text = minutes.toString();
+          } catch (e) {
+            _durationController.text = '60'; // Default to 60 minutes
+          }
+        } else {
+          // Already in numeric format
+          _durationController.text = widget.service!.duration!;
+        }
+      }
+      
+      _specialOfferController.text = widget.service!.specialOffer ?? '';
       _imageUrl = widget.service!.image;
     }
   }
@@ -91,6 +109,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
     _descriptionController.dispose();
     _priceController.dispose();
     _durationController.dispose();
+    _specialOfferController.dispose();
     super.dispose();
   }
 
@@ -112,6 +131,25 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
       return _serviceNameController.text.trim();
     } else {
       return _selectedServiceCategory ?? '';
+    }
+  }
+
+  // Helper function to convert old string format to minutes (for backward compatibility)
+  int _parseStringDurationToMinutes(String durationText) {
+    final regex = RegExp(r'(\d+)hour:(\d+)minutes:(\d+)seconds');
+    final match = regex.firstMatch(durationText);
+    
+    if (match != null) {
+      final hours = int.parse(match.group(1) ?? '0');
+      final minutes = int.parse(match.group(2) ?? '0');
+      return (hours * 60) + minutes;
+    }
+    
+    // If it's already a number, try to parse it
+    try {
+      return int.parse(durationText);
+    } catch (e) {
+      throw const FormatException("Invalid duration format");
     }
   }
 
@@ -258,11 +296,16 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
     final durationText = _durationController.text.trim();
     if (durationText.isEmpty)
       throw const FormatException("Duration cannot be empty");
-    final durationRegex = RegExp(r'^\d+hour:\d+minutes:\d+seconds$');
-    if (!durationRegex.hasMatch(durationText)) {
-      throw const FormatException(
-        "Invalid duration format. Use Xhour:Yminutes:Zseconds (e.g., 1hour:30minutes:0seconds)",
-      );
+    
+    // Parse duration as integer (minutes)
+    int durationInMinutes;
+    try {
+      durationInMinutes = int.parse(durationText);
+      if (durationInMinutes <= 0) {
+        throw const FormatException("Duration must be greater than 0");
+      }
+    } catch (e) {
+      throw const FormatException("Duration must be a valid number (in minutes)");
     }
 
     if (widget.serviceId != null) {
@@ -292,14 +335,20 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
       throw const FormatException("Please select or enter a service name");
     }
 
+    // Service data with duration as number (minutes)
     final Map<String, dynamic> serviceData = {
       "serviceName": currentServiceName,
       "serviceDescription": _descriptionController.text.trim(),
       "price": price,
-      "duration": durationText,
+      "duration": durationInMinutes, // Send as number (minutes)
       "isActive": true,
-      "image": imageUrl,
     };
+
+    // Handle special offer if provided
+    final specialOfferText = _specialOfferController.text.trim();
+    if (specialOfferText.isNotEmpty) {
+      serviceData["specialOffer"] = specialOfferText;
+    }
 
     if (imageUrl != null && imageUrl.isNotEmpty) {
       serviceData["image"] = imageUrl;
@@ -440,19 +489,53 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                 },
               ),
               _buildInputField(
-                "Duration (e.g., 1hour:30minutes:0seconds)",
+                "Duration (in minutes, e.g., 90)",
                 _durationController,
+                inputType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                ],
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'Please enter duration';
                   }
-                  final durationRegex = RegExp(r'^\d+hour:\d+minutes:\d+seconds$');
-                  if (!durationRegex.hasMatch(value.trim())) {
-                    return 'Please enter duration in Xhour:Yminutes:Zseconds format (e.g., 1hour:30minutes:0seconds)';
+                  try {
+                    final duration = int.parse(value.trim());
+                    if (duration <= 0) {
+                      return 'Duration must be greater than 0';
+                    }
+                    if (duration > 1440) { // More than 24 hours
+                      return 'Duration cannot exceed 1440 minutes (24 hours)';
+                    }
+                    return null;
+                  } catch (e) {
+                    return 'Please enter a valid number (in minutes)';
+                  }
+                },
+              ),
+
+              _buildInputField(
+                "Special Offer (e.g., 10%)",
+                _specialOfferController,
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'^\d{0,2}%?$')),
+                ],
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return null; // Optional field
+                  }
+                  final pattern = RegExp(r'^\d{1,2}%$');
+                  if (!pattern.hasMatch(value.trim())) {
+                    return 'Enter a valid percentage (e.g., 10%)';
+                  }
+                  final percent = int.tryParse(value.replaceAll('%', ''));
+                  if (percent == null || percent < 0 || percent > 99) {
+                    return 'Percentage must be between 0% and 99%';
                   }
                   return null;
                 },
               ),
+
               const SizedBox(height: 16),
 
               _buildImageSection(),

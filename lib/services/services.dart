@@ -199,6 +199,7 @@ Future<List<Service>> fetchServicesByMerchant(
 }
 
 // New function to fetch services by merchant and filter by category
+// Replace your fetchServicesByMerchantAndCategory function with this:
 Future<List<Service>> fetchServicesByMerchantAndCategory(
   String merchantId,
   String serviceName,
@@ -207,12 +208,35 @@ Future<List<Service>> fetchServicesByMerchantAndCategory(
   try {
     final allMerchantServices = await fetchServicesByMerchant(merchantId, token);
     
+    // Add debug logging
+    print('🔍 Filtering services for merchant: $merchantId');
+    print('🔍 Looking for category: "$serviceName"');
+    print('🔍 Total services found: ${allMerchantServices.length}');
+    
+    for (final service in allMerchantServices) {
+      print('🔍 Service: "${service.serviceName}"');
+    }
+    
+    // ONLY exact match - service name must equal category name
     final filteredServices = allMerchantServices.where((service) {
-      return service.serviceName.toLowerCase().contains(serviceName.toLowerCase()) ||
-             _isServiceMatchingCategory(service.serviceName, serviceName);
+      final serviceNameTrimmed = service.serviceName.trim();
+      final categoryNameTrimmed = serviceName.trim();
+      
+      final exactMatch = serviceNameTrimmed == categoryNameTrimmed;
+      
+      print('🔍 Comparing "${service.serviceName}" with "$serviceName"');
+      print('   - Exact match: $exactMatch');
+      
+      return exactMatch;
     }).toList();
 
     print('ℹ️ Filtered ${filteredServices.length} services for merchant $merchantId and category: $serviceName');
+    
+    // Log the filtered results
+    for (final service in filteredServices) {
+      print('✅ Matched service: "${service.serviceName}"');
+    }
+    
     return filteredServices;
   } catch (e) {
     print('❌ Error fetching services by merchant and category: $e');

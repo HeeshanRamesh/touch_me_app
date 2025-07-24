@@ -414,23 +414,23 @@ class _MerchantProfileEditPageState extends State<MerchantProfileEditPage> {
                       label: 'Outlet Address',
                     ),
 
-                    // Manager Information Section
-                    _buildSectionTitle('Manager Information'),
-                    _buildTextField(
-                      controller: _managerNameController,
-                      label: 'Manager Name',
-                    ),
-                    _buildTextField(
-                      controller: _managerEmailController,
-                      label: 'Manager Email',
-                      enabled: false,
-                      keyboardType: TextInputType.emailAddress,
-                    ),
-                    _buildTextField(
-                      controller: _managerPhoneController,
-                      label: 'Manager Phone',
-                      keyboardType: TextInputType.phone,
-                    ),
+                    // // Manager Information Section
+                    // _buildSectionTitle('Manager Information'),
+                    // _buildTextField(
+                    //   controller: _managerNameController,
+                    //   label: 'Manager Name',
+                    // ),
+                    // _buildTextField(
+                    //   controller: _managerEmailController,
+                    //   label: 'Manager Email',
+                    //   enabled: false,
+                    //   keyboardType: TextInputType.emailAddress,
+                    // ),
+                    // _buildTextField(
+                    //   controller: _managerPhoneController,
+                    //   label: 'Manager Phone',
+                    //   keyboardType: TextInputType.phone,
+                    // ),
 
                     // Bank Details Section
                     _buildSectionTitle('Bank Details'),
@@ -443,11 +443,11 @@ class _MerchantProfileEditPageState extends State<MerchantProfileEditPage> {
                       label: 'Account Number',
                       keyboardType: TextInputType.number,
                     ),
-                    _buildTextField(
-                      controller: _bankPhoneController,
-                      label: 'Bank Phone',
-                      keyboardType: TextInputType.phone,
-                    ),
+                    // _buildTextField(
+                    //   controller: _bankPhoneController,
+                    //   label: 'Bank Phone',
+                    //   keyboardType: TextInputType.phone,
+                    // ),
                     _buildTextField(
                       controller: _bankNameController,
                       label: 'Bank Name',

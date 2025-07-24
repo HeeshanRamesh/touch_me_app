@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // Add this import
+import 'package:touch_me/merchant_forgot_password.dart';
 import 'package:touch_me/merchant_page.dart';
 import 'package:touch_me/merchant_signup_main.dart';
 import 'package:touch_me/saloon_dashboard_screen.dart';
@@ -309,7 +310,14 @@ class _MerchantLoginPageState extends State<MerchantLoginPage> {
               Align(
                 alignment: Alignment.centerRight,
                 child: GestureDetector(
-                  onTap: () {}, // TODO: Implement forgot password
+                  onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const MerchantForgetPasswordPage(),
+                        ),
+                      );
+                    }, // TODO: Implement forgot password
                   child: const Text(
                     'Forgot Password?',
                     style: TextStyle(

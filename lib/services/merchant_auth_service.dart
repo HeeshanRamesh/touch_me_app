@@ -309,4 +309,51 @@ class MerchantAuthService {
       return {'success': false, 'message': 'Network error: ${e.toString()}'};
     }
   }
+  // Add this method to your MerchantAuthService class
+
+Future<Map<String, dynamic>> forgotPassword(String email) async {
+  const String forgotPasswordUrl = 'http://api.touchmeapp.com/api/auth/forgot-password';
+  
+  try {
+    print('Forgot Password Request for email: $email');
+    
+    final response = await http.post(
+      Uri.parse(forgotPasswordUrl),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email}),
+    );
+
+    print('Forgot Password Response: Status=${response.statusCode}, Body=${response.body}');
+
+    final responseData = response.body.isNotEmpty ? jsonDecode(response.body) : {};
+
+    if (response.statusCode == 200) {
+      return {
+        'success': true,
+        'message': responseData['message'] ?? 'Password reset email sent successfully',
+      };
+    } else if (response.statusCode == 404) {
+      return {
+        'success': false,
+        'message': responseData['message'] ?? 'Email address not found',
+      };
+    } else if (response.statusCode == 400) {
+      return {
+        'success': false,
+        'message': responseData['message'] ?? 'Invalid email address',
+      };
+    } else {
+      return {
+        'success': false,
+        'message': responseData['message'] ?? 'Failed to send reset email: ${response.statusCode}',
+      };
+    }
+  } catch (e) {
+    print('Forgot Password Error: $e');
+    return {
+      'success': false,
+      'message': 'Network error: ${e.toString()}',
+    };
+  }
+}
 }

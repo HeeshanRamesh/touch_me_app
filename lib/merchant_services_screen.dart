@@ -187,12 +187,12 @@ class _MerchantServicesScreenState extends State<MerchantServicesScreen> {
   }
 
   // Helper method to build image widget
-  Widget _buildImageWidget(String imageString) {
+  Widget _buildImageWidget(String imageString, {double size = 56}) {
     if (imageString.isEmpty) {
-      return const Icon(
+      return Icon(
         Icons.design_services,
-        size: 40,
-        color: Color(0xFF6A1B9A),
+        size: size * 0.7,
+        color: const Color(0xFF6A1B9A),
       );
     }
 
@@ -203,12 +203,12 @@ class _MerchantServicesScreenState extends State<MerchantServicesScreen> {
           borderRadius: BorderRadius.circular(12),
           child: Image.memory(
             imageBytes,
-            width: 56,
-            height: 56,
+            width: size,
+            height: size,
             fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => const Icon(
+            errorBuilder: (_, __, ___) => Icon(
               Icons.image_not_supported,
-              size: 42,
+              size: size * 0.7,
             ),
           ),
         );
@@ -219,21 +219,203 @@ class _MerchantServicesScreenState extends State<MerchantServicesScreen> {
         borderRadius: BorderRadius.circular(12),
         child: Image.network(
           imageString,
-          width: 56,
-          height: 56,
+          width: size,
+          height: size,
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => const Icon(
+          errorBuilder: (_, __, ___) => Icon(
             Icons.image_not_supported,
-            size: 42,
+            size: size * 0.7,
           ),
         ),
       );
     }
 
     // Fallback if image can't be loaded
-    return const Icon(
+    return Icon(
       Icons.image_not_supported,
-      size: 42,
+      size: size * 0.7,
+    );
+  }
+
+  // Show service details dialog
+  void showServiceDetails(Service service) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header with image and close button
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildImageWidget(service.image, size: 80),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          service.serviceName,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF6A1B9A),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Text(
+                              "LKR ${service.price.toStringAsFixed(0)}",
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.green,
+                              ),
+                            ),
+                            if (service.specialOffer?.isNotEmpty == true) ...[
+                              const SizedBox(width: 12),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.orange,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Text(
+                                  "SPECIAL OFFER",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              
+              // Service details
+              if (service.specialOffer?.isNotEmpty == true) ...[
+                const Text(
+                  "Special Offer",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.orange,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade50,
+                    border: Border.all(color: Colors.orange.shade200),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    service.specialOffer!,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+              
+              if (service.serviceDescription?.isNotEmpty == true) ...[
+                const Text(
+                  "Description",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  service.serviceDescription!,
+                  style: const TextStyle(fontSize: 14),
+                ),
+                const SizedBox(height: 16),
+              ],
+              
+              if (service.duration?.isNotEmpty == true) ...[
+                const Text(
+                  "Duration",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  service.duration!,
+                  style: const TextStyle(fontSize: 14),
+                ),
+                const SizedBox(height: 20),
+              ],
+              
+              // Action buttons
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      goToEdit(service);
+                    },
+                    icon: const Icon(Icons.edit, size: 18),
+                    label: const Text("Edit"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF6A1B9A),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      confirmDelete(service);
+                    },
+                    icon: const Icon(Icons.delete, size: 18),
+                    label: const Text("Delete"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -248,74 +430,108 @@ class _MerchantServicesScreenState extends State<MerchantServicesScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
-        
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _isError
               ? const Center(child: Text("Failed to load services"))
               : _services.isEmpty
-                  ? const Center(child: Text("No services found. Try to add."))
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.design_services_outlined,
+                            size: 64,
+                            color: Colors.grey,
+                          ),
+                          const SizedBox(height: 16),
+                          const Text(
+                            "No services found",
+                            style: TextStyle(fontSize: 18, color: Colors.grey),
+                          ),
+                          const SizedBox(height: 8),
+                          ElevatedButton(
+                            onPressed: goToAdd,
+                            child: const Text("Add Service"),
+                          ),
+                        ],
+                      ),
+                    )
                   : ListView.builder(
-                      padding: const EdgeInsets.all(14),
+                      padding: const EdgeInsets.all(16),
                       itemCount: _services.length,
                       itemBuilder: (context, index) {
                         final service = _services[index];
                         return Card(
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(18),
+                            borderRadius: BorderRadius.circular(15),
                           ),
-                          elevation: 2,
-                          margin: const EdgeInsets.only(bottom: 16),
-                          child: ListTile(
-                            leading: _buildImageWidget(service.image),
-                            title: Text(
-                              service.serviceName,
-                              style: const TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                if (service.serviceDescription?.isNotEmpty == true)
-                                  Text(
-                                    service.serviceDescription!,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                if (service.duration?.isNotEmpty == true)
-                                  Text(
-                                    'Duration: ${service.duration}',
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey,
+                          elevation: 3,
+                          margin: const EdgeInsets.only(bottom: 12),
+                          child: InkWell(
+                            onTap: () => showServiceDetails(service),
+                            borderRadius: BorderRadius.circular(15),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Row(
+                                children: [
+                                  _buildImageWidget(service.image, size: 50),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          service.serviceName,
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Row(
+                                          children: [
+                                            Text(
+                                              "LKR ${service.price.toStringAsFixed(0)}",
+                                              style: const TextStyle(
+                                                color: Color(0xFF6A1B9A),
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                            if (service.specialOffer?.isNotEmpty == true) ...[
+                                              const SizedBox(width: 8),
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(
+                                                  horizontal: 6,
+                                                  vertical: 2,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.orange,
+                                                  borderRadius: BorderRadius.circular(10),
+                                                ),
+                                                child: const Text(
+                                                  "OFFER",
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                      ],
                                     ),
                                   ),
-                              ],
-                            ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  "LKR ${service.price.toStringAsFixed(0)}",
-                                  style: const TextStyle(
-                                    color: Color(0xFF6A1B9A),
-                                    fontWeight: FontWeight.bold,
+                                  const Icon(
+                                    Icons.arrow_forward_ios,
+                                    color: Colors.grey,
+                                    size: 16,
                                   ),
-                                ),
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.edit,
-                                    color: Color(0xFF6A1B9A),
-                                  ),
-                                  onPressed: () => goToEdit(service),
-                                  tooltip: 'Edit',
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete, color: Colors.red),
-                                  onPressed: () => confirmDelete(service),
-                                  tooltip: 'Delete',
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         );

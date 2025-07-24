@@ -194,15 +194,15 @@ class _SelectCategoryPageState extends State<SelectCategoryPage> {
               //     ),
               //   ),
               // ),
-              SizedBox(height: screenHeight * 0.02),
+              // SizedBox(height: screenHeight * 0.02),
 
-              Text(
-                'Once you are done selecting your profession, proceed by clicking on the next button',
-                style: TextStyle(
-                  fontSize: screenHeight * 0.018,
-                  color: Colors.black,
-                ),
-              ),
+              // Text(
+              //   'Once you are done selecting your profession, proceed by clicking on the next button',
+              //   style: TextStyle(
+              //     fontSize: screenHeight * 0.018,
+              //     color: Colors.black,
+              //   ),
+              // ),
                SizedBox(height: screenHeight * 0.03),
 
               // Next Button

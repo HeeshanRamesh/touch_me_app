@@ -16,7 +16,7 @@ class MerchantSettingPage extends StatefulWidget {
 
 class _MerchantSettingPageState extends State<MerchantSettingPage> {
   final storage = const FlutterSecureStorage();
-  String? _merchantId;
+  String? _merchantId; 
 
   @override
   void initState() {
@@ -136,8 +136,8 @@ class _MerchantSettingPageState extends State<MerchantSettingPage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => PaymentMethodsPage(),
-                          ),
+                            builder: (context) => PaymentMethodsPage()
+                          ), 
                         );
                       },
                     ),

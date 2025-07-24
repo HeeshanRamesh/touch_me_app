@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 
 class PaymentMethod {
@@ -19,6 +20,10 @@ class PaymentMethod {
 }
 
 class PaymentMethodsPage extends StatefulWidget {
+  final String? merchantId;
+
+  const PaymentMethodsPage({Key? key, this.merchantId}) : super(key: key);
+
   @override
   _PaymentMethodsPageState createState() => _PaymentMethodsPageState();
 }
@@ -27,6 +32,11 @@ class _PaymentMethodsPageState extends State<PaymentMethodsPage>
     with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
+  final storage = const FlutterSecureStorage();
+
+  String? _merchantId;
+  String? _authToken;
+  bool _isLoading = false;
 
   List<PaymentMethod> paymentMethods = [
     PaymentMethod(
@@ -77,13 +87,27 @@ class _PaymentMethodsPageState extends State<PaymentMethodsPage>
   void initState() {
     super.initState();
     _animationController = AnimationController(
-      duration: Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 600),
       vsync: this,
     );
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
     _animationController.forward();
+    _initializeMerchantData();
+  }
+
+  Future<void> _initializeMerchantData() async {
+    try {
+      _merchantId = widget.merchantId ?? await storage.read(key: 'merchantId');
+      _authToken = await storage.read(key: 'authToken');
+      if (_merchantId == null || _authToken == null) {
+        _showSnackBar('Missing merchant ID or auth token', Colors.orange);
+      }
+    } catch (error) {
+      _showSnackBar('Error initializing merchant data', Colors.red);
+    }
+    setState(() {});
   }
 
   @override
@@ -92,8 +116,7 @@ class _PaymentMethodsPageState extends State<PaymentMethodsPage>
     super.dispose();
   }
 
-  int get selectedCount =>
-      paymentMethods.where((method) => method.isSelected).length;
+  int get selectedCount => paymentMethods.where((method) => method.isSelected).length;
 
   void clearSelection() {
     setState(() {
@@ -103,54 +126,114 @@ class _PaymentMethodsPageState extends State<PaymentMethodsPage>
     });
   }
 
-  Future<void> saveToMongoDB(List<String> selectedMethods) async {
-    final url = Uri.parse('http://localhost:3000/api/payment-methods'); // Replace with your backend URL
-    try {
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'userId': 'default_user', // Replace with actual user ID if available
-          'selectedMethods': selectedMethods,
-        }),
-      );
+  void _showSnackBar(String message, Color backgroundColor) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: backgroundColor,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
 
-      if (response.statusCode == 201) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Payment methods saved successfully!'),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-          ),
+  Future<void> saveToAPI(List<String> selectedMethodIds) async {
+    if (_merchantId == null || _authToken == null) {
+      _showSnackBar('Missing authentication data', Colors.red);
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      // Clean the merchant ID to remove any whitespace
+      final cleanMerchantId = _merchantId!.trim();
+      final cleanAuthToken = _authToken!.trim();
+      
+      final url = Uri.parse('http://api.touchmeapp.com/api/merchants/$cleanMerchantId/payment');
+      
+      // Convert method IDs to display names that the API expects
+      final methodIdToName = {
+        'cash': 'Cash',
+        'debit-card': 'Debit Card',
+        'credit-card': 'Credit Card',
+        'online-payment': 'Online Payment',
+        'mobile-payment': 'Mobile Payment',
+        'lanka-pay': 'Lanka Pay',
+        'qr-pay': 'QR Pay',
+      };
+      
+      // For now, send requests for each payment method individually
+      // since the API expects single paymentOption format
+      List<String> successfulMethods = [];
+      List<String> failedMethods = [];
+      
+      for (String methodId in selectedMethodIds) {
+        final paymentName = methodIdToName[methodId] ?? methodId;
+        final requestBody = {
+          'paymentOption': paymentName,
+        };
+        
+        print('Sending request for: $paymentName');
+        print('Request body: ${jsonEncode(requestBody)}');
+        
+        final response = await http.post(
+          url,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $cleanAuthToken',
+            'Accept': 'application/json',
+          },
+          body: jsonEncode(requestBody),
+        ).timeout(
+          const Duration(seconds: 30),
+          onTimeout: () {
+            throw Exception('Request timeout');
+          },
         );
+
+        print('Response status: ${response.statusCode}');
+        print('Response body: ${response.body}');
+
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          successfulMethods.add(paymentName);
+        } else {
+          failedMethods.add(paymentName);
+          print('Failed to save $paymentName: ${response.statusCode}');
+        }
+      }
+      
+      // Show results
+      if (failedMethods.isEmpty) {
+        _showSnackBar('All payment methods saved successfully!', Colors.green);
+      } else if (successfulMethods.isEmpty) {
+        _showSnackBar('Failed to save payment methods', Colors.red);
       } else {
-        throw Exception('Failed to save payment methods: ${response.statusCode}');
+        _showSnackBar(
+          'Saved: ${successfulMethods.length}, Failed: ${failedMethods.length}', 
+          Colors.orange
+        );
       }
     } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error saving payment methods: $error'),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      String errorMessage = 'Error saving payment methods';
+      if (error.toString().contains('SocketException') || error.toString().contains('Failed host lookup')) {
+        errorMessage = 'Network connection error. Please check your internet connection.';
+      } else if (error.toString().contains('timeout')) {
+        errorMessage = 'Request timeout. Please try again.';
+      } else {
+        errorMessage = 'Error: ${error.toString()}';
+      }
+      _showSnackBar(errorMessage, Colors.red);
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
   void confirmSelection() {
-    final selectedMethods = paymentMethods
-        .where((method) => method.isSelected)
-        .map((method) => method.name)
-        .toList();
+    final selectedMethods = paymentMethods.where((method) => method.isSelected).toList();
 
     if (selectedMethods.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Please select at least one payment method.'),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      _showSnackBar('Please select at least one payment method.', Colors.red);
       return;
     }
 
@@ -161,18 +244,18 @@ class _PaymentMethodsPageState extends State<PaymentMethodsPage>
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
-          title: Text('Selected Payment Methods'),
+          title: const Text('Selected Payment Methods'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: selectedMethods
                 .map((method) => Padding(
-                      padding: EdgeInsets.symmetric(vertical: 4),
+                      padding: const EdgeInsets.symmetric(vertical: 4),
                       child: Row(
                         children: [
-                          Icon(Icons.check_circle, color: Colors.green, size: 20),
-                          SizedBox(width: 8),
-                          Text(method),
+                          const Icon(Icons.check_circle, color: Colors.green, size: 20),
+                          const SizedBox(width: 8),
+                          Text(method.name),
                         ],
                       ),
                     ))
@@ -181,14 +264,25 @@ class _PaymentMethodsPageState extends State<PaymentMethodsPage>
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text('CANCEL'),
+              child: const Text('CANCEL'),
             ),
             TextButton(
-              onPressed: () async {
-                await saveToMongoDB(selectedMethods); // Save to MongoDB
-                Navigator.of(context).pop(); // Close dialog
-              },
-              child: Text('SAVE'),
+              onPressed: _isLoading
+                  ? null
+                  : () async {
+                      final selectedMethodIds = selectedMethods.map((method) => method.id).toList();
+                      await saveToAPI(selectedMethodIds);
+                      if (!_isLoading && mounted) {
+                        Navigator.of(context).pop();
+                      }
+                    },
+              child: _isLoading
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('SAVE'),
             ),
           ],
         );
@@ -200,7 +294,7 @@ class _PaymentMethodsPageState extends State<PaymentMethodsPage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Payment Methods',
           style: TextStyle(
             color: Colors.white,
@@ -209,133 +303,141 @@ class _PaymentMethodsPageState extends State<PaymentMethodsPage>
           ),
         ),
         backgroundColor: const Color(0xFF6A1B9A),
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: Container(
-        child: SafeArea(
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: Padding(
-              padding: EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.95),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      padding: EdgeInsets.all(20),
-                      child: Column(
-                        children: [
-                          Expanded(
-                            child: ListView.separated(
-                              itemCount: paymentMethods.length,
-                              separatorBuilder: (context, index) =>
-                                  SizedBox(height: 16),
-                              itemBuilder: (context, index) {
-                                return PaymentMethodCard(
-                                  paymentMethod: paymentMethods[index],
-                                  onTap: () {
-                                    setState(() {
-                                      paymentMethods[index].isSelected =
-                                          !paymentMethods[index].isSelected;
-                                    });
-                                  },
-                                );
-                              },
-                            ),
-                          ),
-                          SizedBox(height: 20),
-                          Container(
+      body: SafeArea(
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.95),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      children: [
+                        if (_isLoading)
+                          const Padding(
                             padding: EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: selectedCount > 0
-                                  ? Color(0xFF667eea)
-                                  : Colors.grey[100],
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              selectedCount == 0
-                                  ? 'No payment methods selected'
-                                  : selectedCount == 1
-                                      ? '1 payment method selected'
-                                      : '$selectedCount payment methods selected',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: selectedCount > 0
-                                    ? Colors.white
-                                    : Colors.grey[600],
-                              ),
-                              textAlign: TextAlign.center,
+                            child: Column(
+                              children: [
+                                CircularProgressIndicator(),
+                                SizedBox(height: 8),
+                                Text('Saving payment methods...'),
+                              ],
                             ),
                           ),
-                          SizedBox(height: 16),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: ElevatedButton(
-                                  onPressed: clearSelection,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.transparent,
-                                    foregroundColor: Color(0xFF667eea),
-                                    elevation: 0,
-                                    side: BorderSide(
-                                      color: Color(0xFF667eea),
-                                      width: 2,
-                                    ),
-                                    padding: EdgeInsets.symmetric(vertical: 16),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
+                        Expanded(
+                          child: ListView.separated(
+                            itemCount: paymentMethods.length,
+                            separatorBuilder: (context, index) => const SizedBox(height: 16),
+                            itemBuilder: (context, index) {
+                              return PaymentMethodCard(
+                                paymentMethod: paymentMethods[index],
+                                onTap: () {
+                                  setState(() {
+                                    paymentMethods[index].isSelected = !paymentMethods[index].isSelected;
+                                  });
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: selectedCount > 0 ? const Color(0xFF667eea) : Colors.grey[100],
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            selectedCount == 0
+                                ? 'No payment methods selected'
+                                : selectedCount == 1
+                                    ? '1 payment method selected'
+                                    : '$selectedCount payment methods selected',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: selectedCount > 0 ? Colors.white : Colors.grey[600],
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: _isLoading ? null : clearSelection,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.transparent,
+                                  foregroundColor: const Color(0xFF667eea),
+                                  elevation: 0,
+                                  side: const BorderSide(
+                                    color: Color(0xFF667eea),
+                                    width: 2,
                                   ),
-                                  child: Text(
-                                    'CLEAR ALL',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                      letterSpacing: 0.5,
-                                    ),
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'CLEAR ALL',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 0.5,
                                   ),
                                 ),
                               ),
-                              SizedBox(width: 16),
-                              Expanded(
-                                child: ElevatedButton(
-                                  onPressed: confirmSelection,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Color(0xFF667eea),
-                                    foregroundColor: Colors.white,
-                                    elevation: 4,
-                                    shadowColor:
-                                        Color(0xFF667eea).withOpacity(0.4),
-                                    padding: EdgeInsets.symmetric(vertical: 16),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: _isLoading ? null : confirmSelection,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF667eea),
+                                  foregroundColor: Colors.white,
+                                  elevation: 4,
+                                  shadowColor: const Color(0xFF667eea).withOpacity(0.4),
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
-                                  child: FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    child: Text(
-                                      'CONFIRM',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                        letterSpacing: 0.5,
+                                ),
+                                child: _isLoading
+                                    ? const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : const Text(
+                                        'CONFIRM',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          letterSpacing: 0.5,
+                                        ),
                                       ),
-                                    ),
-                                  ),
-                                ),
                               ),
-                            ],
-                          ),
-                        ],
-                      ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
@@ -367,7 +469,7 @@ class _PaymentMethodCardState extends State<PaymentMethodCard>
   void initState() {
     super.initState();
     _scaleController = AnimationController(
-      duration: Duration(milliseconds: 150),
+      duration: const Duration(milliseconds: 150),
       vsync: this,
     );
     _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
@@ -391,23 +493,19 @@ class _PaymentMethodCardState extends State<PaymentMethodCard>
       child: ScaleTransition(
         scale: _scaleAnimation,
         child: AnimatedContainer(
-          duration: Duration(milliseconds: 300),
+          duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
           decoration: BoxDecoration(
-            color: widget.paymentMethod.isSelected
-                ? Color(0xFF667eea)
-                : Colors.white,
+            color: widget.paymentMethod.isSelected ? const Color(0xFF667eea) : Colors.white,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: widget.paymentMethod.isSelected
-                  ? Color(0xFF667eea)
-                  : Colors.grey[300]!,
+              color: widget.paymentMethod.isSelected ? const Color(0xFF667eea) : Colors.grey[300]!,
               width: 2,
             ),
             boxShadow: [
               BoxShadow(
                 color: widget.paymentMethod.isSelected
-                    ? Color(0xFF667eea).withOpacity(0.3)
+                    ? const Color(0xFF667eea).withOpacity(0.3)
                     : Colors.black.withOpacity(0.1),
                 blurRadius: widget.paymentMethod.isSelected ? 12 : 6,
                 offset: Offset(0, widget.paymentMethod.isSelected ? 6 : 3),
@@ -415,7 +513,7 @@ class _PaymentMethodCardState extends State<PaymentMethodCard>
             ],
           ),
           child: Padding(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             child: Row(
               children: [
                 Container(
@@ -430,12 +528,10 @@ class _PaymentMethodCardState extends State<PaymentMethodCard>
                   child: Icon(
                     widget.paymentMethod.icon,
                     size: 28,
-                    color: widget.paymentMethod.isSelected
-                        ? Colors.white
-                        : Color(0xFF667eea),
+                    color: widget.paymentMethod.isSelected ? Colors.white : const Color(0xFF667eea),
                   ),
                 ),
-                SizedBox(width: 16),
+                const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -446,12 +542,10 @@ class _PaymentMethodCardState extends State<PaymentMethodCard>
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
-                          color: widget.paymentMethod.isSelected
-                              ? Colors.white
-                              : Colors.black87,
+                          color: widget.paymentMethod.isSelected ? Colors.white : Colors.black87,
                         ),
                       ),
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
                       Text(
                         widget.paymentMethod.description,
                         style: TextStyle(
@@ -465,23 +559,19 @@ class _PaymentMethodCardState extends State<PaymentMethodCard>
                   ),
                 ),
                 AnimatedContainer(
-                  duration: Duration(milliseconds: 300),
+                  duration: const Duration(milliseconds: 300),
                   width: 24,
                   height: 24,
                   decoration: BoxDecoration(
-                    color: widget.paymentMethod.isSelected
-                        ? Colors.white
-                        : Colors.transparent,
+                    color: widget.paymentMethod.isSelected ? Colors.white : Colors.transparent,
                     border: Border.all(
-                      color: widget.paymentMethod.isSelected
-                          ? Colors.white
-                          : Colors.grey[400]!,
+                      color: widget.paymentMethod.isSelected ? Colors.white : Colors.grey[400]!,
                       width: 2,
                     ),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: widget.paymentMethod.isSelected
-                      ? Icon(
+                      ? const Icon(
                           Icons.check,
                           size: 16,
                           color: Color(0xFF667eea),

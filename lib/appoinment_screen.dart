@@ -10,16 +10,9 @@ class AppointmentScreen extends StatefulWidget {
 }
 
 class _AppointmentScreenState extends State<AppointmentScreen> {
-  DateTime _focusedDay = DateTime(2025, 1, 1);
-  DateTime? _selectedDay = DateTime(2025, 1, 9);
-  String? _selectedTimeSlot = '10:30 AM';
-
-  final List<Map<String, dynamic>> _timeSlots = [
-    {'time': '10:00 AM', 'availability': '25%'},
-    {'time': '10:30 AM', 'availability': ''},
-    {'time': '11:00 AM', 'availability': '25%'},
-    {'time': '11:30 AM', 'availability': ''},
-  ];
+  DateTime _focusedDay = DateTime.now();
+  DateTime? _selectedDay = DateTime.now();
+  String? _selectedTimeSlot;
 
   @override
   Widget build(BuildContext context) {
@@ -56,6 +49,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
+            // Calendar
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 16.0),
               child: TableCalendar(
@@ -110,134 +104,62 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                 ),
               ),
             ),
-            SizedBox(
-              height: 50,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: _timeSlots.length + 1,
-                itemBuilder: (context, index) {
-                  if (index == _timeSlots.length) {
-                    return GestureDetector(
-                      onTap: () async {
-                        TimeOfDay? pickedTime = await showTimePicker(
-                          context: context,
-                          initialTime: TimeOfDay.now(),
-                        );
-                        if (pickedTime != null) {
-                          final formatted = pickedTime.format(context);
-                          setState(() {
-                            _selectedTimeSlot = formatted;
-                          });
-                        }
-                      },
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border.all(color: Colors.purple),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Row(
-                          children: [
-                            Icon(
-                              Icons.access_time,
-                              size: 16,
-                              color: Color(0xFF6A1B9A),
-                            ),
-                            SizedBox(width: 6),
-                            Text(
-                              "Other time",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF6A1B9A),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }
-                  final slot = _timeSlots[index];
-                  final isSelected = _selectedTimeSlot == slot['time'];
-                  return GestureDetector(
-                    onTap: () {
-                      showDialog(
+
+            // Time Picker Button
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  GestureDetector(
+                    onTap: () async {
+                      TimeOfDay? pickedTime = await showTimePicker(
                         context: context,
-                        builder:
-                            (context) => AlertDialog(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              title: const Text("Confirm Time Slot"),
-                              content: Text(
-                                "Book appointment at ${slot['time']} with Kamal Dunusinghe?",
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context),
-                                  child: const Text("Cancel"),
-                                ),
-                                TextButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      _selectedTimeSlot = slot['time'];
-                                    });
-                                    Navigator.pop(context);
-                                  },
-                                  child: const Text(
-                                    "Confirm",
-                                    style: TextStyle(color: Color(0xFF6A1B9A)),
-                                  ),
-                                ),
-                              ],
-                            ),
+                        initialTime: TimeOfDay.now(),
                       );
+                      if (pickedTime != null) {
+                        final formatted = pickedTime.format(context);
+                        setState(() {
+                          _selectedTimeSlot = formatted;
+                        });
+                      }
                     },
                     child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
+                          horizontal: 16, vertical: 12),
                       decoration: BoxDecoration(
-                        color:
-                            isSelected
-                                ? const Color(0xFF6A1B9A)
-                                : Colors.grey[200],
-                        borderRadius: BorderRadius.circular(20),
+                        color: Colors.white,
+                        border: Border.all(color: Colors.purple),
+                        borderRadius: BorderRadius.circular(25),
                       ),
-                      child: Row(
+                      child: const Row(
                         children: [
+                          Icon(Icons.access_time,
+                              size: 18, color: Color(0xFF6A1B9A)),
+                          SizedBox(width: 8),
                           Text(
-                            slot['time'],
+                            "Pick a Time",
                             style: TextStyle(
-                              color: isSelected ? Colors.white : Colors.black,
+                              color: Color(0xFF6A1B9A),
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          if (slot['availability'].isNotEmpty) ...[
-                            const SizedBox(width: 8),
-                            Text(
-                              slot['availability'],
-                              style: const TextStyle(
-                                color: Colors.red,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
                         ],
                       ),
                     ),
-                  );
-                },
+                  ),
+                  const SizedBox(width: 12),
+                  if (_selectedTimeSlot != null)
+                    Text(
+                      'Selected: $_selectedTimeSlot',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                ],
               ),
             ),
+
             const SizedBox(height: 16),
+
+            // Service Info
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Container(
@@ -249,6 +171,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Service Title & Price
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -284,7 +207,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                     ),
                     const SizedBox(height: 4),
                     const Text(
-                      '10.30 – 11.15 AM',
+                      'Time: 45 minutes',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 12),
@@ -293,7 +216,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                         CircleAvatar(
                           radius: 18,
                           backgroundColor: Colors.white,
-                          backgroundImage: AssetImage(
+                          backgroundImage: const AssetImage(
                             'assets/images/stylist_avatar.png',
                           ),
                           child: const Icon(
@@ -312,7 +235,10 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                 ),
               ),
             ),
+
             const SizedBox(height: 12),
+
+            // Optional Actions
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
@@ -344,29 +270,36 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                 ],
               ),
             ),
+
             const SizedBox(height: 16),
+
+            // Continue Button
             Column(
               children: [
-                // Price and duration text above the button
                 Padding(
-                  padding: const EdgeInsets.only(
-                    bottom: 8,
-                  ), // Space between text and button
+                  padding: const EdgeInsets.only(bottom: 8),
                   child: Text(
                     '15,000 LKR · 45 Minutes',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
-                      color: Colors.black, // Or any color you prefer
+                      color: Colors.black,
                     ),
                   ),
                 ),
-
-                // Continue button (now without the price text)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: ElevatedButton(
                     onPressed: () {
+                      if (_selectedTimeSlot == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Please select a time.'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        return;
+                      }
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -393,6 +326,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                 ),
               ],
             ),
+
             const SizedBox(height: 16),
           ],
         ),

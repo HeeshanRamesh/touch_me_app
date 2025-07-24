@@ -136,7 +136,14 @@ class _LoginPageState extends State<LoginPage> {
       print('=== END DEBUG ===');
 
       if (response['success']) {
-        await _storage.write(key: 'auth_token', value: response['token']); // Ensure token is saved
+        final userId = response['user']?['id']?.toString() ?? '';
+
+  await _storage.write(key: 'auth_token', value: response['token']);
+  await _storage.write(key: 'user_id', value: userId);
+
+  // 🔍 Print user ID in debug
+  debugPrint('User ID stored securely: $userId');
+        //await _storage.write(key: 'auth_token', value: response['token']); // Ensure token is saved
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Login successful! Redirecting...'),

@@ -227,345 +227,358 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
   }
 
   Future<List<Merchant>> fetchNearestMerchants() async {
-    final allMerchants = await fetchMerchants(widget.token);
+  final allMerchants = await fetchMerchants(widget.token);
 
-    if (_userPosition == null) return allMerchants; // Return unsorted if no position
+  if (_userPosition == null) return []; // Return empty list if no user position
 
-    allMerchants.sort((a, b) {
-      final distA = getDistanceFromUser(_userPosition!, a);
-      final distB = getDistanceFromUser(_userPosition!, b);
-      return distA.compareTo(distB);
-    });
+  // Filter merchants within 10 km (10,000 meters) and sort by distance
+  final nearestMerchants = allMerchants.where((merchant) {
+    final distance = Geolocator.distanceBetween(
+      _userPosition!.latitude,
+      _userPosition!.longitude,
+      merchant.latitude,
+      merchant.longitude,
+    );
+    return distance <= 10000; // Filter merchants within 10 km
+  }).toList();
 
-    return allMerchants;
-  }
+  // Sort by distance (ascending)
+  nearestMerchants.sort((a, b) {
+    final distA = Geolocator.distanceBetween(
+      _userPosition!.latitude,
+      _userPosition!.longitude,
+      a.latitude,
+      a.longitude,
+    );
+    final distB = Geolocator.distanceBetween(
+      _userPosition!.latitude,
+      _userPosition!.longitude,
+      b.latitude,
+      b.longitude,
+    );
+    return distA.compareTo(distB);
+  });
 
-  @override
-  Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final scaleFactor = screenWidth / 375.0;
+  return nearestMerchants;
+}
 
-    final List<Map<String, String>> services = [
-      {'name': 'Haircut & Styling - Ladies ', 'image': 'assets/services/haircut_image.png'},
-      {'name': 'Haircut & Styling - Gents', 'image': 'assets/services/Ellipse 325.png'},
-      {'name': 'Haircut & Styling - Kids', 'image': 'assets/services/kid.png'},
-      {'name': 'Haircut & Styling - Adults', 'image': 'assets/services/old.png'},
-      {'name': 'Massage', 'image': 'assets/services/massage_image.png'},
-      {'name': 'Bridal', 'image': 'assets/services/bridal.png'},
-      {'name': 'Tattoo & Piercing', 'image': 'assets/services/tattoo_image.png'},
-      {
-        'name': 'Facials & Skincare',
-        'image': 'assets/services/Ellipse 328.png',
-      },
-      {
-        'name': 'Hair Removal',
-        'image': 'assets/services/hair_removal_image.png',
-      },
-      {'name': 'Nails', 'image': 'assets/services/nail_salon_image.png'},
-      {
-        'name': 'Eyebrow & EyeLashes',
-        'image': 'assets/services/brows_lashes_image.png',
-      },
-      {'name': 'Injectable & Fillers', 'image': 'assets/services/piercing_image.png'},
-      {'name': 'Makeup', 'image': 'assets/services/makeup_image.png'},
-      {'name': 'Dressing', 'image': 'assets/services/dress.png'},
-      {'name': 'Pedicure & Manicure', 'image': 'assets/services/image.png'},
-      {'name': 'Door Step Service', 'image': 'assets/services/home.png'},
-    ];
+@override
+Widget build(BuildContext context) {
+  final screenWidth = MediaQuery.of(context).size.width;
+  final scaleFactor = screenWidth / 375.0;
 
-    return Column(
-      children: [
-        CustomerHomeHeader(
-          userName: widget.user['first_name'] ?? widget.user['email'] ?? '',
-          location: _currentLocation,
-          token: widget.token,
-        ),
-        Expanded(
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            child: Padding(
-              padding: EdgeInsets.all(16.0 * scaleFactor),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // SERVICES SECTION
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "Services",
+  final List<Map<String, String>> services = [
+    {'name': 'Haircut & Styling - Ladies ', 'image': 'assets/services/haircut_image.png'},
+    {'name': 'Haircut & Styling - Gents', 'image': 'assets/services/Ellipse 325.png'},
+    {'name': 'Haircut & Styling - Kids', 'image': 'assets/services/kid.png'},
+    {'name': 'Haircut & Styling - Adults', 'image': 'assets/services/old.png'},
+    {'name': 'Massage', 'image': 'assets/services/massage_image.png'},
+    {'name': 'Bridal', 'image': 'assets/services/bridal.png'},
+    {'name': 'Tattoo & Piercing', 'image': 'assets/services/tattoo_image.png'},
+    {'name': 'Facials & Skincare', 'image': 'assets/services/Ellipse 328.png'},
+    {'name': 'Hair Removal', 'image': 'assets/services/hair_removal_image.png'},
+    {'name': 'Nails', 'image': 'assets/services/nail_salon_image.png'},
+    {'name': 'Eyebrow & EyeLashes', 'image': 'assets/services/brows_lashes_image.png'},
+    {'name': 'Injectable & Fillers', 'image': 'assets/services/piercing_image.png'},
+    {'name': 'Makeup', 'image': 'assets/services/makeup_image.png'},
+    {'name': 'Dressing', 'image': 'assets/services/dress.png'},
+    {'name': 'Pedicure & Manicure', 'image': 'assets/services/image.png'},
+    {'name': 'Door Step Service', 'image': 'assets/services/home.png'},
+  ];
+
+  return Column(
+    children: [
+      CustomerHomeHeader(
+        userName: widget.user['first_name'] ?? widget.user['email'] ?? '',
+        location: _currentLocation,
+        token: widget.token,
+      ),
+      Expanded(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Padding(
+            padding: EdgeInsets.all(16.0 * scaleFactor),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // SERVICES SECTION
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Services",
+                      style: TextStyle(
+                        fontSize: 18 * scaleFactor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ServicesScreen(),
+                          ),
+                        );
+                      },
+                      child: Text(
+                        "View all",
                         style: TextStyle(
-                          fontSize: 18 * scaleFactor,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 12 * scaleFactor,
+                          color: Colors.purple,
                         ),
                       ),
-                      GestureDetector(
+                    ),
+                  ],
+                ),
+                SizedBox(height: 10 * scaleFactor),
+                SizedBox(
+                  height: 130 * scaleFactor,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: services.length,
+                    itemBuilder: (context, index) {
+                      final service = services[index];
+                      return GestureDetector(
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => ServicesScreen(),
+                              builder: (_) => MerchantListScreen(
+                                serviceName: service['name']!,
+                                token: widget.token,
+                                customerId: widget.customerId,
+                              ),
                             ),
                           );
                         },
-                        child: Text(
-                          "View all",
-                          style: TextStyle(
-                            fontSize: 12 * scaleFactor,
-                            color: Colors.purple,
+                        child: Container(
+                          width: 90 * scaleFactor,
+                          margin: EdgeInsets.only(right: 12 * scaleFactor),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: 65 * scaleFactor,
+                                height: 65 * scaleFactor,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  image: DecorationImage(
+                                    image: AssetImage(service['image']!),
+                                    fit: BoxFit.cover,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black12,
+                                      blurRadius: 4,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(height: 8 * scaleFactor),
+                              Expanded(
+                                child: Text(
+                                  service['name']!,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 11 * scaleFactor,
+                                    fontWeight: FontWeight.w500,
+                                    height: 1.2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  maxLines: 3,
+                                  overflow: TextOverflow.visible,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ),
-                    ],
+                      );
+                    },
                   ),
-                  SizedBox(height: 10 * scaleFactor),
-                  SizedBox(
-                    height: 130 * scaleFactor,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: services.length,
-                      itemBuilder: (context, index) {
-                        final service = services[index];
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => MerchantListScreen(
-                                  serviceName: service['name']!,
-                                  token: widget.token,
-                                  customerId: widget.customerId,
+                ),
+                // Saloons Section (dynamic)
+                Text(
+                  "Recommended",
+                  style: TextStyle(
+                    fontSize: 18 * scaleFactor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 12 * scaleFactor),
+                SizedBox(
+                  height: 170 * scaleFactor,
+                  child: FutureBuilder<List<Merchant>>(
+                    future: fetchMerchants(widget.token),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      } else if (snapshot.hasError) {
+                        return const Text('Failed to load saloons');
+                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return const Text('No saloons found');
+                      } else {
+                        final merchants = snapshot.data!;
+                        return ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: merchants.length,
+                          itemBuilder: (context, index) {
+                            final merchant = merchants[index];
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => MerchantServiceListScreen(
+                                      merchantId: merchant.id,
+                                      outletName: merchant.outletName,
+                                      token: widget.token,
+                                      customerId: widget.customerId,
+                                      profileImageUrl: merchant.logoUrl,
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                width: 180 * scaleFactor,
+                                margin: EdgeInsets.only(right: 12 * scaleFactor),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(12 * scaleFactor),
+                                      child: Image.asset(
+                                        'assets/saloonservice.jpg',
+                                        height: 100 * scaleFactor,
+                                        width: double.infinity,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                    SizedBox(height: 8 * scaleFactor),
+                                    Text(
+                                      merchant.outletName,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15 * scaleFactor,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    Text(
+                                      merchant.address,
+                                      style: TextStyle(
+                                        fontSize: 12 * scaleFactor,
+                                        color: Colors.grey,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.star,
+                                          size: 14 * scaleFactor,
+                                          color: Colors.amber,
+                                        ),
+                                        SizedBox(width: 2 * scaleFactor),
+                                        Text(
+                                          merchant.rating?.toString() ?? '5.0',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 13 * scaleFactor,
+                                          ),
+                                        ),
+                                        SizedBox(width: 4 * scaleFactor),
+                                        Text(
+                                          "| ${(merchant.reviews ?? 0).toString()} Reviews",
+                                          style: TextStyle(
+                                            fontSize: 11 * scaleFactor,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
                               ),
                             );
                           },
-                          child: Container(
-                            width: 90 * scaleFactor,
-                            margin: EdgeInsets.only(right: 12 * scaleFactor),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                Container(
-                                  width: 65 * scaleFactor,
-                                  height: 65 * scaleFactor,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    image: DecorationImage(
-                                      image: AssetImage(service['image']!),
-                                      fit: BoxFit.cover,
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black12,
-                                        blurRadius: 4,
-                                        offset: Offset(0, 2),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                SizedBox(height: 8 * scaleFactor),
-                                Expanded(
-                                  child: Text(
-                                    service['name']!,
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 11 * scaleFactor,
-                                      fontWeight: FontWeight.w500,
-                                      height: 1.2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    maxLines: 3,
-                                    overflow: TextOverflow.visible,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
                         );
-                      },
-                    ),
+                      }
+                    },
                   ),
-                  // Saloons Section (dynamic)
-                  Text(
-                    "Recommended",
-                    style: TextStyle(
-                      fontSize: 18 * scaleFactor,
-                      fontWeight: FontWeight.bold,
-                    ),
+                ),
+                SizedBox(height: 24 * scaleFactor),
+                // Nearest Saloon Section
+                Text(
+                  "Nearest Saloon (within 10 km)",
+                  style: TextStyle(
+                    fontSize: 18 * scaleFactor,
+                    fontWeight: FontWeight.bold,
                   ),
-                  SizedBox(height: 12 * scaleFactor),
-                  SizedBox(
-                    height: 170 * scaleFactor,
-                    child: FutureBuilder<List<Merchant>>(
-                      future: fetchMerchants(widget.token),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        } else if (snapshot.hasError) {
-                          return const Text('Failed to load saloons');
-                        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                          return const Text('No saloons found');
-                        } else {
-                          final merchants = snapshot.data!;
-                          return ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: merchants.length,
-                            itemBuilder: (context, index) {
-                              final merchant = merchants[index];
-                              return GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) => MerchantServiceListScreen(
-                                            merchantId: merchant.id,
-                                            outletName: merchant.outletName,
-                                            token: widget.token,
-                                            customerId: widget.customerId,
-                                            profileImageUrl: merchant.logoUrl,
-                                          ),
-                                        ),
-                                      );
-                                },
-                                child: Container(
-                                  width: 180 * scaleFactor,
-                                  margin: EdgeInsets.only(right: 12 * scaleFactor),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(12 * scaleFactor),
-                                        child: Image.asset(
-                                          'assets/saloonservice.jpg',
-                                          height: 100 * scaleFactor,
-                                          width: double.infinity,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                      SizedBox(height: 8 * scaleFactor),
-                                      Text(
-                                        merchant.outletName,
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 15 * scaleFactor,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                      Text(
-                                        merchant.address,
-                                        style: TextStyle(
-                                          fontSize: 12 * scaleFactor,
-                                          color: Colors.grey,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                      Row(
-                                        children: [
-                                          Icon(
-                                            Icons.star,
-                                            size: 14 * scaleFactor,
-                                            color: Colors.amber,
-                                          ),
-                                          SizedBox(width: 2 * scaleFactor),
-                                          Text(
-                                            merchant.rating?.toString() ?? '5.0',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 13 * scaleFactor,
-                                            ),
-                                          ),
-                                          SizedBox(width: 4 * scaleFactor),
-                                          Text(
-                                            "| ${(merchant.reviews ?? 0).toString()} Reviews",
-                                            style: TextStyle(
-                                              fontSize: 11 * scaleFactor,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
+                ),
+                SizedBox(height: 8),
+                FutureBuilder<List<Merchant>>(
+                  future: fetchNearestMerchants(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      return const Text('Failed to load nearest saloons');
+                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return const Text('No saloons found within 10 km');
+                    }
+
+                    final nearestMerchants = snapshot.data!;
+                    return ListView.builder(
+                      itemCount: nearestMerchants.length > 3 ? 3 : nearestMerchants.length, // Show up to 3 nearest
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemBuilder: (context, index) {
+                        final merchant = nearestMerchants[index];
+                        final distanceInKm = (_userPosition != null)
+                            ? (getDistanceFromUser(_userPosition!, merchant) / 1000).toStringAsFixed(2)
+                            : 'N/A';
+
+                        return ListTile(
+                          leading: CircleAvatar(
+                            backgroundImage: merchant.logoUrl.isNotEmpty
+                                ? NetworkImage(merchant.logoUrl)
+                                : const AssetImage('assets/images/default_logo.jpg') as ImageProvider,
+                            backgroundColor: Colors.grey[200],
+                          ),
+                          title: Text(merchant.outletName),
+                          subtitle: Text('${merchant.address}, $distanceInKm km away'),
+                          trailing: ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => MerchantServiceListScreen(
+                                    merchantId: merchant.id,
+                                    outletName: merchant.outletName,
+                                    token: widget.token,
+                                    customerId: widget.customerId,
+                                    profileImageUrl: merchant.logoUrl,
                                   ),
                                 ),
                               );
                             },
-                          );
-                        }
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color.fromARGB(255, 133, 18, 179),
+                            ),
+                            child: const Text('Visit Now', style: TextStyle(color: Colors.white)),
+                          ),
+                        );
                       },
-                    ),
-                  ),
-                  SizedBox(height: 24 * scaleFactor),
-                  // Nearest Saloon Section
-                  Text(
-                    "Nearest Saloon",
-                    style: TextStyle(
-                      fontSize: 18 * scaleFactor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  FutureBuilder<List<Merchant>>(
-                    future: fetchNearestMerchants(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      } else if (snapshot.hasError || !snapshot.hasData) {
-                        return const Text('No nearest saloons found');
-                      }
-
-                      final nearestMerchants = snapshot.data!;
-                      return ListView.builder(
-                        itemCount: 3, // show top 3 nearest
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemBuilder: (context, index) {
-                          final merchant = nearestMerchants[index];
-                          final distanceInKm = (_userPosition != null)
-                              ? (getDistanceFromUser(_userPosition!, merchant) / 1000).toStringAsFixed(2)
-                              : 'N/A';
-
-                          return ListTile(
-                            leading:  CircleAvatar(
-                               backgroundImage: merchant.logoUrl.isNotEmpty
-                                ? NetworkImage(merchant.logoUrl)
-                                :  AssetImage('assets/images/default_logo.jpg') as ImageProvider,
-                            backgroundColor: Colors.grey[200],
-                            ),
-                            title: Text(merchant.outletName),
-                            subtitle: Text('${merchant.address}, $distanceInKm km away'),
-                            trailing: ElevatedButton(
-                              onPressed: () {
-                                // Navigation logic here
-                                Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) => MerchantServiceListScreen(
-                                            merchantId: merchant.id,
-                                            outletName: merchant.outletName,
-                                            token: widget.token,
-                                            customerId: widget.customerId,
-                                            profileImageUrl: merchant.logoUrl,
-                                          ),
-                                        ),
-                                      );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color.fromARGB(255, 133, 18, 179),
-                              ),
-                              child: const Text('Visit Now', style: TextStyle(color: Colors.white)),
-                            ),
-                          );
-                        },
-                      );
-                    },
-                  ),
-                ],
-              ),
+                    );
+                  },
+                ),
+              ],
             ),
           ),
         ),
-      ],
+  ),],
     );
   }
 }

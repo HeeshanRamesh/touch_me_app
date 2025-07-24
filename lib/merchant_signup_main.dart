@@ -704,7 +704,7 @@ if (result['success'] == true) {
 
   @override
   Widget build(BuildContext context) {
-    final DateTime currentDateTime = DateTime(2025, 5, 20, 11, 00);
+    final DateTime currentDateTime = DateTime.now();
     final String formattedDateTime = DateFormat(
       'hh:mm a Z \'on\' EEEE, MMMM d, yyyy',
     ).format(
@@ -2052,6 +2052,7 @@ GestureDetector(
             _buildFieldLabel("Bank Branch *"),
             DropdownButtonFormField<String>(
               value: _selectedBranch,
+              //isExpanded: true,
               items: _getBranchOptions(),
               onChanged: (value) {
                 setState(() {

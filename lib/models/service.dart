@@ -6,6 +6,7 @@ class Service {
   final String image;
   final bool isActive;
   final String? duration; 
+  final String? specialOffer;
   
 
   Service({
@@ -16,6 +17,7 @@ class Service {
     required this.image,
     this.isActive = true,
     this.duration,
+    this.specialOffer,
   });
 
   factory Service.fromJson(Map<String, dynamic> json) {
@@ -33,6 +35,7 @@ class Service {
       image: json['image']?.toString() ?? '',
       isActive: json['isActive'] ?? true,
       duration: json['duration']?.toString() ?? '',
+      specialOffer: json['specialOffer']?.toString() ?? '',
     );
   }
 }
