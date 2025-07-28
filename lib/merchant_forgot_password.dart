@@ -86,9 +86,21 @@ class _MerchantForgetPasswordPageState extends State<MerchantForgetPasswordPage>
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
-            duration: const Duration(seconds: 4),
+            duration: const Duration(seconds: 2),
           ),
         );
+        Future.delayed(const Duration(seconds: 2), () {
+    // if (mounted) {
+    //   Navigator.push(
+    //     context,
+    //     MaterialPageRoute(
+    //       builder: (context) => MerchantResetPasswordPage(
+    //         email: _emailController.text.trim(),
+    //       ),
+    //     ),
+    //   );
+    // }
+  });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

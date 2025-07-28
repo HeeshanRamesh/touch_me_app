@@ -25,7 +25,7 @@
     </queries>
 
     <application
-        android:label="touch_me"
+        android:label="Touch Me"
         android:icon="@mipmap/ic_launcher">
 
         <!-- Google Maps API key (replace with your actual key) -->

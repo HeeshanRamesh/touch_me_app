@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
 
 class AddMemberScreen extends StatefulWidget {
   const AddMemberScreen({super.key});
@@ -261,15 +262,19 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
             const SizedBox(height: 16),
 
             // Phone Field
-            TextField(
-              controller: _phoneController,
-              decoration: const InputDecoration(
-                labelText: 'Phone Number *',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.phone),
+            IntlPhoneField(
+                decoration: const InputDecoration(
+                  labelText: 'Phone Number *',
+                  border: OutlineInputBorder(),
+                ),
+                initialCountryCode: 'LK', // Default to Sri Lanka
+                onChanged: (phone) {
+                  _phoneController.text = phone.completeNumber; // Save with country code
+                },
+                onCountryChanged: (country) {
+                  debugPrint('Country changed to: ${country.name} (${country.dialCode})');
+                },
               ),
-              keyboardType: TextInputType.phone,
-            ),
             const SizedBox(height: 16),
 
             // Job Title Field
