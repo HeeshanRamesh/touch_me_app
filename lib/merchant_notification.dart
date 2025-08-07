@@ -49,7 +49,7 @@ class _NotificationPageState extends State<NotificationPage> {
     try {
       final bookings = await fetchMerchantBookings(token);
       final newNotifications = await _generateNotifications(bookings);
-      
+
       setState(() {
         notifications = newNotifications;
         _isLoading = false;
@@ -85,14 +85,17 @@ class _NotificationPageState extends State<NotificationPage> {
     }
   }
 
-  Future<List<Map<String, dynamic>>> _generateNotifications(List<Booking> bookings) async {
+  Future<List<Map<String, dynamic>>> _generateNotifications(
+    List<Booking> bookings,
+  ) async {
     List<Map<String, dynamic>> newNotifications = [];
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 
     for (var booking in bookings) {
       final bookingDate = DateTime.parse(booking.date);
-      final isToday = bookingDate.year == today.year &&
+      final isToday =
+          bookingDate.year == today.year &&
           bookingDate.month == today.month &&
           bookingDate.day == today.day;
 
@@ -101,7 +104,8 @@ class _NotificationPageState extends State<NotificationPage> {
         newNotifications.add({
           'id': 'completed_${booking.id}',
           'title': 'Booking Completed',
-          'message': 'Booking for ${booking.serviceName} with ${booking.customerName} on ${booking.date} at ${booking.time} has been completed.',
+          'message':
+              'Booking for ${booking.serviceName} with ${booking.customerName} on ${booking.date} at ${booking.time} has been completed.',
           'timestamp': DateTime.now().toIso8601String(),
           'type': 'completed',
           'bookingId': booking.id,
@@ -114,7 +118,8 @@ class _NotificationPageState extends State<NotificationPage> {
         newNotifications.add({
           'id': 'new_${booking.id}',
           'title': 'New Booking',
-          'message': 'New booking for ${booking.serviceName} with ${booking.customerName} scheduled for ${booking.date} at ${booking.time}.',
+          'message':
+              'New booking for ${booking.serviceName} with ${booking.customerName} scheduled for ${booking.date} at ${booking.time}.',
           'timestamp': DateTime.now().toIso8601String(),
           'type': 'new',
           'bookingId': booking.id,
@@ -123,13 +128,19 @@ class _NotificationPageState extends State<NotificationPage> {
     }
 
     // Sort notifications by timestamp (newest first)
-    newNotifications.sort((a, b) => DateTime.parse(b['timestamp']).compareTo(DateTime.parse(a['timestamp'])));
+    newNotifications.sort(
+      (a, b) => DateTime.parse(
+        b['timestamp'],
+      ).compareTo(DateTime.parse(a['timestamp'])),
+    );
     return newNotifications;
   }
 
   Future<void> _markNotificationAsRead(String notificationId) async {
     setState(() {
-      notifications.removeWhere((notification) => notification['id'] == notificationId);
+      notifications.removeWhere(
+        (notification) => notification['id'] == notificationId,
+      );
     });
   }
 
@@ -153,71 +164,74 @@ class _NotificationPageState extends State<NotificationPage> {
           ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : notifications.isEmpty
+      body:
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : notifications.isEmpty
               ? const Center(
-                  child: Text(
-                    'No notifications available',
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
-                  ),
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: notifications.length,
-                  itemBuilder: (context, index) {
-                    final notification = notifications[index];
-                    return Card(
-                      elevation: 2,
-                      margin: const EdgeInsets.only(bottom: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: ListTile(
-                        leading: Icon(
-                          notification['type'] == 'completed'
-                              ? Icons.check_circle
-                              : Icons.event,
-                          color: notification['type'] == 'completed'
-                              ? Colors.green
-                              : Colors.blue,
-                        ),
-                        title: Text(
-                          notification['title'],
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(height: 4),
-                            Text(notification['message']),
-                            const SizedBox(height: 4),
-                            Text(
-                              DateFormat('MMM d, yyyy HH:mm').format(
-                                DateTime.parse(notification['timestamp']),
-                              ),
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ],
-                        ),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.clear, color: Colors.grey),
-                          onPressed: () => _markNotificationAsRead(notification['id']),
-                        ),
-                        onTap: () {
-                          // Optionally navigate to booking details
-                          // You can add navigation to a booking details page here
-                        },
-                      ),
-                    );
-                  },
+                child: Text(
+                  'No notifications available',
+                  style: TextStyle(fontSize: 16, color: Colors.grey),
                 ),
+              )
+              : ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: notifications.length,
+                itemBuilder: (context, index) {
+                  final notification = notifications[index];
+                  return Card(
+                    elevation: 2,
+                    margin: const EdgeInsets.only(bottom: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: ListTile(
+                      leading: Icon(
+                        notification['type'] == 'completed'
+                            ? Icons.check_circle
+                            : Icons.event,
+                        color:
+                            notification['type'] == 'completed'
+                                ? Colors.green
+                                : Colors.blue,
+                      ),
+                      title: Text(
+                        notification['title'],
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 4),
+                          Text(notification['message']),
+                          const SizedBox(height: 4),
+                          Text(
+                            DateFormat(
+                              'MMM d, yyyy HH:mm',
+                            ).format(DateTime.parse(notification['timestamp'])),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.clear, color: Colors.grey),
+                        onPressed:
+                            () => _markNotificationAsRead(notification['id']),
+                      ),
+                      onTap: () {
+                        // Optionally navigate to booking details
+                        // You can add navigation to a booking details page here
+                      },
+                    ),
+                  );
+                },
+              ),
     );
   }
 }

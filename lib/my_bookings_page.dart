@@ -102,7 +102,9 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
     }
 
     try {
-      final url = Uri.parse('http://api.touchmeapp.com/api/bookings/$bookingId');
+      final url = Uri.parse(
+        'http://api.touchmeapp.com/api/bookings/$bookingId',
+      );
       final response = await http.delete(
         url,
         headers: {
@@ -163,124 +165,143 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('My Bookings')),
-      body: _futureBookings == null
-          ? const Center(child: CircularProgressIndicator())
-          : FutureBuilder<List<Booking>>(
-              future: _futureBookings,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                }
-                final bookings = snapshot.data ?? [];
-                if (bookings.isEmpty) {
-                  return const Center(child: Text('No bookings found.'));
-                }
-                return ListView.builder(
-                  itemCount: bookings.length,
-                  itemBuilder: (context, index) {
-                    final booking = bookings[index];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(
-                        vertical: 10,
-                        horizontal: 16,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              booking.serviceName,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              booking.customerName.isEmpty ? 'N/A' : booking.customerName,
-                              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '${booking.date} | ${booking.time}',
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: booking.status == 'Upcoming'
-                                        ? Colors.orange[100]
-                                        : booking.status == 'Completed'
-                                            ? Colors.green[100]
-                                            : Colors.red[100],
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Text(
-                                    booking.status,
-                                    style: TextStyle(
-                                      color: booking.status == 'Upcoming'
-                                          ? Colors.orange
-                                          : booking.status == 'Completed'
-                                              ? Colors.green
-                                              : Colors.red,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                Row(
-                                  children: [
-                                    DropdownButton<String>(
-                                      value: booking.status,
-                                      items: const [
-                                        DropdownMenuItem(
-                                          value: 'Upcoming',
-                                          child: Text('Upcoming'),
-                                        ),
-                                        DropdownMenuItem(
-                                          value: 'Completed',
-                                          child: Text('Completed'),
-                                        ),
-                                        DropdownMenuItem(
-                                          value: 'Cancelled',
-                                          child: Text('Cancelled'),
-                                        ),
-                                      ],
-                                      onChanged: (newStatus) {
-                                        if (newStatus != null &&
-                                            newStatus != booking.status) {
-                                          _updateBookingStatus(booking.id, newStatus);
-                                        }
-                                      },
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.delete, color: Colors.red, size: 24),
-                                      onPressed: () => _showDeleteConfirmationDialog(
-                                          booking.id, booking.serviceName),
-                                      tooltip: 'Delete Booking',
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ],
+      body:
+          _futureBookings == null
+              ? const Center(child: CircularProgressIndicator())
+              : FutureBuilder<List<Booking>>(
+                future: _futureBookings,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  }
+                  final bookings = snapshot.data ?? [];
+                  if (bookings.isEmpty) {
+                    return const Center(child: Text('No bookings found.'));
+                  }
+                  return ListView.builder(
+                    itemCount: bookings.length,
+                    itemBuilder: (context, index) {
+                      final booking = bookings[index];
+                      return Card(
+                        margin: const EdgeInsets.symmetric(
+                          vertical: 10,
+                          horizontal: 16,
                         ),
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                booking.serviceName,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                booking.customerName.isEmpty
+                                    ? 'N/A'
+                                    : booking.customerName,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${booking.date} | ${booking.time}',
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          booking.status == 'Upcoming'
+                                              ? Colors.orange[100]
+                                              : booking.status == 'Completed'
+                                              ? Colors.green[100]
+                                              : Colors.red[100],
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      booking.status,
+                                      style: TextStyle(
+                                        color:
+                                            booking.status == 'Upcoming'
+                                                ? Colors.orange
+                                                : booking.status == 'Completed'
+                                                ? Colors.green
+                                                : Colors.red,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  Row(
+                                    children: [
+                                      DropdownButton<String>(
+                                        value: booking.status,
+                                        items: const [
+                                          DropdownMenuItem(
+                                            value: 'Upcoming',
+                                            child: Text('Upcoming'),
+                                          ),
+                                          DropdownMenuItem(
+                                            value: 'Completed',
+                                            child: Text('Completed'),
+                                          ),
+                                          DropdownMenuItem(
+                                            value: 'Cancelled',
+                                            child: Text('Cancelled'),
+                                          ),
+                                        ],
+                                        onChanged: (newStatus) {
+                                          if (newStatus != null &&
+                                              newStatus != booking.status) {
+                                            _updateBookingStatus(
+                                              booking.id,
+                                              newStatus,
+                                            );
+                                          }
+                                        },
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.delete,
+                                          color: Colors.red,
+                                          size: 24,
+                                        ),
+                                        onPressed:
+                                            () => _showDeleteConfirmationDialog(
+                                              booking.id,
+                                              booking.serviceName,
+                                            ),
+                                        tooltip: 'Delete Booking',
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
     );
   }
 }

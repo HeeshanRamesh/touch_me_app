@@ -94,8 +94,7 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
     };
 
     // Replace with your actual API base URL
-    const String baseUrl =
-        'https://api.touchmeapp.com'; 
+    const String baseUrl = 'https://api.touchmeapp.com';
     final String apiUrl = '$baseUrl/api/merchants/$merchantId/members';
 
     try {
@@ -263,18 +262,21 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
 
             // Phone Field
             IntlPhoneField(
-                decoration: const InputDecoration(
-                  labelText: 'Phone Number *',
-                  border: OutlineInputBorder(),
-                ),
-                initialCountryCode: 'LK', // Default to Sri Lanka
-                onChanged: (phone) {
-                  _phoneController.text = phone.completeNumber; // Save with country code
-                },
-                onCountryChanged: (country) {
-                  debugPrint('Country changed to: ${country.name} (${country.dialCode})');
-                },
+              decoration: const InputDecoration(
+                labelText: 'Phone Number *',
+                border: OutlineInputBorder(),
               ),
+              initialCountryCode: 'LK', // Default to Sri Lanka
+              onChanged: (phone) {
+                _phoneController.text =
+                    phone.completeNumber; // Save with country code
+              },
+              onCountryChanged: (country) {
+                debugPrint(
+                  'Country changed to: ${country.name} (${country.dialCode})',
+                );
+              },
+            ),
             const SizedBox(height: 16),
 
             // Job Title Field

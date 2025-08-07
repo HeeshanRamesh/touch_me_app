@@ -6,10 +6,12 @@ import 'dart:convert';
 
 class MerchantChangePasswordPage extends StatefulWidget {
   final String? merchantId; // Nullable to handle cases where ID is not passed
-  const MerchantChangePasswordPage({Key? key, this.merchantId}) : super(key: key);
+  const MerchantChangePasswordPage({Key? key, this.merchantId})
+    : super(key: key);
 
   @override
-  State<MerchantChangePasswordPage> createState() => _MerchantChangePasswordPageState();
+  State<MerchantChangePasswordPage> createState() =>
+      _MerchantChangePasswordPageState();
 }
 
 class _MerchantChangePasswordPageState extends State<MerchantChangePasswordPage>
@@ -40,7 +42,8 @@ class _MerchantChangePasswordPageState extends State<MerchantChangePasswordPage>
   String? _merchantId; // Store the resolved merchantId
   String? _authToken; // Store the authentication token
 
-  final storage = const FlutterSecureStorage(); // ✅ Use FlutterSecureStorage instead of SharedPreferences
+  final storage =
+      const FlutterSecureStorage(); // ✅ Use FlutterSecureStorage instead of SharedPreferences
 
   @override
   void initState() {
@@ -50,13 +53,12 @@ class _MerchantChangePasswordPageState extends State<MerchantChangePasswordPage>
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    _strengthAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _strengthAnimationController,
-      curve: Curves.easeInOut,
-    ));
+    _strengthAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _strengthAnimationController,
+        curve: Curves.easeInOut,
+      ),
+    );
 
     // Add listeners for password validation
     _newPasswordController.addListener(_validatePassword);
@@ -67,15 +69,19 @@ class _MerchantChangePasswordPageState extends State<MerchantChangePasswordPage>
     _resolveCredentials();
   }
 
-    Future<void> _resolveCredentials() async {
+  Future<void> _resolveCredentials() async {
     if (widget.merchantId != null && widget.merchantId!.isNotEmpty) {
       _merchantId = widget.merchantId;
       print('Merchant ID (from widget): $_merchantId');
     } else {
-      _merchantId = await storage.read(key: 'merchantId'); // ✅ Use FlutterSecureStorage
+      _merchantId = await storage.read(
+        key: 'merchantId',
+      ); // ✅ Use FlutterSecureStorage
       print('Merchant ID (from FlutterSecureStorage): $_merchantId');
     }
-    _authToken = await storage.read(key: 'authToken'); // ✅ Use FlutterSecureStorage
+    _authToken = await storage.read(
+      key: 'authToken',
+    ); // ✅ Use FlutterSecureStorage
     print('Auth Token (from FlutterSecureStorage): $_authToken');
     setState(() {}); // Update UI after resolving credentials
   }
@@ -185,7 +191,8 @@ class _MerchantChangePasswordPageState extends State<MerchantChangePasswordPage>
 
     try {
       // Use localhost endpoint for testing; switch to production endpoint as needed
-      final String apiUrl = 'http://api.touchmeapp.com/api/merchants/$_merchantId/change-password';
+      final String apiUrl =
+          'http://api.touchmeapp.com/api/merchants/$_merchantId/change-password';
 
       // Prepare the request payload
       final Map<String, String> payload = {
@@ -199,14 +206,16 @@ class _MerchantChangePasswordPageState extends State<MerchantChangePasswordPage>
       print('Auth Token: $_authToken');
 
       // Make the API call
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $_authToken',
-        },
-        body: jsonEncode(payload),
-      ).timeout(const Duration(seconds: 10));
+      final response = await http
+          .post(
+            Uri.parse(apiUrl),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $_authToken',
+            },
+            body: jsonEncode(payload),
+          )
+          .timeout(const Duration(seconds: 10));
 
       // Log the response details
       print('Response Status Code: ${response.statusCode}');
@@ -233,7 +242,8 @@ class _MerchantChangePasswordPageState extends State<MerchantChangePasswordPage>
         // Handle error response
         String errorMessage = 'Failed to change password';
         if (response.statusCode == 404) {
-          errorMessage = 'API endpoint not found. Please check the server configuration.';
+          errorMessage =
+              'API endpoint not found. Please check the server configuration.';
         } else {
           try {
             final responseBody = jsonDecode(response.body);
@@ -249,10 +259,7 @@ class _MerchantChangePasswordPageState extends State<MerchantChangePasswordPage>
         }
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(errorMessage),
-              backgroundColor: Colors.red,
-            ),
+            SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
           );
         }
       }
@@ -270,10 +277,7 @@ class _MerchantChangePasswordPageState extends State<MerchantChangePasswordPage>
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -310,7 +314,10 @@ class _MerchantChangePasswordPageState extends State<MerchantChangePasswordPage>
           obscureText: obscureText,
           validator: validator,
           decoration: InputDecoration(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 16,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: Colors.grey, width: 2),
@@ -342,10 +349,7 @@ class _MerchantChangePasswordPageState extends State<MerchantChangePasswordPage>
     );
   }
 
-  Widget _buildRequirementItem({
-    required bool isValid,
-    required String text,
-  }) {
+  Widget _buildRequirementItem({required bool isValid, required String text}) {
     return Row(
       children: [
         Container(
@@ -359,13 +363,10 @@ class _MerchantChangePasswordPageState extends State<MerchantChangePasswordPage>
               width: 2,
             ),
           ),
-          child: isValid
-              ? const Icon(
-                  Icons.check,
-                  size: 10,
-                  color: Colors.white,
-                )
-              : null,
+          child:
+              isValid
+                  ? const Icon(Icons.check, size: 10, color: Colors.white)
+                  : null,
         ),
         const SizedBox(width: 8),
         Text(
@@ -417,7 +418,9 @@ class _MerchantChangePasswordPageState extends State<MerchantChangePasswordPage>
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.of(context).pushReplacementNamed('/login'); // Adjust route as needed
+                    Navigator.of(
+                      context,
+                    ).pushReplacementNamed('/login'); // Adjust route as needed
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF667EEA),
@@ -636,15 +639,16 @@ class _MerchantChangePasswordPageState extends State<MerchantChangePasswordPage>
                           }
                           return null;
                         },
-                        suffixWidget: _confirmPasswordController.text.isNotEmpty &&
-                                _newPasswordController.text ==
-                                    _confirmPasswordController.text
-                            ? const Icon(
-                                Icons.check_circle,
-                                color: Colors.green,
-                                size: 20,
-                              )
-                            : null,
+                        suffixWidget:
+                            _confirmPasswordController.text.isNotEmpty &&
+                                    _newPasswordController.text ==
+                                        _confirmPasswordController.text
+                                ? const Icon(
+                                  Icons.check_circle,
+                                  color: Colors.green,
+                                  size: 20,
+                                )
+                                : null,
                       ),
                       const SizedBox(height: 30),
 
@@ -652,9 +656,10 @@ class _MerchantChangePasswordPageState extends State<MerchantChangePasswordPage>
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: _isFormValid && !_isLoading
-                              ? _changePassword
-                              : null,
+                          onPressed:
+                              _isFormValid && !_isLoading
+                                  ? _changePassword
+                                  : null,
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 15),
                             backgroundColor: const Color(0xFF667EEA),
@@ -664,23 +669,25 @@ class _MerchantChangePasswordPageState extends State<MerchantChangePasswordPage>
                             ),
                             elevation: _isFormValid ? 5 : 0,
                           ),
-                          child: _isLoading
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor:
-                                        AlwaysStoppedAnimation<Color>(Colors.white),
+                          child:
+                              _isLoading
+                                  ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white,
+                                      ),
+                                    ),
+                                  )
+                                  : const Text(
+                                    'Change Password',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
-                                )
-                              : const Text(
-                                  'Change Password',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
                         ),
                       ),
                       const SizedBox(height: 20),

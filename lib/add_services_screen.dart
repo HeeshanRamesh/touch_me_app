@@ -41,10 +41,10 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
   bool _isUploadingImage = false;
   String? _imageUrl;
   File? _selectedImage;
-  
+
   String? _selectedServiceCategory;
   bool _isCustomService = false;
-  
+
   final List<String> _serviceCategories = [
     'Haircut & Styling - Ladies',
     'Haircut & Styling - Gents',
@@ -78,16 +78,18 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
         _isCustomService = true;
         _serviceNameController.text = serviceName;
       }
-      
+
       _descriptionController.text = widget.service!.serviceDescription;
       _priceController.text = widget.service!.price.toString();
-      
+
       // Handle duration - convert to minutes if it's in string format
       if (widget.service!.duration != null) {
         if (widget.service!.duration!.contains('hour:')) {
           // Convert from string format to minutes
           try {
-            int minutes = _parseStringDurationToMinutes(widget.service!.duration!);
+            int minutes = _parseStringDurationToMinutes(
+              widget.service!.duration!,
+            );
             _durationController.text = minutes.toString();
           } catch (e) {
             _durationController.text = '60'; // Default to 60 minutes
@@ -97,7 +99,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
           _durationController.text = widget.service!.duration!;
         }
       }
-      
+
       _specialOfferController.text = widget.service!.specialOffer ?? '';
       _imageUrl = widget.service!.image;
     }
@@ -138,13 +140,13 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
   int _parseStringDurationToMinutes(String durationText) {
     final regex = RegExp(r'(\d+)hour:(\d+)minutes:(\d+)seconds');
     final match = regex.firstMatch(durationText);
-    
+
     if (match != null) {
       final hours = int.parse(match.group(1) ?? '0');
       final minutes = int.parse(match.group(2) ?? '0');
       return (hours * 60) + minutes;
     }
-    
+
     // If it's already a number, try to parse it
     try {
       return int.parse(durationText);
@@ -296,7 +298,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
     final durationText = _durationController.text.trim();
     if (durationText.isEmpty)
       throw const FormatException("Duration cannot be empty");
-    
+
     // Parse duration as integer (minutes)
     int durationInMinutes;
     try {
@@ -305,7 +307,9 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
         throw const FormatException("Duration must be greater than 0");
       }
     } catch (e) {
-      throw const FormatException("Duration must be a valid number (in minutes)");
+      throw const FormatException(
+        "Duration must be a valid number (in minutes)",
+      );
     }
 
     if (widget.serviceId != null) {
@@ -455,11 +459,11 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              
+
               _buildServiceCategoryDropdown(),
-              
+
               if (_isCustomService) _buildCustomServiceNameField(),
-              
+
               _buildInputField(
                 "Description",
                 _descriptionController,
@@ -492,9 +496,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                 "Duration (in minutes, e.g., 90)",
                 _durationController,
                 inputType: TextInputType.number,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                ],
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'Please enter duration';
@@ -504,7 +506,8 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
                     if (duration <= 0) {
                       return 'Duration must be greater than 0';
                     }
-                    if (duration > 1440) { // More than 24 hours
+                    if (duration > 1440) {
+                      // More than 24 hours
                       return 'Duration cannot exceed 1440 minutes (24 hours)';
                     }
                     return null;
@@ -626,18 +629,16 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
             borderRadius: BorderRadius.circular(30),
           ),
         ),
-        items: _serviceCategories.map((String category) {
-          return DropdownMenuItem<String>(
-            value: category,
-            child: Text(
-              category,
-              style: const TextStyle(
-                color: Colors.black87,
-                fontSize: 14,
-              ),
-            ),
-          );
-        }).toList(),
+        items:
+            _serviceCategories.map((String category) {
+              return DropdownMenuItem<String>(
+                value: category,
+                child: Text(
+                  category,
+                  style: const TextStyle(color: Colors.black87, fontSize: 14),
+                ),
+              );
+            }).toList(),
         onChanged: _onServiceCategoryChanged,
         validator: (value) {
           if (value == null || value.isEmpty) {
@@ -645,10 +646,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
           }
           return null;
         },
-        icon: const Icon(
-          Icons.arrow_drop_down,
-          color: Color(0xFF6A1B9A),
-        ),
+        icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF6A1B9A)),
         isExpanded: true,
         dropdownColor: Colors.white,
       ),
@@ -662,7 +660,8 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
         controller: _serviceNameController,
         decoration: InputDecoration(
           labelText: widget.serviceId != null ? "Custom Service Name" : null,
-          hintText: widget.serviceId != null ? null : "Enter custom service name",
+          hintText:
+              widget.serviceId != null ? null : "Enter custom service name",
           floatingLabelBehavior:
               widget.serviceId != null
                   ? FloatingLabelBehavior.always
@@ -849,14 +848,8 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
         maxLines: maxLines,
         validator: validator,
         decoration: InputDecoration(
-          labelText:
-              widget.serviceId != null
-                  ? hint
-                  : null,
-          hintText:
-              widget.serviceId != null
-                  ? null
-                  : hint,
+          labelText: widget.serviceId != null ? hint : null,
+          hintText: widget.serviceId != null ? null : hint,
           floatingLabelBehavior:
               widget.serviceId != null
                   ? FloatingLabelBehavior.always

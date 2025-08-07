@@ -53,10 +53,11 @@ class _CompletedBookingsPageState extends State<CompletedBookingsPage> {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       final bookings = data['bookings'] as List<dynamic>;
-      final completedBookings = bookings
-          .map((b) => Booking.fromJson(b))
-          .where((booking) => booking.status == 'Completed')
-          .toList();
+      final completedBookings =
+          bookings
+              .map((b) => Booking.fromJson(b))
+              .where((booking) => booking.status == 'Completed')
+              .toList();
       return completedBookings;
     } else {
       throw Exception('Failed to fetch completed bookings: ${response.body}');
@@ -66,81 +67,88 @@ class _CompletedBookingsPageState extends State<CompletedBookingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Completed Bookings'),
-              iconTheme: const IconThemeData(color: Colors.white),
+      appBar: AppBar(
+        title: const Text('Completed Bookings'),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: _futureCompletedBookings == null
-          ? const Center(child: CircularProgressIndicator())
-          : FutureBuilder<List<Booking>>(
-              future: _futureCompletedBookings,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                }
-                final bookings = snapshot.data ?? [];
-                if (bookings.isEmpty) {
-                  return const Center(child: Text('No client found.'));
-                }
-                return ListView.builder(
-                  itemCount: bookings.length,
-                  itemBuilder: (context, index) {
-                    final booking = bookings[index];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(
-                        vertical: 10,
-                        horizontal: 16,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              booking.customerName.isEmpty ? 'N/A' : booking.customerName,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              booking.serviceName,
-                              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '${booking.date} | ${booking.time}',
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                            const SizedBox(height: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.green[100],
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Text(
-                                'Completed',
-                                style: TextStyle(
-                                  color: Colors.green,
+      body:
+          _futureCompletedBookings == null
+              ? const Center(child: CircularProgressIndicator())
+              : FutureBuilder<List<Booking>>(
+                future: _futureCompletedBookings,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  }
+                  final bookings = snapshot.data ?? [];
+                  if (bookings.isEmpty) {
+                    return const Center(child: Text('No client found.'));
+                  }
+                  return ListView.builder(
+                    itemCount: bookings.length,
+                    itemBuilder: (context, index) {
+                      final booking = bookings[index];
+                      return Card(
+                        margin: const EdgeInsets.symmetric(
+                          vertical: 10,
+                          horizontal: 16,
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                booking.customerName.isEmpty
+                                    ? 'N/A'
+                                    : booking.customerName,
+                                style: const TextStyle(
+                                  fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 4),
+                              Text(
+                                booking.serviceName,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${booking.date} | ${booking.time}',
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                              const SizedBox(height: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.green[100],
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Text(
+                                  'Completed',
+                                  style: TextStyle(
+                                    color: Colors.green,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
+                      );
+                    },
+                  );
+                },
+              ),
     );
   }
 }

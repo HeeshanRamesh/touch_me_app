@@ -58,11 +58,14 @@ Future<List<Service>> fetchServicesByCategory(
       }
 
       // Filter services by name if backend doesn't support category filtering
-      final filteredServices = services.where((s) {
-        final service = Service.fromJson(s as Map<String, dynamic>);
-        return service.serviceName.toLowerCase().contains(serviceName.toLowerCase()) ||
-               _isServiceMatchingCategory(service.serviceName, serviceName);
-      }).toList();
+      final filteredServices =
+          services.where((s) {
+            final service = Service.fromJson(s as Map<String, dynamic>);
+            return service.serviceName.toLowerCase().contains(
+                  serviceName.toLowerCase(),
+                ) ||
+                _isServiceMatchingCategory(service.serviceName, serviceName);
+          }).toList();
 
       if (filteredServices.isEmpty) {
         print('⚠️ No services found for category: $serviceName');
@@ -93,13 +96,18 @@ Future<List<Service>> fetchServicesAndFilterLocally(
 ) async {
   try {
     final allServices = await fetchServices(token);
-    
-    final filteredServices = allServices.where((service) {
-      return service.serviceName.toLowerCase().contains(serviceName.toLowerCase()) ||
-             _isServiceMatchingCategory(service.serviceName, serviceName);
-    }).toList();
 
-    print('ℹ️ Filtered ${filteredServices.length} services for category: $serviceName');
+    final filteredServices =
+        allServices.where((service) {
+          return service.serviceName.toLowerCase().contains(
+                serviceName.toLowerCase(),
+              ) ||
+              _isServiceMatchingCategory(service.serviceName, serviceName);
+        }).toList();
+
+    print(
+      'ℹ️ Filtered ${filteredServices.length} services for category: $serviceName',
+    );
     return filteredServices;
   } catch (e) {
     print('❌ Error in fallback filtering: $e');
@@ -111,30 +119,57 @@ Future<List<Service>> fetchServicesAndFilterLocally(
 bool _isServiceMatchingCategory(String serviceName, String categoryName) {
   final service = serviceName.toLowerCase();
   final category = categoryName.toLowerCase();
-  
+
   // Define category mappings
   final categoryMappings = {
-    'haircut & styling - ladies': ['haircut', 'hair styling', 'ladies hair', 'women hair'],
-    'haircut & styling - gents': ['haircut', 'hair styling', 'men hair', 'gents hair', 'male hair'],
+    'haircut & styling - ladies': [
+      'haircut',
+      'hair styling',
+      'ladies hair',
+      'women hair',
+    ],
+    'haircut & styling - gents': [
+      'haircut',
+      'hair styling',
+      'men hair',
+      'gents hair',
+      'male hair',
+    ],
     'haircut & styling - kids': ['kids hair', 'children hair', 'child haircut'],
     'haircut & styling - adults': ['adult hair', 'haircut', 'hair styling'],
     'massage': ['massage', 'body massage', 'therapeutic massage', 'relaxation'],
     'bridal': ['bridal', 'wedding', 'bride makeup', 'bridal package'],
     'tattoo & piercing': ['tattoo', 'piercing', 'body art', 'ink'],
-    'facials & skincare': ['facial', 'skincare', 'skin treatment', 'face treatment'],
+    'facials & skincare': [
+      'facial',
+      'skincare',
+      'skin treatment',
+      'face treatment',
+    ],
     'hair removal': ['hair removal', 'waxing', 'laser hair', 'threading'],
     'nails': ['nail', 'manicure', 'pedicure', 'nail art', 'nail polish'],
-    'eyebrow & eyelashes': ['eyebrow', 'eyelash', 'brow', 'lash', 'eyebrow threading'],
+    'eyebrow & eyelashes': [
+      'eyebrow',
+      'eyelash',
+      'brow',
+      'lash',
+      'eyebrow threading',
+    ],
     'injectable & fillers': ['injectable', 'filler', 'botox', 'dermal filler'],
     'makeup': ['makeup', 'cosmetics', 'face makeup', 'beauty'],
     'dressing': ['dressing', 'styling', 'wardrobe', 'fashion'],
     'pedicure & manicure': ['pedicure', 'manicure', 'nail care', 'foot care'],
-    'door step service': ['door step', 'home service', 'mobile service', 'at home'],
+    'door step service': [
+      'door step',
+      'home service',
+      'mobile service',
+      'at home',
+    ],
   };
 
   // Check if the service matches any keywords for the category
   final keywords = categoryMappings[category] ?? [category];
-  
+
   return keywords.any((keyword) => service.contains(keyword));
 }
 
@@ -206,37 +241,43 @@ Future<List<Service>> fetchServicesByMerchantAndCategory(
   String token,
 ) async {
   try {
-    final allMerchantServices = await fetchServicesByMerchant(merchantId, token);
-    
+    final allMerchantServices = await fetchServicesByMerchant(
+      merchantId,
+      token,
+    );
+
     // Add debug logging
     print('🔍 Filtering services for merchant: $merchantId');
     print('🔍 Looking for category: "$serviceName"');
     print('🔍 Total services found: ${allMerchantServices.length}');
-    
+
     for (final service in allMerchantServices) {
       print('🔍 Service: "${service.serviceName}"');
     }
-    
-    // ONLY exact match - service name must equal category name
-    final filteredServices = allMerchantServices.where((service) {
-      final serviceNameTrimmed = service.serviceName.trim();
-      final categoryNameTrimmed = serviceName.trim();
-      
-      final exactMatch = serviceNameTrimmed == categoryNameTrimmed;
-      
-      print('🔍 Comparing "${service.serviceName}" with "$serviceName"');
-      print('   - Exact match: $exactMatch');
-      
-      return exactMatch;
-    }).toList();
 
-    print('ℹ️ Filtered ${filteredServices.length} services for merchant $merchantId and category: $serviceName');
-    
+    // ONLY exact match - service name must equal category name
+    final filteredServices =
+        allMerchantServices.where((service) {
+          final serviceNameTrimmed = service.serviceName.trim();
+          final categoryNameTrimmed = serviceName.trim();
+
+          final exactMatch = serviceNameTrimmed == categoryNameTrimmed;
+
+          print('🔍 Comparing "${service.serviceName}" with "$serviceName"');
+          print('   - Exact match: $exactMatch');
+
+          return exactMatch;
+        }).toList();
+
+    print(
+      'ℹ️ Filtered ${filteredServices.length} services for merchant $merchantId and category: $serviceName',
+    );
+
     // Log the filtered results
     for (final service in filteredServices) {
       print('✅ Matched service: "${service.serviceName}"');
     }
-    
+
     return filteredServices;
   } catch (e) {
     print('❌ Error fetching services by merchant and category: $e');

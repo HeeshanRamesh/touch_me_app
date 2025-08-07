@@ -55,10 +55,7 @@ class _GetMembersScreenState extends State<GetMembersScreen> {
         headers['Authorization'] = 'Bearer $authToken';
       }
 
-      final response = await http.get(
-        Uri.parse(apiUrl),
-        headers: headers,
-      );
+      final response = await http.get(Uri.parse(apiUrl), headers: headers);
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
@@ -76,7 +73,10 @@ class _GetMembersScreenState extends State<GetMembersScreen> {
         }
 
         setState(() {
-          _members = membersData.map((member) => Map<String, dynamic>.from(member)).toList();
+          _members =
+              membersData
+                  .map((member) => Map<String, dynamic>.from(member))
+                  .toList();
           _isLoading = false;
         });
       } else {
@@ -104,10 +104,18 @@ class _GetMembersScreenState extends State<GetMembersScreen> {
 
   // Function to show edit member dialog
   Future<void> _showEditMemberDialog(Map<String, dynamic> member) async {
-    final TextEditingController nameController = TextEditingController(text: member['name'] ?? '');
-    final TextEditingController emailController = TextEditingController(text: member['email'] ?? '');
-    final TextEditingController phoneController = TextEditingController(text: member['phone'] ?? '');
-    final TextEditingController roleController = TextEditingController(text: member['role'] ?? '');
+    final TextEditingController nameController = TextEditingController(
+      text: member['name'] ?? '',
+    );
+    final TextEditingController emailController = TextEditingController(
+      text: member['email'] ?? '',
+    );
+    final TextEditingController phoneController = TextEditingController(
+      text: member['phone'] ?? '',
+    );
+    final TextEditingController roleController = TextEditingController(
+      text: member['role'] ?? '',
+    );
 
     return showDialog<void>(
       context: context,
@@ -188,15 +196,12 @@ class _GetMembersScreenState extends State<GetMembersScreen> {
                 Navigator.of(context).pop();
 
                 // Call update function
-                _updateMember(
-                  member['email']?.toString() ?? '',
-                  {
-                    'name': nameController.text.trim(),
-                    'email': emailController.text.trim(),
-                    'phone': phoneController.text.trim(),
-                    'role': roleController.text.trim(),
-                  },
-                );
+                _updateMember(member['email']?.toString() ?? '', {
+                  'name': nameController.text.trim(),
+                  'email': emailController.text.trim(),
+                  'phone': phoneController.text.trim(),
+                  'role': roleController.text.trim(),
+                });
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF6A1B9A),
@@ -211,7 +216,10 @@ class _GetMembersScreenState extends State<GetMembersScreen> {
   }
 
   // Function to update a member
-  Future<void> _updateMember(String memberEmail, Map<String, String> updatedData) async {
+  Future<void> _updateMember(
+    String memberEmail,
+    Map<String, String> updatedData,
+  ) async {
     // Show loading indicator
     showDialog(
       context: context,
@@ -249,7 +257,8 @@ class _GetMembersScreenState extends State<GetMembersScreen> {
 
       // Use the provided API base URL
       const String baseUrl = 'http://api.touchmeapp.com';
-      final String apiUrl = '$baseUrl/api/merchants/$merchantId/members/$memberEmail';
+      final String apiUrl =
+          '$baseUrl/api/merchants/$merchantId/members/$memberEmail';
 
       // Get authentication token if needed
       String? authToken = await storage.read(key: "authToken");
@@ -378,7 +387,8 @@ class _GetMembersScreenState extends State<GetMembersScreen> {
 
       // Use the provided API base URL
       const String baseUrl = 'http://api.touchmeapp.com';
-      final String apiUrl = '$baseUrl/api/merchants/$merchantId/members/$memberEmail';
+      final String apiUrl =
+          '$baseUrl/api/merchants/$merchantId/members/$memberEmail';
 
       // Get authentication token if needed
       String? authToken = await storage.read(key: "authToken");
@@ -390,10 +400,7 @@ class _GetMembersScreenState extends State<GetMembersScreen> {
         headers['Authorization'] = 'Bearer $authToken';
       }
 
-      final response = await http.delete(
-        Uri.parse(apiUrl),
-        headers: headers,
-      );
+      final response = await http.delete(Uri.parse(apiUrl), headers: headers);
 
       // Hide loading indicator
       Navigator.pop(context);
@@ -447,210 +454,201 @@ class _GetMembersScreenState extends State<GetMembersScreen> {
         backgroundColor: const Color(0xFF6A1B9A),
         foregroundColor: Colors.white,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _getMembers,
-          ),
+          IconButton(icon: const Icon(Icons.refresh), onPressed: _getMembers),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _errorMessage != null
+      body:
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _errorMessage != null
               ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.error_outline,
-                        size: 64,
-                        color: Colors.red.shade300,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      size: 64,
+                      color: Colors.red.shade300,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      _errorMessage!,
+                      style: const TextStyle(fontSize: 16, color: Colors.red),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: _getMembers,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF6A1B9A),
+                        foregroundColor: Colors.white,
                       ),
-                      const SizedBox(height: 16),
-                      Text(
-                        _errorMessage!,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: Colors.red,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _getMembers,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF6A1B9A),
-                          foregroundColor: Colors.white,
-                        ),
-                        child: const Text('Retry'),
-                      ),
-                    ],
-                  ),
-                )
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              )
               : _members.isEmpty
-                  ? const Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.people_outline,
-                            size: 64,
-                            color: Colors.grey,
-                          ),
-                          SizedBox(height: 16),
-                          Text(
-                            'No members found',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.grey,
-                            ),
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            'Add your first team member to get started',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
+              ? const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.people_outline, size: 64, color: Colors.grey),
+                    SizedBox(height: 16),
+                    Text(
+                      'No members found',
+                      style: TextStyle(fontSize: 18, color: Colors.grey),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Add your first team member to get started',
+                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                    ),
+                  ],
+                ),
+              )
+              : RefreshIndicator(
+                onRefresh: _getMembers,
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(16.0),
+                  itemCount: _members.length,
+                  itemBuilder: (context, index) {
+                    final member = _members[index];
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                    )
-                  : RefreshIndicator(
-                      onRefresh: _getMembers,
-                      child: ListView.builder(
-                        padding: const EdgeInsets.all(16.0),
-                        itemCount: _members.length,
-                        itemBuilder: (context, index) {
-                          final member = _members[index];
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            elevation: 2,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: ListTile(
-                              contentPadding: const EdgeInsets.all(16),
-                              leading: CircleAvatar(
-                                radius: 30,
-                                backgroundColor: const Color(0xFF6A1B9A),
-                                backgroundImage: member['profile_image'] != null
-                                    ? NetworkImage(member['profile_image'])
-                                    : null,
-                                child: member['profile_image'] == null
-                                    ? Text(
-                                        (member['name'] ?? 'N/A')
-                                            .split(' ')
-                                            .map((e) => e.isNotEmpty ? e[0] : '')
-                                            .take(2)
-                                            .join()
-                                            .toUpperCase(),
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      )
-                                    : null,
-                              ),
-                              title: Text(
-                                member['name'] ?? 'No Name',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.all(16),
+                        leading: CircleAvatar(
+                          radius: 30,
+                          backgroundColor: const Color(0xFF6A1B9A),
+                          backgroundImage:
+                              member['profile_image'] != null
+                                  ? NetworkImage(member['profile_image'])
+                                  : null,
+                          child:
+                              member['profile_image'] == null
+                                  ? Text(
+                                    (member['name'] ?? 'N/A')
+                                        .split(' ')
+                                        .map((e) => e.isNotEmpty ? e[0] : '')
+                                        .take(2)
+                                        .join()
+                                        .toUpperCase(),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  )
+                                  : null,
+                        ),
+                        title: Text(
+                          member['name'] ?? 'No Name',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 4),
+                            if (member['role'] != null)
+                              Text(
+                                member['role'],
+                                style: TextStyle(
+                                  color: Colors.grey.shade600,
+                                  fontSize: 14,
                                 ),
                               ),
-                              subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                            const SizedBox(height: 4),
+                            if (member['email'] != null)
+                              Row(
                                 children: [
-                                  const SizedBox(height: 4),
-                                  if (member['role'] != null)
-                                    Text(
-                                      member['role'],
+                                  Icon(
+                                    Icons.email,
+                                    size: 16,
+                                    color: Colors.grey.shade500,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Expanded(
+                                    child: Text(
+                                      member['email'],
                                       style: TextStyle(
                                         color: Colors.grey.shade600,
-                                        fontSize: 14,
+                                        fontSize: 12,
                                       ),
                                     ),
-                                  const SizedBox(height: 4),
-                                  if (member['email'] != null)
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.email,
-                                          size: 16,
-                                          color: Colors.grey.shade500,
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Expanded(
-                                          child: Text(
-                                            member['email'],
-                                            style: TextStyle(
-                                              color: Colors.grey.shade600,
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  const SizedBox(height: 2),
-                                  if (member['phone'] != null)
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.phone,
-                                          size: 16,
-                                          color: Colors.grey.shade500,
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          member['phone'],
-                                          style: TextStyle(
-                                            color: Colors.grey.shade600,
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                                  ),
                                 ],
                               ),
-                              trailing: PopupMenuButton<String>(
-                                onSelected: (value) {
-                                  if (value == 'edit') {
-                                    _showEditMemberDialog(member);
-                                  } else if (value == 'delete') {
-                                    _deleteMember(
-                                      member['email']?.toString() ?? '',
-                                      member['name'] ?? 'Unknown',
-                                    );
-                                  }
-                                },
-                                itemBuilder: (BuildContext context) => [
-                                  const PopupMenuItem<String>(
-                                    value: 'edit',
-                                    child: Row(
-                                      children: [
-                                        Icon(Icons.edit, color: Color(0xFF6A1B9A)),
-                                        SizedBox(width: 8),
-                                        Text('Edit'),
-                                      ],
-                                    ),
+                            const SizedBox(height: 2),
+                            if (member['phone'] != null)
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.phone,
+                                    size: 16,
+                                    color: Colors.grey.shade500,
                                   ),
-                                  const PopupMenuItem<String>(
-                                    value: 'delete',
-                                    child: Row(
-                                      children: [
-                                        Icon(Icons.delete, color: Colors.red),
-                                        SizedBox(width: 8),
-                                        Text('Delete'),
-                                      ],
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    member['phone'],
+                                    style: TextStyle(
+                                      color: Colors.grey.shade600,
+                                      fontSize: 12,
                                     ),
                                   ),
                                 ],
                               ),
-                            ),
-                          );
-                        },
+                          ],
+                        ),
+                        trailing: PopupMenuButton<String>(
+                          onSelected: (value) {
+                            if (value == 'edit') {
+                              _showEditMemberDialog(member);
+                            } else if (value == 'delete') {
+                              _deleteMember(
+                                member['email']?.toString() ?? '',
+                                member['name'] ?? 'Unknown',
+                              );
+                            }
+                          },
+                          itemBuilder:
+                              (BuildContext context) => [
+                                const PopupMenuItem<String>(
+                                  value: 'edit',
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.edit,
+                                        color: Color(0xFF6A1B9A),
+                                      ),
+                                      SizedBox(width: 8),
+                                      Text('Edit'),
+                                    ],
+                                  ),
+                                ),
+                                const PopupMenuItem<String>(
+                                  value: 'delete',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.delete, color: Colors.red),
+                                      SizedBox(width: 8),
+                                      Text('Delete'),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                        ),
                       ),
-                    ),
+                    );
+                  },
+                ),
+              ),
     );
   }
 }

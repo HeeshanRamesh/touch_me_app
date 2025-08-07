@@ -6,10 +6,12 @@ import '../models/service.dart';
 import '../models/review.dart';
 import '../models/booking.dart';
 import '../models/gift.dart';
+import '../models/merchant.dart';
 import '../services/services.dart';
 import '../services/bookings.dart';
 import '../services/reviews.dart';
 import '../services/gift_cards.dart';
+import '../services/merchant_service.dart';
 import '../reviews_tab.dart';
 
 class MerchantServiceListScreen extends StatefulWidget {
@@ -37,6 +39,7 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
   late Future<List<Service>> _futureServices;
   late Future<List<Review>> _futureReviews;
   late Future<List<Booking>> _futureBookings;
+  late Future<Merchant?> _futureMerchant;
   int _selectedIndex = 1; // Default to Service tab
 
   @override
@@ -45,6 +48,21 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
     _futureServices = fetchServicesByMerchant(widget.merchantId, widget.token);
     _futureReviews = fetchReviewsByMerchant(widget.merchantId, widget.token);
     _futureBookings = fetchCustomerBookings(widget.token);
+    _futureMerchant = _fetchMerchantDetails();
+  }
+
+  // Fetch merchant details to get the address
+  Future<Merchant?> _fetchMerchantDetails() async {
+    try {
+      final merchants = await fetchMerchants(widget.token);
+      return merchants.firstWhere(
+        (merchant) => merchant.id == widget.merchantId,
+        orElse: () => throw Exception('Merchant not found'),
+      );
+    } catch (e) {
+      print('Error fetching merchant details: $e');
+      return null;
+    }
   }
 
   void refreshReviews() {
@@ -63,11 +81,18 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.outletName,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        title: Text(
+          widget.outletName,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         backgroundColor: const Color(0xFF6A1B9A),
         elevation: 4,
+        iconTheme: const IconThemeData(
+          color: Colors.white, // Change back button color to white
+        ),
       ),
       body: Column(
         children: [
@@ -98,7 +123,7 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
     );
   }
 
-  // -------- Profile Header --------
+  // -------- Profile Header with Dynamic Address --------
   Widget _buildSalonProfileHeader() {
     return Padding(
       padding: const EdgeInsets.only(top: 18, bottom: 6),
@@ -106,11 +131,12 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
         children: [
           CircleAvatar(
             radius: 48,
-            backgroundImage: widget.profileImageUrl.isNotEmpty
-                ? NetworkImage(widget.profileImageUrl)
-                : const NetworkImage(
-                    'https://media.istockphoto.com/id/469090778/photo/interior-of-empty-modern-hair-and-beauty-salon.jpg?s=612x612&w=0&k=20&c=pGrPWP2B83obfEA8unZrPm9oCLEuSLv3tqeK0zA4bEc=',
-                  ),
+            backgroundImage:
+                widget.profileImageUrl.isNotEmpty
+                    ? NetworkImage(widget.profileImageUrl)
+                    : const NetworkImage(
+                      'https://media.istockphoto.com/id/469090778/photo/interior-of-empty-modern-hair-and-beauty-salon.jpg?s=612x612&w=0&k=20&c=pGrPWP2B83obfEA8unZrPm9oCLEuSLv3tqeK0zA4bEc=',
+                    ),
             backgroundColor: Colors.grey[200],
             onBackgroundImageError: (_, __) {},
           ),
@@ -120,16 +146,37 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
-              Icon(Icons.location_on, size: 17, color: Colors.black54),
-              SizedBox(width: 4),
-              Text(
-                'Colombo Havelock Road',
-                style: TextStyle(fontSize: 14, color: Colors.black54),
-              ),
-            ],
+          // Dynamic address display
+          FutureBuilder<Merchant?>(
+            future: _futureMerchant,
+            builder: (context, snapshot) {
+              String displayAddress = 'Loading address...';
+              
+              if (snapshot.connectionState == ConnectionState.done) {
+                if (snapshot.hasData && snapshot.data != null) {
+                  displayAddress = snapshot.data!.address;
+                } else {
+                  displayAddress = 'Address not available';
+                }
+              }
+              
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.location_on, size: 17, color: Colors.black54),
+                  const SizedBox(width: 4),
+                  Flexible(
+                    child: Text(
+                      displayAddress,
+                      style: const TextStyle(fontSize: 14, color: Colors.black54),
+                      textAlign: TextAlign.center,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
           const SizedBox(height: 7),
           Row(
@@ -221,22 +268,47 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
   // ----------- Tab Contents ------------
 
   Widget _buildAboutTab() {
-    return const SingleChildScrollView(
-      padding: EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'About Us',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+    return FutureBuilder<Merchant?>(
+      future: _futureMerchant,
+      builder: (context, snapshot) {
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'About Us',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Welcome to our premium salon! We offer top-notch beauty and haircare services with a focus on customer satisfaction.',
+                style: TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Location',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(Icons.location_on, color: Colors.purple, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      snapshot.hasData && snapshot.data != null 
+                          ? snapshot.data!.address 
+                          : 'Address not available',
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-          SizedBox(height: 12),
-          Text(
-            'Welcome to our premium salon! We offer top-notch beauty and haircare services with a focus on customer satisfaction.',
-            style: TextStyle(fontSize: 16),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -331,26 +403,56 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
   }
 
   Widget _buildContactTab() {
-    return const SingleChildScrollView(
-      padding: EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Contact Us',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+    return FutureBuilder<Merchant?>(
+      future: _futureMerchant,
+      builder: (context, snapshot) {
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Contact Us',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  const Icon(Icons.location_on, color: Colors.purple, size: 20),
+                  const SizedBox(width: 8),
+                  const Text('Address: ', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Padding(
+                padding: const EdgeInsets.only(left: 28),
+                child: Text(
+                  snapshot.hasData && snapshot.data != null 
+                      ? snapshot.data!.address 
+                      : 'Address not available',
+                  style: const TextStyle(fontSize: 16),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Row(
+                children: [
+                  Icon(Icons.phone, color: Colors.purple, size: 20),
+                  SizedBox(width: 8),
+                  Text('Phone: +94 11 261 2345', style: TextStyle(fontSize: 16)),
+                ],
+              ),
+              const SizedBox(height: 12),
+              const Row(
+                children: [
+                  Icon(Icons.email, color: Colors.purple, size: 20),
+                  SizedBox(width: 8),
+                  Text('Email: info@salon.com', style: TextStyle(fontSize: 16)),
+                ],
+              ),
+            ],
           ),
-          SizedBox(height: 12),
-          Text(
-            'Address: 12/2A, Kesbewa, Piliyandala',
-            style: TextStyle(fontSize: 16),
-          ),
-          SizedBox(height: 8),
-          Text('Phone: +94 11 261 2345', style: TextStyle(fontSize: 16)),
-          SizedBox(height: 8),
-          Text('Email: info@salon.com', style: TextStyle(fontSize: 16)),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -424,99 +526,103 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
                   child: const Text('Cancel'),
                 ),
                 ElevatedButton(
-                  onPressed: selectedDate == null || selectedTime == null
-                      ? null
-                      : () async {
-                          final formattedDate =
-                              '${selectedDate!.year}-${selectedDate!.month.toString().padLeft(2, '0')}-${selectedDate!.day.toString().padLeft(2, '0')}';
-                          final formattedTime =
-                              '${selectedTime!.hour.toString().padLeft(2, '0')}:${selectedTime!.minute.toString().padLeft(2, '0')}';
-                          final shortId = DateTime.now()
-                              .millisecondsSinceEpoch
-                              .toString()
-                              .substring(5);
-                          final baseOrderId = 'ORD${service.id}$shortId';
-                          final orderId = baseOrderId.length <= 21
-                              ? baseOrderId
-                              : baseOrderId.substring(0, 21);
+                  onPressed:
+                      selectedDate == null || selectedTime == null
+                          ? null
+                          : () async {
+                            final formattedDate =
+                                '${selectedDate!.year}-${selectedDate!.month.toString().padLeft(2, '0')}-${selectedDate!.day.toString().padLeft(2, '0')}';
+                            final formattedTime =
+                                '${selectedTime!.hour.toString().padLeft(2, '0')}:${selectedTime!.minute.toString().padLeft(2, '0')}';
+                            final shortId = DateTime.now()
+                                .millisecondsSinceEpoch
+                                .toString()
+                                .substring(5);
+                            final baseOrderId = 'ORD${service.id}$shortId';
+                            final orderId =
+                                baseOrderId.length <= 21
+                                    ? baseOrderId
+                                    : baseOrderId.substring(0, 21);
 
-                          try {
-                            final paymentResponse = await _initiateOnePayPayment(
-                              amount: service.price.toDouble(),
-                              orderId: orderId,
-                              customerId: widget.customerId,
-                              returnUrl:
-                                  'http://api.touchmeapp.com/api/payments/payment-callback',
-                              token: widget.token,
-                            );
-
-                            if (paymentResponse['status'] == 'success' &&
-                                paymentResponse['paymentUrl'] != null) {
-                              final bookingResponse = await bookService(
+                            try {
+                              final paymentResponse = await _initiateOnePayPayment(
+                                amount: service.price.toDouble(),
+                                orderId: orderId,
                                 customerId: widget.customerId,
-                                merchantId: widget.merchantId,
-                                saloonServiceId: service.id,
-                                date: formattedDate,
-                                time: formattedTime,
+                                returnUrl:
+                                    'http://api.touchmeapp.com/api/payments/payment-callback',
                                 token: widget.token,
-                                ipgTransactionId:
-                                    paymentResponse['ipg_transaction_id'],
                               );
 
-                              if (bookingResponse['success'] == true) {
-                                Navigator.pop(context);
-                                // Navigate to PaymentDetailsPage
-                                await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => PaymentDetailsPage(
-                                      serviceAmount: service.price.toDouble(),
-                                      serviceName: service.serviceName,
-                                      merchantId: widget.merchantId,
-                                      customerId: widget.customerId,
-                                      token: widget.token,
-                                    ),
-                                  ),
+                              if (paymentResponse['status'] == 'success' &&
+                                  paymentResponse['paymentUrl'] != null) {
+                                final bookingResponse = await bookService(
+                                  customerId: widget.customerId,
+                                  merchantId: widget.merchantId,
+                                  saloonServiceId: service.id,
+                                  date: formattedDate,
+                                  time: formattedTime,
+                                  token: widget.token,
+                                  ipgTransactionId:
+                                      paymentResponse['ipg_transaction_id'],
                                 );
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'Booking created! Please complete payment. 🎉',
+
+                                if (bookingResponse['success'] == true) {
+                                  Navigator.pop(context);
+                                  // Navigate to PaymentDetailsPage
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder:
+                                          (context) => PaymentDetailsPage(
+                                            serviceAmount:
+                                                service.price.toDouble(),
+                                            serviceName: service.serviceName,
+                                            merchantId: widget.merchantId,
+                                            customerId: widget.customerId,
+                                            token: widget.token,
+                                          ),
                                     ),
-                                    backgroundColor: Colors.green,
-                                    duration: Duration(seconds: 3),
-                                  ),
-                                );
-                                refreshBookings();
+                                  );
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Booking created! Please complete payment. 🎉',
+                                      ),
+                                      backgroundColor: Colors.green,
+                                      duration: Duration(seconds: 3),
+                                    ),
+                                  );
+                                  refreshBookings();
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Booking failed: ${bookingResponse['message'] ?? 'Unknown error'}',
+                                      ),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
                               } else {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(
-                                      'Booking failed: ${bookingResponse['message'] ?? 'Unknown error'}',
+                                      'Payment initiation failed: ${paymentResponse['message'] ?? 'Unknown error'}',
                                     ),
                                     backgroundColor: Colors.red,
                                   ),
                                 );
                               }
-                            } else {
+                            } catch (e) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text(
-                                    'Payment initiation failed: ${paymentResponse['message'] ?? 'Unknown error'}',
-                                  ),
+                                  content: Text('Error: $e'),
                                   backgroundColor: Colors.red,
                                 ),
                               );
                             }
-                          } catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Error: $e'),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                          }
-                        },
+                          },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.purple,
                   ),
@@ -595,7 +701,9 @@ class GiftCardsTab extends StatelessWidget {
   });
 
   Future<void> _buyGiftCard(BuildContext context, GiftCard gc) async {
-    final url = Uri.parse('http://api.touchmeapp.com/api/purchased-gift-cards/buy');
+    final url = Uri.parse(
+      'http://api.touchmeapp.com/api/purchased-gift-cards/buy',
+    );
     try {
       final response = await http.post(
         url,
@@ -610,42 +718,43 @@ class GiftCardsTab extends StatelessWidget {
       if (response.statusCode == 200 && data['success'] == true) {
         showDialog(
           context: context,
-          builder: (_) => AlertDialog(
-            title: const Text('Gift Card Purchased!'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'Gift Card Code:',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+          builder:
+              (_) => AlertDialog(
+                title: const Text('Gift Card Purchased!'),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Gift Card Code:',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      data['code'] ?? 'N/A',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        color: Colors.purple,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Expiry Date: ${data['expiryDate'] != null ? data['expiryDate'].substring(0, 10) : 'N/A'}',
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Value: Rs ${data['value']?.toStringAsFixed(2) ?? 'N/A'}',
+                    ),
+                    const SizedBox(height: 8),
+                    Text('Status: ${data['status'] ?? 'N/A'}'),
+                  ],
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  data['code'] ?? 'N/A',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    color: Colors.purple,
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('OK'),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Expiry Date: ${data['expiryDate'] != null ? data['expiryDate'].substring(0, 10) : 'N/A'}',
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Value: Rs ${data['value']?.toStringAsFixed(2) ?? 'N/A'}',
-                ),
-                const SizedBox(height: 8),
-                Text('Status: ${data['status'] ?? 'N/A'}'),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('OK'),
+                ],
               ),
-            ],
-          ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(

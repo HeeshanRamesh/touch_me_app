@@ -1,12 +1,18 @@
-// Updated SearchPage with navigation to details
+// Updated SearchPage with navigation to MerchantServiceListScreen
 import 'package:flutter/material.dart';
 import '../models/merchant.dart';
 import '../services/merchant_service.dart';
+import 'merchant_service_list_screen.dart'; // Add this import
 
 class SearchPage extends StatefulWidget {
   final String token;
-
-  const SearchPage({Key? key, required this.token}) : super(key: key);
+  final String customerId; // Add this parameter
+  
+  const SearchPage({
+    Key? key, 
+    required this.token,
+    required this.customerId, // Add this parameter
+  }) : super(key: key);
 
   @override
   State<SearchPage> createState() => _SearchPageState();
@@ -64,10 +70,17 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   void _showMerchantDetails(Merchant merchant) {
+    // Navigate to MerchantServiceListScreen instead of MerchantDetailsPage
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => MerchantDetailsPage(merchant: merchant),
+        builder: (context) => MerchantServiceListScreen(
+          merchantId: merchant.id,
+          outletName: merchant.outletName,
+          token: widget.token,
+          customerId: widget.customerId,
+          profileImageUrl: merchant.logoUrl,
+        ),
       ),
     );
   }
@@ -78,7 +91,7 @@ class _SearchPageState extends State<SearchPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('All Sallons & Spas'),
+        title: const Text('All Salons & Spas'),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
@@ -371,285 +384,6 @@ class _SearchPageState extends State<SearchPage> {
                     );
                   }
                 },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// Merchant Details Page
-class MerchantDetailsPage extends StatelessWidget {
-  final Merchant merchant;
-
-  const MerchantDetailsPage({Key? key, required this.merchant}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final scaleFactor = MediaQuery.of(context).textScaleFactor;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(merchant.outletName),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.favorite_border),
-            onPressed: () {
-              // Add to favorites functionality
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.share),
-            onPressed: () {
-              // Share functionality
-            },
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Hero Image
-            Container(
-              height: 250 * scaleFactor,
-              width: double.infinity,
-              child: Image.asset(
-                'assets/saloonservice.jpg',
-                fit: BoxFit.cover,
-              ),
-            ),
-            
-            Padding(
-              padding: EdgeInsets.all(16 * scaleFactor),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Title and Rating
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          merchant.outletName,
-                          style: TextStyle(
-                            fontSize: 24 * scaleFactor,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 12 * scaleFactor,
-                          vertical: 6 * scaleFactor,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.green,
-                          borderRadius: BorderRadius.circular(20 * scaleFactor),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.star,
-                              color: Colors.white,
-                              size: 16 * scaleFactor,
-                            ),
-                            SizedBox(width: 4 * scaleFactor),
-                            Text(
-                              merchant.rating?.toString() ?? '5.0',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14 * scaleFactor,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  
-                  SizedBox(height: 8 * scaleFactor),
-                  
-                  // Reviews count
-                  Text(
-                    '${merchant.reviews ?? 0} Reviews',
-                    style: TextStyle(
-                      fontSize: 16 * scaleFactor,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                  
-                  SizedBox(height: 16 * scaleFactor),
-                  
-                  // Address Section
-                  Card(
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12 * scaleFactor),
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.all(16 * scaleFactor),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.location_on,
-                                color: Colors.red,
-                                size: 20 * scaleFactor,
-                              ),
-                              SizedBox(width: 8 * scaleFactor),
-                              Text(
-                                'Address',
-                                style: TextStyle(
-                                  fontSize: 16 * scaleFactor,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 8 * scaleFactor),
-                          Text(
-                            merchant.address,
-                            style: TextStyle(
-                              fontSize: 14 * scaleFactor,
-                              color: Colors.grey[700],
-                            ),
-                          ),
-                          SizedBox(height: 12 * scaleFactor),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: ElevatedButton.icon(
-                                  onPressed: () {
-                                    // Open maps functionality
-                                  },
-                                  icon: Icon(
-                                    Icons.directions,
-                                    size: 18 * scaleFactor,
-                                  ),
-                                  label: Text(
-                                    'Get Directions',
-                                    style: TextStyle(fontSize: 14 * scaleFactor),
-                                  ),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.blue,
-                                    foregroundColor: Colors.white,
-                                    padding: EdgeInsets.symmetric(
-                                      vertical: 12 * scaleFactor,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              SizedBox(width: 8 * scaleFactor),
-                              Expanded(
-                                child: OutlinedButton.icon(
-                                  onPressed: () {
-                                    // Call functionality
-                                  },
-                                  icon: Icon(
-                                    Icons.phone,
-                                    size: 18 * scaleFactor,
-                                  ),
-                                  label: Text(
-                                    'Call Now',
-                                    style: TextStyle(fontSize: 14 * scaleFactor),
-                                  ),
-                                  style: OutlinedButton.styleFrom(
-                                    padding: EdgeInsets.symmetric(
-                                      vertical: 12 * scaleFactor,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  
-                  SizedBox(height: 16 * scaleFactor),
-                  
-                  // Services Section (if available)
-                  Card(
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12 * scaleFactor),
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.all(16 * scaleFactor),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.business_center,
-                                color: Colors.orange,
-                                size: 20 * scaleFactor,
-                              ),
-                              SizedBox(width: 8 * scaleFactor),
-                              Text(
-                                'Services',
-                                style: TextStyle(
-                                  fontSize: 16 * scaleFactor,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 12 * scaleFactor),
-                          // Add services list here based on your Merchant model
-                          Text(
-                            'Hair Cut, Hair Styling, Beard Trim, Facial, Massage',
-                            style: TextStyle(
-                              fontSize: 14 * scaleFactor,
-                              color: Colors.grey[700],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  
-                  SizedBox(height: 24 * scaleFactor),
-                  
-                  // Book Appointment Button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // Navigate to booking page
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(vertical: 16 * scaleFactor),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12 * scaleFactor),
-                        ),
-                      ),
-                      child: Text(
-                        'Book Appointment',
-                        style: TextStyle(
-                          fontSize: 16 * scaleFactor,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                  
-                  SizedBox(height: 16 * scaleFactor),
-                ],
               ),
             ),
           ],

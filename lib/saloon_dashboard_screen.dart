@@ -45,17 +45,19 @@ class _SaloonDashboardScreenState extends State<SaloonDashboardScreen> {
     try {
       final fetchedBookings = await fetchMerchantBookings(token);
       setState(() {
-        todayCompletedBookings = fetchedBookings.where((booking) {
-          final bookingDate = DateTime.parse(booking.date);
-          final isToday = _isSameDay(bookingDate, DateTime.now());
-          return isToday && booking.status == 'Completed';
-        }).toList();
+        todayCompletedBookings =
+            fetchedBookings.where((booking) {
+              final bookingDate = DateTime.parse(booking.date);
+              final isToday = _isSameDay(bookingDate, DateTime.now());
+              return isToday && booking.status == 'Completed';
+            }).toList();
 
-        futureCompletedBookings = fetchedBookings.where((booking) {
-          final bookingDate = DateTime.parse(booking.date);
-          final isFuture = bookingDate.isAfter(DateTime.now());
-          return isFuture && booking.status == 'Completed';
-        }).toList();
+        futureCompletedBookings =
+            fetchedBookings.where((booking) {
+              final bookingDate = DateTime.parse(booking.date);
+              final isFuture = bookingDate.isAfter(DateTime.now());
+              return isFuture && booking.status == 'Completed';
+            }).toList();
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -148,74 +150,74 @@ class _SaloonDashboardScreenState extends State<SaloonDashboardScreen> {
                       const SizedBox(height: 10),
                       todayCompletedBookings.isEmpty
                           ? Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: const [
-                                Icon(Icons.history, size: 40),
-                                SizedBox(height: 10),
-                                Text(
-                                  'No appointments today',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [
+                              Icon(Icons.history, size: 40),
+                              SizedBox(height: 10),
+                              Text(
+                                'No appointments today',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
                                 ),
-                                SizedBox(height: 5),
-                                Text(
-                                  'Visit the calendar section to add some appointments',
-                                  textAlign: TextAlign.center,
-                                ),
-                              ],
-                            )
+                              ),
+                              SizedBox(height: 5),
+                              Text(
+                                'Visit the calendar section to add some appointments',
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          )
                           : ListView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: todayCompletedBookings.length,
-                              itemBuilder: (context, index) {
-                                final booking = todayCompletedBookings[index];
-                                return Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 8.0,
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Service: ${booking.serviceName}',
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 14,
-                                        ),
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: todayCompletedBookings.length,
+                            itemBuilder: (context, index) {
+                              final booking = todayCompletedBookings[index];
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 8.0,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Service: ${booking.serviceName}',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 14,
                                       ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        'Customer: ${booking.customerName}',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey[600],
-                                        ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Customer: ${booking.customerName}',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey[600],
                                       ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        'Time: ${booking.time}',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey[600],
-                                        ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Time: ${booking.time}',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey[600],
                                       ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        'Status: ${booking.status}',
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.green,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Status: ${booking.status}',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.green,
+                                        fontWeight: FontWeight.bold,
                                       ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
                     ],
                   ),
                 ),
@@ -238,83 +240,83 @@ class _SaloonDashboardScreenState extends State<SaloonDashboardScreen> {
                       const SizedBox(height: 10),
                       futureCompletedBookings.isEmpty
                           ? Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: const [
-                                Icon(Icons.history, size: 40),
-                                SizedBox(height: 10),
-                                Text(
-                                  'No future completed appointments',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [
+                              Icon(Icons.history, size: 40),
+                              SizedBox(height: 10),
+                              Text(
+                                'No future completed appointments',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
                                 ),
-                                SizedBox(height: 5),
-                                Text(
-                                  'Visit the calendar section to manage appointments',
-                                  textAlign: TextAlign.center,
-                                ),
-                              ],
-                            )
+                              ),
+                              SizedBox(height: 5),
+                              Text(
+                                'Visit the calendar section to manage appointments',
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          )
                           : ListView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: futureCompletedBookings.length,
-                              itemBuilder: (context, index) {
-                                final booking = futureCompletedBookings[index];
-                                return Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 8.0,
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Service: ${booking.serviceName}',
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 14,
-                                        ),
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: futureCompletedBookings.length,
+                            itemBuilder: (context, index) {
+                              final booking = futureCompletedBookings[index];
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 8.0,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Service: ${booking.serviceName}',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 14,
                                       ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        'Customer: ${booking.customerName}',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey[600],
-                                        ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Customer: ${booking.customerName}',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey[600],
                                       ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        'Date: ${booking.date}',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey[600],
-                                        ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Date: ${booking.date}',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey[600],
                                       ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        'Time: ${booking.time}',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey[600],
-                                        ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Time: ${booking.time}',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey[600],
                                       ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        'Status: ${booking.status}',
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.green,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Status: ${booking.status}',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.green,
+                                        fontWeight: FontWeight.bold,
                                       ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
                     ],
                   ),
                 ),

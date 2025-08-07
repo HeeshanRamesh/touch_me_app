@@ -54,7 +54,9 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
   Future<List<Merchant>> _fetchMerchants(List<String> ids) async {
     try {
       final response = await http.get(
-        Uri.parse('http://api.touchmeapp.com/api/merchants?ids=${ids.join(',')}'),
+        Uri.parse(
+          'http://api.touchmeapp.com/api/merchants?ids=${ids.join(',')}',
+        ),
         headers: {'Content-Type': 'application/json'},
       );
       if (response.statusCode == 200) {
@@ -90,25 +92,28 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
     final prefs = SharedPreferences.getInstance();
     setState(() {
       _selectedFilter = filter;
-      _filteredSalons = _favoriteMerchants
-          .where((merchant) {
-            if (filter == 'All') return true;
-            if (filter == 'Salons') {
-              return merchant.outletName.toLowerCase().contains('saloon') ||
-                  merchant.outletName.toLowerCase().contains('salon');
-            }
-            return false;
-          })
-          .map((merchant) => {
-                'name': merchant.outletName,
-                'rating': 5.0, // Static rating for consistency
-                'reviews': 127, // Static reviews for consistency
-                'location': '12/214, ${merchant.outletPhone}',
-                'imagePath': merchant.logoUrl,
-                'isFavorite': true, // All merchants here are favorites
-                'merchantId': merchant.id,
+      _filteredSalons =
+          _favoriteMerchants
+              .where((merchant) {
+                if (filter == 'All') return true;
+                if (filter == 'Salons') {
+                  return merchant.outletName.toLowerCase().contains('saloon') ||
+                      merchant.outletName.toLowerCase().contains('salon');
+                }
+                return false;
               })
-          .toList();
+              .map(
+                (merchant) => {
+                  'name': merchant.outletName,
+                  'rating': 5.0, // Static rating for consistency
+                  'reviews': 127, // Static reviews for consistency
+                  'location': '12/214, ${merchant.outletPhone}',
+                  'imagePath': merchant.logoUrl,
+                  'isFavorite': true, // All merchants here are favorites
+                  'merchantId': merchant.id,
+                },
+              )
+              .toList();
     });
   }
 
@@ -125,10 +130,7 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
         ),
         title: const Text(
           'Favorites',
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
       ),
       body: Column(
@@ -145,45 +147,47 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
             ),
           ),
           Expanded(
-            child: _filteredSalons.isEmpty
-                ? const Center(
-                    child: Text(
-                      'No favorite salons yet.',
-                      style: TextStyle(fontSize: 16, color: Colors.grey),
-                    ),
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.all(16.0),
-                    itemCount: _filteredSalons.length,
-                    itemBuilder: (context, index) {
-                      final salon = _filteredSalons[index];
-                      return GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => MerchantServiceListScreen(
-                                merchantId: salon['merchantId'],
-                                outletName: salon['name'],
-                                token: widget.token,
-                                customerId: widget.customerId,
-                                profileImageUrl: salon['imagePath'],
+            child:
+                _filteredSalons.isEmpty
+                    ? const Center(
+                      child: Text(
+                        'No favorite salons yet.',
+                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                      ),
+                    )
+                    : ListView.builder(
+                      padding: const EdgeInsets.all(16.0),
+                      itemCount: _filteredSalons.length,
+                      itemBuilder: (context, index) {
+                        final salon = _filteredSalons[index];
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (_) => MerchantServiceListScreen(
+                                      merchantId: salon['merchantId'],
+                                      outletName: salon['name'],
+                                      token: widget.token,
+                                      customerId: widget.customerId,
+                                      profileImageUrl: salon['imagePath'],
+                                    ),
                               ),
-                            ),
-                          );
-                        },
-                        child: _buildSalonCard(
-                          salon['name'],
-                          salon['rating'],
-                          salon['reviews'],
-                          salon['location'],
-                          salon['imagePath'],
-                          salon['isFavorite'],
-                          index,
-                        ),
-                      );
-                    },
-                  ),
+                            );
+                          },
+                          child: _buildSalonCard(
+                            salon['name'],
+                            salon['rating'],
+                            salon['reviews'],
+                            salon['location'],
+                            salon['imagePath'],
+                            salon['isFavorite'],
+                            index,
+                          ),
+                        );
+                      },
+                    ),
           ),
         ],
       ),
@@ -196,9 +200,7 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
       style: ElevatedButton.styleFrom(
         backgroundColor: isSelected ? Colors.purple : Colors.grey[300],
         foregroundColor: isSelected ? Colors.white : Colors.black,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       ),
       child: Text(
@@ -222,9 +224,7 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
   ) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8.0),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Row(
         children: [
           Container(
@@ -279,20 +279,30 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
                       const SizedBox(width: 4),
                       Text(
                         '$rating ($reviews Reviews)',
-                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 4),
-                  
+
                   Row(
                     children: [
-                      const Icon(Icons.location_pin, color: Colors.grey, size: 16),
+                      const Icon(
+                        Icons.location_pin,
+                        color: Colors.grey,
+                        size: 16,
+                      ),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
                           location,
-                          style: const TextStyle(fontSize: 12, color: Colors.grey),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),

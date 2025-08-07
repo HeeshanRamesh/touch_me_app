@@ -75,8 +75,6 @@ class MerchantAuthService {
       },
     };
 
-
-    
     try {
       print('Signup Request Body: ${jsonEncode(merchantData)}');
       final response = await http.post(

@@ -175,10 +175,7 @@ class _AppointmentBookingPageState extends State<AppointmentBookingPage> {
                             .toList(),
                   ),
                   SizedBox(height: 20),
-                  SizedBox(
-                    height: 300,
-                    child: _buildCalendar(),
-                  ),
+                  SizedBox(height: 300, child: _buildCalendar()),
                 ],
               ),
             ),
@@ -323,10 +320,7 @@ class _AppointmentBookingPageState extends State<AppointmentBookingPage> {
         ),
         child: Text(
           'No bookings for this date.',
-          style: TextStyle(
-            color: Colors.grey[600],
-            fontSize: 14,
-          ),
+          style: TextStyle(color: Colors.grey[600], fontSize: 14),
         ),
       );
     }
@@ -334,65 +328,67 @@ class _AppointmentBookingPageState extends State<AppointmentBookingPage> {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: Column(
-        children: selectedBookings.map((booking) {
-          return Container(
-            margin: EdgeInsets.only(bottom: 10),
-            padding: EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.grey[100],
-              borderRadius: BorderRadius.circular(15),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
-                  spreadRadius: 1,
-                  blurRadius: 5,
-                  offset: Offset(0, 2),
+        children:
+            selectedBookings.map((booking) {
+              return Container(
+                margin: EdgeInsets.only(bottom: 10),
+                padding: EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(15),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      spreadRadius: 1,
+                      blurRadius: 5,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Service Name: ${booking.serviceName}',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                    color: Colors.black87,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Service Name: ${booking.serviceName}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Customer Name: ${booking.customerName}',
+                      style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Date: ${booking.date}',
+                      style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Time: ${booking.time}',
+                      style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Status: ${booking.status}',
+                      style: TextStyle(
+                        color:
+                            booking.status == 'Completed'
+                                ? Colors.green
+                                : booking.status == 'Upcoming'
+                                ? Colors.orange
+                                : Colors.red,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
-                SizedBox(height: 8),
-                Text(
-                  'Customer Name: ${booking.customerName}',
-                  style: TextStyle(color: Colors.grey[600], fontSize: 14),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'Date: ${booking.date}',
-                  style: TextStyle(color: Colors.grey[600], fontSize: 14),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'Time: ${booking.time}',
-                  style: TextStyle(color: Colors.grey[600], fontSize: 14),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'Status: ${booking.status}',
-                  style: TextStyle(
-                    color: booking.status == 'Completed'
-                        ? Colors.green
-                        : booking.status == 'Upcoming'
-                            ? Colors.orange
-                            : Colors.red,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          );
-        }).toList(),
+              );
+            }).toList(),
       ),
     );
   }
@@ -400,34 +396,36 @@ class _AppointmentBookingPageState extends State<AppointmentBookingPage> {
   void _showBookingDialog(List<Booking> bookings) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Booking Details'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: bookings.map((booking) {
-              return Column(
+      builder:
+          (context) => AlertDialog(
+            title: Text('Booking Details'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildDetailRow('Service:', booking.serviceName),
-                  _buildDetailRow('Customer:', booking.customerName),
-                  _buildDetailRow('Date:', booking.date),
-                  _buildDetailRow('Time:', booking.time),
-                  _buildDetailRow('Status:', booking.status),
-                  Divider(),
-                ],
-              );
-            }).toList(),
+                children:
+                    bookings.map((booking) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildDetailRow('Service:', booking.serviceName),
+                          _buildDetailRow('Customer:', booking.customerName),
+                          _buildDetailRow('Date:', booking.date),
+                          _buildDetailRow('Time:', booking.time),
+                          _buildDetailRow('Status:', booking.status),
+                          Divider(),
+                        ],
+                      );
+                    }).toList(),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('Close'),
+              ),
+            ],
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Close'),
-          ),
-        ],
-      ),
     );
   }
 
@@ -460,206 +458,223 @@ class _AppointmentBookingPageState extends State<AppointmentBookingPage> {
 
     showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: Text('Book New Appointment'),
-          content: Form(
-            key: _formKey,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  DropdownButtonFormField<String>(
-                    value: selectedService,
-                    decoration: InputDecoration(
-                      labelText: 'Service Name',
-                      border: OutlineInputBorder(),
-                    ),
-                    items: services.map((String service) {
-                      return DropdownMenuItem<String>(
-                        value: service,
-                        child: Text(
-                          service,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: (String? newValue) {
-                      setDialogState(() {
-                        selectedService = newValue;
-                      });
-                    },
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please select a service';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 12),
-                  TextFormField(
-                    controller: salonController,
-                    decoration: InputDecoration(
-                      labelText: 'Salon Name',
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter salon name';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 12),
-                  TextFormField(
-                    controller: customerController,
-                    decoration: InputDecoration(
-                      labelText: 'Customer Name',
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter customer name';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 12),
-                  Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Time: ${selectedTime.format(context)}',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.access_time),
-                          onPressed: () async {
-                            final time = await showTimePicker(
-                              context: context,
-                              initialTime: selectedTime,
-                            );
-                            if (time != null) {
+      builder:
+          (context) => StatefulBuilder(
+            builder:
+                (context, setDialogState) => AlertDialog(
+                  title: Text('Book New Appointment'),
+                  content: Form(
+                    key: _formKey,
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          DropdownButtonFormField<String>(
+                            value: selectedService,
+                            decoration: InputDecoration(
+                              labelText: 'Service Name',
+                              border: OutlineInputBorder(),
+                            ),
+                            items:
+                                services.map((String service) {
+                                  return DropdownMenuItem<String>(
+                                    value: service,
+                                    child: Text(
+                                      service,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  );
+                                }).toList(),
+                            onChanged: (String? newValue) {
                               setDialogState(() {
-                                selectedTime = time;
+                                selectedService = newValue;
                               });
+                            },
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please select a service';
+                              }
+                              return null;
+                            },
+                          ),
+                          SizedBox(height: 12),
+                          TextFormField(
+                            controller: salonController,
+                            decoration: InputDecoration(
+                              labelText: 'Salon Name',
+                              border: OutlineInputBorder(),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter salon name';
+                              }
+                              return null;
+                            },
+                          ),
+                          SizedBox(height: 12),
+                          TextFormField(
+                            controller: customerController,
+                            decoration: InputDecoration(
+                              labelText: 'Customer Name',
+                              border: OutlineInputBorder(),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter customer name';
+                              }
+                              return null;
+                            },
+                          ),
+                          SizedBox(height: 12),
+                          Container(
+                            width: double.infinity,
+                            padding: EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Time: ${selectedTime.format(context)}',
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                                IconButton(
+                                  icon: Icon(Icons.access_time),
+                                  onPressed: () async {
+                                    final time = await showTimePicker(
+                                      context: context,
+                                      initialTime: selectedTime,
+                                    );
+                                    if (time != null) {
+                                      setDialogState(() {
+                                        selectedTime = time;
+                                      });
+                                    }
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(height: 12),
+                          Container(
+                            width: double.infinity,
+                            padding: EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              'Date: ${DateFormat('yyyy-MM-dd').format(selectedDate)}',
+                              style: TextStyle(fontSize: 16),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text('Cancel'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () async {
+                        if (_formKey.currentState!.validate() &&
+                            selectedService != null) {
+                          final token = await _getToken();
+                          if (token == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'No authentication token found. Please log in.',
+                                ),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                            return;
+                          }
+                          try {
+                            final url = Uri.parse(
+                              'http://api.touchmeapp.com/api/bookings',
+                            );
+                            final response = await http.post(
+                              url,
+                              headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': 'Bearer $token',
+                              },
+                              body: jsonEncode({
+                                'serviceName': selectedService,
+                                'salonName': salonController.text,
+                                'customerName': customerController.text,
+                                'date': DateFormat(
+                                  'yyyy-MM-dd',
+                                ).format(selectedDate),
+                                'time': selectedTime.format(context),
+                                'status': 'Upcoming',
+                              }),
+                            );
+                            if (response.statusCode == 201) {
+                              final newBooking = Booking(
+                                id: jsonDecode(response.body)['id'],
+                                serviceName: selectedService!,
+                                customerName: customerController.text,
+                                date: DateFormat(
+                                  'yyyy-MM-dd',
+                                ).format(selectedDate),
+                                time: selectedTime.format(context),
+                                status: 'Upcoming',
+                              );
+                              setState(() {
+                                bookings.add(newBooking);
+                                if (_isSameDay(
+                                  selectedDate,
+                                  DateTime.parse(newBooking.date),
+                                )) {
+                                  selectedBookings = _getBookingsForDate(
+                                    selectedDate,
+                                  );
+                                }
+                              });
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Appointment booked successfully!',
+                                  ),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                              _loadBookings();
+                            } else {
+                              throw Exception(
+                                'Failed to create booking: ${response.body}',
+                              );
                             }
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: 12),
-                  Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      'Date: ${DateFormat('yyyy-MM-dd').format(selectedDate)}',
-                      style: TextStyle(fontSize: 16),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (_formKey.currentState!.validate() && selectedService != null) {
-                  final token = await _getToken();
-                  if (token == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'No authentication token found. Please log in.',
-                        ),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                    return;
-                  }
-                  try {
-                    final url = Uri.parse(
-                      'http://api.touchmeapp.com/api/bookings',
-                    );
-                    final response = await http.post(
-                      url,
-                      headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer $token',
-                      },
-                      body: jsonEncode({
-                        'serviceName': selectedService,
-                        'salonName': salonController.text,
-                        'customerName': customerController.text,
-                        'date': DateFormat('yyyy-MM-dd').format(selectedDate),
-                        'time': selectedTime.format(context),
-                        'status': 'Upcoming',
-                      }),
-                    );
-                    if (response.statusCode == 201) {
-                      final newBooking = Booking(
-                        id: jsonDecode(response.body)['id'],
-                        serviceName: selectedService!,
-                        customerName: customerController.text,
-                        date: DateFormat('yyyy-MM-dd').format(selectedDate),
-                        time: selectedTime.format(context),
-                        status: 'Upcoming',
-                      );
-                      setState(() {
-                        bookings.add(newBooking);
-                        if (_isSameDay(selectedDate, DateTime.parse(newBooking.date))) {
-                          selectedBookings = _getBookingsForDate(selectedDate);
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Error booking appointment: $e'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        } else if (selectedService == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Please select a service'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
                         }
-                      });
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Appointment booked successfully!'),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                      _loadBookings();
-                    } else {
-                      throw Exception('Failed to create booking: ${response.body}');
-                    }
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Error booking appointment: $e'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  }
-                } else if (selectedService == null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Please select a service'),
-                      backgroundColor: Colors.red,
+                      },
+                      child: Text('Book'),
                     ),
-                  );
-                }
-              },
-              child: Text('Book'),
-            ),
-          ],
-        ),
-      ),
+                  ],
+                ),
+          ),
     );
   }
 
@@ -694,9 +709,9 @@ class _AppointmentBookingPageState extends State<AppointmentBookingPage> {
   }
 
   List<Booking> _getBookingsForDate(DateTime date) {
-    return bookings.where(
-      (booking) => _isSameDay(DateTime.parse(booking.date), date),
-    ).toList();
+    return bookings
+        .where((booking) => _isSameDay(DateTime.parse(booking.date), date))
+        .toList();
   }
 
   bool _isSameDay(DateTime date1, DateTime date2) {

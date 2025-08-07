@@ -110,7 +110,9 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
                       ),
                       if (order2Price > 0)
                         _buildOrderItem(
-                            'Order:2', 'Rs. ${order2Price.toStringAsFixed(2)}'),
+                          'Order:2',
+                          'Rs. ${order2Price.toStringAsFixed(2)}',
+                        ),
 
                       // Subtotal Section
                       Container(
@@ -124,10 +126,13 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
                         child: Column(
                           children: [
                             _buildSubtotalItem(
-                                'Subtotal', 'Rs. ${subtotal.toStringAsFixed(2)}'),
+                              'Subtotal',
+                              'Rs. ${subtotal.toStringAsFixed(2)}',
+                            ),
                             _buildSubtotalItem(
-                                'Tax (${(taxRate * 100).toInt()}%)',
-                                'Rs. ${tax.toStringAsFixed(2)}'),
+                              'Tax (${(taxRate * 100).toInt()}%)',
+                              'Rs. ${tax.toStringAsFixed(2)}',
+                            ),
                           ],
                         ),
                       ),
@@ -223,10 +228,7 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
                   ),
                   child: Text(
                     'Proceed to Checkout',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                 ),
               ),
@@ -241,20 +243,12 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: Colors.grey[200]!, width: 1),
-        ),
+        border: Border(bottom: BorderSide(color: Colors.grey[200]!, width: 1)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            name,
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.black87,
-            ),
-          ),
+          Text(name, style: TextStyle(fontSize: 16, color: Colors.black87)),
           Text(
             price,
             style: TextStyle(
@@ -274,13 +268,7 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
-            ),
-          ),
+          Text(label, style: TextStyle(fontSize: 16, color: Colors.grey[600])),
           Text(
             value,
             style: TextStyle(
@@ -295,85 +283,92 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
   }
 
   Widget _buildPaymentOption(
-  String value,
-  String iconText,
-  String label,
-  Color iconColor,
-  Color textColor,
-) {
-  return GestureDetector(
-    onTap: () {
-      setState(() {
-        selectedPayment = value;
-      });
-    },
-    child: Container(
-      padding: EdgeInsets.symmetric(vertical: 15),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: iconColor,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Center(
-              child: Text(
-                iconText,
-                style: TextStyle(
-                  color: textColor,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
+    String value,
+    String iconText,
+    String label,
+    Color iconColor,
+    Color textColor,
+  ) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          selectedPayment = value;
+        });
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 15),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: iconColor,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Center(
+                child: Text(
+                  iconText,
+                  style: TextStyle(
+                    color: textColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
                 ),
               ),
             ),
-          ),
-          SizedBox(width: 15),
-          Expanded(
-            child: Text(
-              label,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.black87,
+            SizedBox(width: 15),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(fontSize: 16, color: Colors.black87),
               ),
             ),
-          ),
-          Container(
-            width: 20,
-            height: 20,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: selectedPayment == value ? Color(0xFF8B5CF6) : Colors.grey[400]!,
-                width: 2,
+            Container(
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color:
+                      selectedPayment == value
+                          ? Color(0xFF8B5CF6)
+                          : Colors.grey[400]!,
+                  width: 2,
+                ),
+                color:
+                    selectedPayment == value
+                        ? Color(0xFF8B5CF6)
+                        : Colors.transparent, // Fill when selected
               ),
-              color: selectedPayment == value ? Color(0xFF8B5CF6) : Colors.transparent, // Fill when selected
+              child:
+                  selectedPayment == value
+                      ? Center(
+                        child: Container(
+                          width: 10,
+                          height: 10,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white, // Inner dot for contrast
+                          ),
+                        ),
+                      )
+                      : null,
             ),
-            child: selectedPayment == value
-                ? Center(
-                    child: Container(
-                      width: 10,
-                      height: 10,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white, // Inner dot for contrast
-                      ),
-                    ),
-                  )
-                : null,
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   Future<void> _proceedToCheckout() async {
     // Generate a unique order ID
-    final shortId = DateTime.now().millisecondsSinceEpoch.toString().substring(5);
+    final shortId = DateTime.now().millisecondsSinceEpoch.toString().substring(
+      5,
+    );
     final baseOrderId = 'ORD${widget.serviceName ?? 'SERVICE'}$shortId';
-    final orderId = baseOrderId.length <= 21 ? baseOrderId : baseOrderId.substring(0, 21);
+    final orderId =
+        baseOrderId.length <= 21 ? baseOrderId : baseOrderId.substring(0, 21);
 
     try {
       // Initiate payment
@@ -391,7 +386,9 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
         await launchPaymentURL(paymentUrl);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Proceeding to payment. Please complete the payment.'),
+            content: Text(
+              'Proceeding to payment. Please complete the payment.',
+            ),
             backgroundColor: Colors.green,
             duration: Duration(seconds: 3),
           ),
@@ -408,10 +405,7 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: $e'),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
       );
     }
   }
@@ -514,24 +508,25 @@ class _WebViewPageState extends State<WebViewPage> {
   @override
   void initState() {
     super.initState();
-    controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageStarted: (url) {
-            setState(() => isLoading = true);
-          },
-          onPageFinished: (url) {
-            setState(() => isLoading = false);
-          },
-          onWebResourceError: (WebResourceError error) {
-            setState(() {
-              isLoading = false;
-              errorMessage = error.description;
-            });
-          },
-        ),
-      );
+    controller =
+        WebViewController()
+          ..setJavaScriptMode(JavaScriptMode.unrestricted)
+          ..setNavigationDelegate(
+            NavigationDelegate(
+              onPageStarted: (url) {
+                setState(() => isLoading = true);
+              },
+              onPageFinished: (url) {
+                setState(() => isLoading = false);
+              },
+              onWebResourceError: (WebResourceError error) {
+                setState(() {
+                  isLoading = false;
+                  errorMessage = error.description;
+                });
+              },
+            ),
+          );
     controller.loadRequest(Uri.parse(widget.url)).catchError((e) {
       setState(() {
         isLoading = false;

@@ -3,7 +3,6 @@ import 'package:http/http.dart' as http;
 import '../models/gift.dart';
 import '../models/purchased_gift_card.dart';
 
-
 Future<List<GiftCard>> fetchGiftCardsByMerchant(
   String merchantId,
   String token,
@@ -34,7 +33,9 @@ Future<List<GiftCard>> fetchGiftCardsByMerchant(
 }
 
 Future<List<PurchasedGiftCard>> fetchMyGiftCards(String token) async {
-  final url = Uri.parse('http://api.touchmeapp.com/api/purchased-gift-cards/my');
+  final url = Uri.parse(
+    'http://api.touchmeapp.com/api/purchased-gift-cards/my',
+  );
   final res = await http.get(
     url,
     headers: {

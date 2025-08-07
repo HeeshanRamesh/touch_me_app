@@ -13,19 +13,6 @@ import 'merchant_list_screen.dart';
 import 'services/merchant_service.dart';
 import 'models/merchant.dart';
 
-// Dummy placeholder screens for demo
-class SearchScreen extends StatelessWidget {
-  const SearchScreen({super.key});
-  @override
-  Widget build(BuildContext context) => Center(child: Text("Search Page"));
-}
-
-// class ProfileScreen extends StatelessWidget {
-//   const ProfileScreen({super.key});
-//   @override
-//   Widget build(BuildContext context) => Center(child: Text("Profile Page"));
-// }
-
 class CustomerHomeScaffold extends StatefulWidget {
   final String token;
   final String customerId;
@@ -58,16 +45,23 @@ class _CustomerHomeScaffoldState extends State<CustomerHomeScaffold> {
         );
         break;
       case 1:
-        body =  const AppointmentScreen();
+        body = const AppointmentScreen();
         break;
       case 2:
-        body = const FavouriteScreen(token: '', customerId: '',);
+        body = FavouriteScreen(
+          token: widget.token,
+          customerId: widget.customerId,
+        );
+        break;
+      case 4:
+        body = SearchPage(token: widget.token, customerId: widget.customerId,
+);
         break;
       case 3:
         body = const ProfileScreen();
         break;
       default:
-        body = const SearchPage(token: "token",);//Center(child: Text("Not Found"));
+        body = const Center(child: Text("Not Found"));
     }
 
     return Scaffold(
