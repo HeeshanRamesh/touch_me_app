@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:touch_me/booking_confirm_page.dart';
 import 'package:touch_me/payment_page.dart';
 import 'dart:convert';
 import '../models/service.dart';
@@ -567,33 +568,45 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
                                       paymentResponse['ipg_transaction_id'],
                                 );
 
-                                if (bookingResponse['success'] == true) {
-                                  Navigator.pop(context);
-                                  // Navigate to PaymentDetailsPage
-                                  await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder:
-                                          (context) => PaymentDetailsPage(
-                                            serviceAmount:
-                                                service.price.toDouble(),
-                                            serviceName: service.serviceName,
-                                            merchantId: widget.merchantId,
-                                            customerId: widget.customerId,
-                                            token: widget.token,
-                                          ),
-                                    ),
-                                  );
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Booking created! Please complete payment. 🎉',
-                                      ),
-                                      backgroundColor: Colors.green,
-                                      duration: Duration(seconds: 3),
-                                    ),
-                                  );
-                                  refreshBookings();
+if (bookingResponse['success'] == true) {
+  Navigator.pop(context); // Close the booking dialog
+  
+  // Extract booking ID from the nested booking object
+  String bookingId = 'N/A';
+  if (bookingResponse.containsKey('booking') && 
+      bookingResponse['booking'] != null && 
+      bookingResponse['booking'].containsKey('id')) {
+    bookingId = bookingResponse['booking']['id']?.toString() ?? 'N/A';
+  }
+  
+  // Navigate to booking confirmation page
+  await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => BookingConfirmationPage(
+        bookingId: bookingId,
+        serviceName: service.serviceName,
+        serviceDescription: 'Professional ${service.serviceName.toLowerCase()} service',
+        date: formattedDate,
+        time: formattedTime,
+        serviceId: service.id,
+        totalAmount: service.price.toDouble(),
+        merchantId: widget.merchantId,
+        customerId: widget.customerId,
+        token: widget.token,
+      ),
+    ),
+  );
+  
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text('Booking created successfully! Booking ID: $bookingId 🎉'),
+      backgroundColor: Colors.green,
+      duration: Duration(seconds: 3),
+    ),
+  );
+  refreshBookings();
+
                                 } else {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
