@@ -3,6 +3,7 @@ import 'package:touch_me/about_screen.dart';
 import 'package:touch_me/login_page.dart';
 import 'package:touch_me/payment_method_screen.dart';
 import 'package:touch_me/profile_personal_details_screen.dart';
+import 'package:touch_me/support_page.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -30,7 +31,7 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 14),
             CircleAvatar(
               radius: avatarSize / 2,
-              backgroundImage: const AssetImage('assets/profile_male.jpg'),
+              backgroundImage: const AssetImage('assets/profile_image.png'),
             ),
             const SizedBox(height: 26),
             Expanded(
@@ -74,6 +75,20 @@ class ProfileScreen extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (context) => const AboutScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  _ProfileMenuItem(
+                    icon: Icons.help,
+                    label: "Support and Info",
+                    iconBg: iconBgColor,
+                    iconColor: mainColor,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SupportPage(),
                         ),
                       );
                     },

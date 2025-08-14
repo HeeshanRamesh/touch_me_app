@@ -371,10 +371,17 @@ class _SearchPageState extends State<SearchPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('All Salons & Spas'),
+        title: const Text('All Salons & Spas',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
+        automaticallyImplyLeading: false,
       ),
       body: Column(
         children: [

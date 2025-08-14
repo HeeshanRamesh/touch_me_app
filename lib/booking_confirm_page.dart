@@ -32,7 +32,8 @@ class BookingConfirmationPage extends StatefulWidget {
   });
 
   @override
-  State<BookingConfirmationPage> createState() => _BookingConfirmationPageState();
+  State<BookingConfirmationPage> createState() =>
+      _BookingConfirmationPageState();
 }
 
 class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
@@ -57,9 +58,9 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
         // Otherwise, fetch user profile details
         await _fetchCustomerDetails();
       }
-      
+
       await _fetchServiceDetails();
-      
+
       setState(() {
         isLoading = false;
       });
@@ -75,7 +76,9 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
     try {
       print('Fetching user profile for ID: ${widget.customerId}');
       final response = await http.get(
-        Uri.parse('http://api.touchmeapp.com/api/users/profile/${widget.customerId}'),
+        Uri.parse(
+          'http://api.touchmeapp.com/api/users/profile/${widget.customerId}',
+        ),
         headers: {
           'Authorization': 'Bearer ${widget.token}',
           'Content-Type': 'application/json',
@@ -133,16 +136,11 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
         appBar: AppBar(
           title: const Text(
             'Booking Confirmation',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
           backgroundColor: const Color(0xFF6A1B9A),
           elevation: 0,
-          iconTheme: const IconThemeData(
-            color: Colors.white,
-          ),
+          iconTheme: const IconThemeData(color: Colors.white),
         ),
         body: const Center(
           child: CircularProgressIndicator(
@@ -159,54 +157,56 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
 
     if (customerData != null) {
       // Try different possible field names for name
-      customerName = customerData!['name'] ?? 
-                    customerData!['firstName'] ?? 
-                    customerData!['fullName'] ??
-                    customerData!['username'] ??
-                    customerData!['first_name'] ??
-                    customerData!['last_name'] ??
-                    '${customerData!['first_name'] ?? ''} ${customerData!['last_name'] ?? ''}'.trim();
-      
+      customerName =
+          customerData!['name'] ??
+          customerData!['firstName'] ??
+          customerData!['fullName'] ??
+          customerData!['username'] ??
+          customerData!['first_name'] ??
+          customerData!['last_name'] ??
+          '${customerData!['first_name'] ?? ''} ${customerData!['last_name'] ?? ''}'
+              .trim();
+
       if (customerName.isEmpty) customerName = 'Customer';
 
       // Try different possible field names for phone
-      customerPhone = customerData!['phone'] ?? 
-                     customerData!['phoneNumber'] ?? 
-                     customerData!['phone_number'] ?? 
-                     customerData!['mobile'] ?? 
-                     customerData!['contactNumber'] ??
-                     'N/A';
+      customerPhone =
+          customerData!['phone'] ??
+          customerData!['phoneNumber'] ??
+          customerData!['phone_number'] ??
+          customerData!['mobile'] ??
+          customerData!['contactNumber'] ??
+          'N/A';
 
       // Try different possible field names for email
-      customerEmail = customerData!['email'] ?? 
-                     customerData!['emailAddress'] ?? 
-                     customerData!['email_address'] ?? 
-                     'N/A';
+      customerEmail =
+          customerData!['email'] ??
+          customerData!['emailAddress'] ??
+          customerData!['email_address'] ??
+          'N/A';
     }
 
     // Debug print
     print('Customer Data: $customerData');
-    print('Extracted - Name: $customerName, Phone: $customerPhone, Email: $customerEmail');
+    print(
+      'Extracted - Name: $customerName, Phone: $customerPhone, Email: $customerEmail',
+    );
 
-    final duration = serviceData?['duration'] != null 
-        ? '${serviceData!['duration']} minutes' 
-        : '60 minutes'; // Default fallback
+    final duration =
+        serviceData?['duration'] != null
+            ? '${serviceData!['duration']} minutes'
+            : '60 minutes'; // Default fallback
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: const Text(
           'Booking Confirmation',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: const Color(0xFF6A1B9A),
         elevation: 0,
-        iconTheme: const IconThemeData(
-          color: Colors.white,
-        ),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -243,10 +243,7 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
                     const SizedBox(height: 10),
                     const Text(
                       'Your appointment has been successfully booked',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.black54,
-                      ),
+                      style: TextStyle(fontSize: 16, color: Colors.black54),
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -254,7 +251,7 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
               ),
 
               // Debug Information (remove in production)
-              // 
+              //
 
               // Booking Details Card
               Card(
@@ -505,13 +502,14 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => PaymentDetailsPage(
-                          serviceAmount: widget.totalAmount,
-                          serviceName: widget.serviceName,
-                          merchantId: widget.merchantId,
-                          customerId: widget.customerId,
-                          token: widget.token,
-                        ),
+                        builder:
+                            (context) => PaymentDetailsPage(
+                              serviceAmount: widget.totalAmount,
+                              serviceName: widget.serviceName,
+                              merchantId: widget.merchantId,
+                              customerId: widget.customerId,
+                              token: widget.token,
+                            ),
                       ),
                     );
                   },

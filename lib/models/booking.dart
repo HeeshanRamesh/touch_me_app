@@ -1,4 +1,3 @@
-// models/booking.dart
 class Booking {
   final String id;
   final String customerName;
@@ -17,12 +16,20 @@ class Booking {
   });
 
   factory Booking.fromJson(Map<String, dynamic> json) {
+    // Extract customer name: prefer customerName field, fallback to first_name + last_name
+    String customerName = json['customerName'] ??
+        ((json['customerId'] != null)
+            ? '${json['customerId']['first_name'] ?? ''} ${json['customerId']['last_name'] ?? ''}'.trim()
+            : 'N/A');
+
+    // Extract service name: handle nested saloonServiceId
+    String serviceName = json['saloonServiceId']?['serviceName'] ??
+        'N/A';
+
     return Booking(
       id: json['_id'] ?? json['id'] ?? '',
-      customerName:
-          json['customerId']?['name'] ??
-          'N/A', // Changed from firstName to name
-      serviceName: json['saloonServiceId']?['serviceName'] ?? 'N/A',
+      customerName: customerName,
+      serviceName: serviceName,
       date: json['date'] ?? '',
       time: json['time'] ?? '',
       status: json['status'] ?? '',

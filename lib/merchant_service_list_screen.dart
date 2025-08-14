@@ -152,7 +152,7 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
             future: _futureMerchant,
             builder: (context, snapshot) {
               String displayAddress = 'Loading address...';
-              
+
               if (snapshot.connectionState == ConnectionState.done) {
                 if (snapshot.hasData && snapshot.data != null) {
                   displayAddress = snapshot.data!.address;
@@ -160,16 +160,23 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
                   displayAddress = 'Address not available';
                 }
               }
-              
+
               return Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.location_on, size: 17, color: Colors.black54),
+                  const Icon(
+                    Icons.location_on,
+                    size: 17,
+                    color: Colors.black54,
+                  ),
                   const SizedBox(width: 4),
                   Flexible(
                     child: Text(
                       displayAddress,
-                      style: const TextStyle(fontSize: 14, color: Colors.black54),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.black54,
+                      ),
                       textAlign: TextAlign.center,
                       overflow: TextOverflow.ellipsis,
                       maxLines: 2,
@@ -298,8 +305,8 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      snapshot.hasData && snapshot.data != null 
-                          ? snapshot.data!.address 
+                      snapshot.hasData && snapshot.data != null
+                          ? snapshot.data!.address
                           : 'Address not available',
                       style: const TextStyle(fontSize: 14),
                     ),
@@ -421,15 +428,18 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
                 children: [
                   const Icon(Icons.location_on, color: Colors.purple, size: 20),
                   const SizedBox(width: 8),
-                  const Text('Address: ', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                  const Text(
+                    'Address: ',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  ),
                 ],
               ),
               const SizedBox(height: 4),
               Padding(
                 padding: const EdgeInsets.only(left: 28),
                 child: Text(
-                  snapshot.hasData && snapshot.data != null 
-                      ? snapshot.data!.address 
+                  snapshot.hasData && snapshot.data != null
+                      ? snapshot.data!.address
                       : 'Address not available',
                   style: const TextStyle(fontSize: 16),
                 ),
@@ -439,7 +449,10 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
                 children: [
                   Icon(Icons.phone, color: Colors.purple, size: 20),
                   SizedBox(width: 8),
-                  Text('Phone: +94 11 261 2345', style: TextStyle(fontSize: 16)),
+                  Text(
+                    'Phone: +94 11 261 2345',
+                    style: TextStyle(fontSize: 16),
+                  ),
                 ],
               ),
               const SizedBox(height: 12),
@@ -568,45 +581,56 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
                                       paymentResponse['ipg_transaction_id'],
                                 );
 
-if (bookingResponse['success'] == true) {
-  Navigator.pop(context); // Close the booking dialog
-  
-  // Extract booking ID from the nested booking object
-  String bookingId = 'N/A';
-  if (bookingResponse.containsKey('booking') && 
-      bookingResponse['booking'] != null && 
-      bookingResponse['booking'].containsKey('id')) {
-    bookingId = bookingResponse['booking']['id']?.toString() ?? 'N/A';
-  }
-  
-  // Navigate to booking confirmation page
-  await Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => BookingConfirmationPage(
-        bookingId: bookingId,
-        serviceName: service.serviceName,
-        serviceDescription: 'Professional ${service.serviceName.toLowerCase()} service',
-        date: formattedDate,
-        time: formattedTime,
-        serviceId: service.id,
-        totalAmount: service.price.toDouble(),
-        merchantId: widget.merchantId,
-        customerId: widget.customerId,
-        token: widget.token,
-      ),
-    ),
-  );
-  
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: Text('Booking created successfully! Booking ID: $bookingId 🎉'),
-      backgroundColor: Colors.green,
-      duration: Duration(seconds: 3),
-    ),
-  );
-  refreshBookings();
+                                if (bookingResponse['success'] == true) {
+                                  Navigator.pop(
+                                    context,
+                                  ); // Close the booking dialog
 
+                                  // Extract booking ID from the nested booking object
+                                  String bookingId = 'N/A';
+                                  if (bookingResponse.containsKey('booking') &&
+                                      bookingResponse['booking'] != null &&
+                                      bookingResponse['booking'].containsKey(
+                                        'id',
+                                      )) {
+                                    bookingId =
+                                        bookingResponse['booking']['id']
+                                            ?.toString() ??
+                                        'N/A';
+                                  }
+
+                                  // Navigate to booking confirmation page
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder:
+                                          (context) => BookingConfirmationPage(
+                                            bookingId: bookingId,
+                                            serviceName: service.serviceName,
+                                            serviceDescription:
+                                                'Professional ${service.serviceName.toLowerCase()} service',
+                                            date: formattedDate,
+                                            time: formattedTime,
+                                            serviceId: service.id,
+                                            totalAmount:
+                                                service.price.toDouble(),
+                                            merchantId: widget.merchantId,
+                                            customerId: widget.customerId,
+                                            token: widget.token,
+                                          ),
+                                    ),
+                                  );
+
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Booking created successfully! Booking ID: $bookingId 🎉',
+                                      ),
+                                      backgroundColor: Colors.green,
+                                      duration: Duration(seconds: 3),
+                                    ),
+                                  );
+                                  refreshBookings();
                                 } else {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(

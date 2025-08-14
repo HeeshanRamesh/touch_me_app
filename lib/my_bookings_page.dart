@@ -161,6 +161,38 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
     );
   }
 
+  // Helper method to get status color
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'Upcoming':
+        return Colors.orange;
+      case 'Confirm':
+        return Colors.blue;
+      case 'Completed':
+        return Colors.green;
+      case 'Cancelled':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  // Helper method to get status background color
+  Color _getStatusBackgroundColor(String status) {
+    switch (status) {
+      case 'Upcoming':
+        return Colors.orange[100]!;
+      case 'Confirm':
+        return Colors.blue[100]!;
+      case 'Completed':
+        return Colors.green[100]!;
+      case 'Cancelled':
+        return Colors.red[100]!;
+      default:
+        return Colors.grey[100]!;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -209,7 +241,15 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
                                     : booking.customerName,
                                 style: TextStyle(
                                   fontSize: 16,
-                                  color: Colors.grey[600],
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Booking ID: ${booking.id}',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey[700],
                                 ),
                               ),
                               const SizedBox(height: 4),
@@ -228,23 +268,15 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
                                       vertical: 4,
                                     ),
                                     decoration: BoxDecoration(
-                                      color:
-                                          booking.status == 'Upcoming'
-                                              ? Colors.orange[100]
-                                              : booking.status == 'Completed'
-                                              ? Colors.green[100]
-                                              : Colors.red[100],
+                                      color: _getStatusBackgroundColor(
+                                        booking.status,
+                                      ),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Text(
                                       booking.status,
                                       style: TextStyle(
-                                        color:
-                                            booking.status == 'Upcoming'
-                                                ? Colors.orange
-                                                : booking.status == 'Completed'
-                                                ? Colors.green
-                                                : Colors.red,
+                                        color: _getStatusColor(booking.status),
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
@@ -257,6 +289,10 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
                                           DropdownMenuItem(
                                             value: 'Upcoming',
                                             child: Text('Upcoming'),
+                                          ),
+                                          DropdownMenuItem(
+                                            value: 'Confirm',
+                                            child: Text('Confirm'),
                                           ),
                                           DropdownMenuItem(
                                             value: 'Completed',
