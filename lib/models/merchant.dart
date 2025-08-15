@@ -2,6 +2,7 @@ class Merchant {
   final String id;
   final String outletName;
   final String outletPhone;
+  final String outletEmail;
   final String logoUrl;
   final String outletPictureUrl; // NEW
   final String ownerName;
@@ -15,6 +16,7 @@ class Merchant {
     required this.id,
     required this.outletName,
     required this.outletPhone,
+    required this.outletEmail,
     required this.logoUrl,
     required this.outletPictureUrl, // NEW
     required this.ownerName,
@@ -42,6 +44,7 @@ class Merchant {
       id: id,
       outletName: outlet['name'] ?? 'Unknown Outlet',
       outletPhone: outlet['phone'] ?? 'N/A',
+      outletEmail: outlet['email']  ?? 'N/A',
       logoUrl: businessRegistration['logo'] ?? '',
       outletPictureUrl: outlet['picture'] ?? '', // <-- NEW
       ownerName: owner['name'] ?? 'Unknown Owner',

@@ -424,10 +424,11 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
+              // Address Section
               Row(
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   const Icon(Icons.location_on, color: Colors.purple, size: 20),
-                  const SizedBox(width: 8),
                   const Text(
                     'Address: ',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
@@ -436,32 +437,65 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
               ),
               const SizedBox(height: 4),
               Padding(
-                padding: const EdgeInsets.only(left: 28),
+                padding: const EdgeInsets.only(
+                  left: 16.0,
+                ), // Indent the address
                 child: Text(
                   snapshot.hasData && snapshot.data != null
-                      ? snapshot.data!.address
+                      ? snapshot.data!.address ?? 'Address not available'
                       : 'Address not available',
                   style: const TextStyle(fontSize: 16),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
                 ),
               ),
               const SizedBox(height: 16),
-              const Row(
+              // Phone Number Section
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.phone, color: Colors.purple, size: 20),
-                  SizedBox(width: 8),
-                  Text(
-                    'Phone: +94 11 261 2345',
-                    style: TextStyle(fontSize: 16),
+                  const Icon(Icons.phone, color: Colors.purple, size: 20),
+                  const Text(
+                    'Phone: ',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                   ),
                 ],
               ),
+              const SizedBox(height: 4),
+              Padding(
+                padding: const EdgeInsets.only(left: 16.0), // Indent the phone
+                child: Text(
+                  snapshot.hasData && snapshot.data != null
+                      ? snapshot.data!.outletPhone ?? 'Not available'
+                      : 'Not available',
+                  style: const TextStyle(fontSize: 16),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+              ),
               const SizedBox(height: 12),
-              const Row(
+              // Email Section
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.email, color: Colors.purple, size: 20),
-                  SizedBox(width: 8),
-                  Text('Email: info@salon.com', style: TextStyle(fontSize: 16)),
+                  const Icon(Icons.email, color: Colors.purple, size: 20),
+                  const Text(
+                    'Email: ',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  ),
                 ],
+              ),
+              const SizedBox(height: 4),
+              Padding(
+                padding: const EdgeInsets.only(left: 16.0), // Indent the email
+                child: Text(
+                  snapshot.hasData && snapshot.data != null
+                      ? snapshot.data!.outletEmail ?? 'Not available'
+                      : 'Not available',
+                  style: const TextStyle(fontSize: 16),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
               ),
             ],
           ),

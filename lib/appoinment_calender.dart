@@ -249,6 +249,7 @@ class _AppointmentBookingPageState extends State<AppointmentBookingPage> {
         final currentDate = DateTime(focusedDate.year, focusedDate.month, day);
         final hasBooking = _hasBookingOnDate(currentDate);
         final isCompleted = _hasCompletedBookingOnDate(currentDate);
+        final isConfirmed = _hasConfirmedBookingOnDate(currentDate);
         final isSelected = _isSameDay(currentDate, selectedDate);
         final isToday = _isSameDay(currentDate, DateTime.now());
 
@@ -257,7 +258,7 @@ class _AppointmentBookingPageState extends State<AppointmentBookingPage> {
             setState(() {
               selectedDate = currentDate;
               selectedBookings = _getBookingsForDate(currentDate);
-              if (isCompleted && selectedBookings.isNotEmpty) {
+              if ((isCompleted || isConfirmed) && selectedBookings.isNotEmpty) {
                 _showBookingDialog(selectedBookings);
               }
             });
@@ -270,6 +271,8 @@ class _AppointmentBookingPageState extends State<AppointmentBookingPage> {
                       ? Colors.blue
                       : isCompleted
                       ? Colors.green.withOpacity(0.6)
+                      : isConfirmed
+                      ? Colors.yellow.withOpacity(0.7)
                       : hasBooking
                       ? Colors.pink.withOpacity(0.6)
                       : Colors.transparent,
@@ -279,13 +282,17 @@ class _AppointmentBookingPageState extends State<AppointmentBookingPage> {
                 '$day',
                 style: TextStyle(
                   color:
-                      isSelected || isCompleted || hasBooking
-                          ? Colors.white
+                      isSelected || isCompleted || isConfirmed || hasBooking
+                          ? (isConfirmed ? Colors.black : Colors.white)
                           : isToday
                           ? Colors.blue
                           : Colors.black,
                   fontWeight:
-                      isCompleted || hasBooking || isSelected || isToday
+                      isCompleted ||
+                              hasBooking ||
+                              isSelected ||
+                              isToday ||
+                              isConfirmed
                           ? FontWeight.bold
                           : FontWeight.w500,
                 ),
@@ -378,6 +385,8 @@ class _AppointmentBookingPageState extends State<AppointmentBookingPage> {
                         color:
                             booking.status == 'Completed'
                                 ? Colors.green
+                                : booking.status == 'Confirm'
+                                ? Colors.orange
                                 : booking.status == 'Upcoming'
                                 ? Colors.orange
                                 : Colors.red,
@@ -705,6 +714,15 @@ class _AppointmentBookingPageState extends State<AppointmentBookingPage> {
       (booking) =>
           _isSameDay(DateTime.parse(booking.date), date) &&
           booking.status == 'Completed',
+    );
+  }
+
+  // New helper method to check for confirmed bookings
+  bool _hasConfirmedBookingOnDate(DateTime date) {
+    return bookings.any(
+      (booking) =>
+          _isSameDay(DateTime.parse(booking.date), date) &&
+          booking.status == 'Confirm',
     );
   }
 

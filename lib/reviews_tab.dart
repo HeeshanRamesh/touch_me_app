@@ -23,16 +23,19 @@ class _ReviewsTabState extends State<ReviewsTab> {
   @override
   void initState() {
     super.initState();
+    print('DEBUG: ReviewsTab initState - merchantId: ${widget.merchantId}');
     _futureReviews = fetchReviewsByMerchant(widget.merchantId, widget.token);
   }
 
   void refreshReviews() {
+    print('DEBUG: Refreshing reviews for merchant: ${widget.merchantId}');
     setState(() {
       _futureReviews = fetchReviewsByMerchant(widget.merchantId, widget.token);
     });
   }
 
   void _showAddReviewDialog() {
+    print('DEBUG: Opening add review dialog');
     final formKey = GlobalKey<FormState>();
     String message = '';
     String improvements = '';
@@ -49,30 +52,56 @@ class _ReviewsTabState extends State<ReviewsTab> {
               content: Form(
                 key: formKey,
                 child: SizedBox(
-                  width: 350,
+                  width: MediaQuery.of(context).size.width * 0.9,
                   child: SingleChildScrollView(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Rating stars
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: List.generate(5, (i) {
-                            return IconButton(
-                              icon: Icon(
-                                i < rating ? Icons.star : Icons.star_border,
-                                color: Colors.amber,
+                        // Rating stars - Fixed layout
+                        Container(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: Column(
+                            children: [
+                              const Text(
+                                'Rating',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
-                              onPressed:
-                                  () => setDialogState(() {
-                                    rating = i + 1;
-                                  }),
-                            );
-                          }),
+                              const SizedBox(height: 8),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: List.generate(5, (i) {
+                                  return GestureDetector(
+                                    onTap:
+                                        () => setDialogState(() {
+                                          print(
+                                            'DEBUG: Rating selected: ${i + 1}',
+                                          );
+                                          rating = i + 1;
+                                        }),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(4),
+                                      child: Icon(
+                                        i < rating
+                                            ? Icons.star
+                                            : Icons.star_border,
+                                        color: Colors.amber,
+                                        size: 32,
+                                      ),
+                                    ),
+                                  );
+                                }),
+                              ),
+                            ],
+                          ),
                         ),
+                        const SizedBox(height: 16),
                         TextFormField(
                           decoration: const InputDecoration(
                             labelText: 'Your review *',
+                            border: OutlineInputBorder(),
                           ),
                           minLines: 2,
                           maxLines: 4,
@@ -81,16 +110,27 @@ class _ReviewsTabState extends State<ReviewsTab> {
                                   (val == null || val.isEmpty)
                                       ? 'Message required'
                                       : null,
-                          onChanged: (val) => message = val,
+                          onChanged: (val) {
+                            print(
+                              'DEBUG: Review message changed: ${val.length} characters',
+                            );
+                            message = val;
+                          },
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 16),
                         TextFormField(
                           decoration: const InputDecoration(
                             labelText: 'Any suggestions? (optional)',
+                            border: OutlineInputBorder(),
                           ),
                           minLines: 1,
                           maxLines: 2,
-                          onChanged: (val) => improvements = val,
+                          onChanged: (val) {
+                            print(
+                              'DEBUG: Improvements changed: ${val.length} characters',
+                            );
+                            improvements = val;
+                          },
                         ),
                       ],
                     ),
@@ -107,7 +147,14 @@ class _ReviewsTabState extends State<ReviewsTab> {
                       loading
                           ? null
                           : () async {
-                            if (!formKey.currentState!.validate()) return;
+                            print('DEBUG: Submit button pressed');
+                            if (!formKey.currentState!.validate()) {
+                              print('DEBUG: Form validation failed');
+                              return;
+                            }
+                            print(
+                              'DEBUG: Submitting review - Rating: $rating, Message: ${message.length} chars, Improvements: ${improvements.length} chars',
+                            );
                             setDialogState(() => loading = true);
 
                             final success = await addReview(
@@ -117,9 +164,13 @@ class _ReviewsTabState extends State<ReviewsTab> {
                               improvements: improvements,
                               rating: rating,
                             );
+                            print('DEBUG: Review submission result: $success');
                             setDialogState(() => loading = false);
 
                             if (success) {
+                              print(
+                                'DEBUG: Review submitted successfully, closing dialog',
+                              );
                               Navigator.pop(context);
                               refreshReviews();
                               ScaffoldMessenger.of(context).showSnackBar(
@@ -128,6 +179,7 @@ class _ReviewsTabState extends State<ReviewsTab> {
                                 ),
                               );
                             } else {
+                              print('DEBUG: Review submission failed');
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text(
@@ -156,7 +208,11 @@ class _ReviewsTabState extends State<ReviewsTab> {
 
   // Helper: Calculate average rating and rating counts
   Map<String, dynamic> _calcRatingStats(List<Review> reviews) {
-    if (reviews.isEmpty) return {"avg": 5.0, "counts": List.filled(5, 0)};
+    print('DEBUG: Calculating rating stats for ${reviews.length} reviews');
+    if (reviews.isEmpty) {
+      print('DEBUG: No reviews found, returning default stats');
+      return {"avg": 5.0, "counts": List.filled(5, 0)};
+    }
     final counts = List<int>.filled(5, 0);
     int sum = 0;
     for (final r in reviews) {
@@ -165,6 +221,9 @@ class _ReviewsTabState extends State<ReviewsTab> {
       sum += r.rating ?? 5;
     }
     final avg = sum / reviews.length;
+    print(
+      'DEBUG: Rating stats - Average: ${avg.toStringAsFixed(2)}, Counts: $counts',
+    );
     return {"avg": avg, "counts": counts};
   }
 
@@ -175,12 +234,16 @@ class _ReviewsTabState extends State<ReviewsTab> {
         FutureBuilder<List<Review>>(
           future: _futureReviews,
           builder: (context, snapshot) {
+            print('DEBUG: FutureBuilder state: ${snapshot.connectionState}');
             if (snapshot.connectionState == ConnectionState.waiting) {
+              print('DEBUG: Loading reviews...');
               return const Center(child: CircularProgressIndicator());
             } else if (snapshot.hasError) {
+              print('DEBUG: Error loading reviews: ${snapshot.error}');
               return const Center(child: Text('Error loading reviews.'));
             }
             final reviews = snapshot.data ?? [];
+            print('DEBUG: Loaded ${reviews.length} reviews');
             final stats = _calcRatingStats(reviews);
             final avgRating = stats["avg"] as double;
             final ratingCounts = stats["counts"] as List<int>;
@@ -214,7 +277,7 @@ class _ReviewsTabState extends State<ReviewsTab> {
                             Row(
                               children: List.generate(
                                 5,
-                                (i) => Icon(
+                                (i) => const Icon(
                                   Icons.star,
                                   color: Colors.amber,
                                   size: 22,
@@ -240,48 +303,62 @@ class _ReviewsTabState extends State<ReviewsTab> {
                               final count = ratingCounts[4 - i];
                               final percent =
                                   totalReviews > 0 ? count / totalReviews : 0.0;
-                              return Row(
-                                children: [
-                                  Text(
-                                    rating.toString(),
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Icon(
-                                    Icons.star,
-                                    color: Colors.amber,
-                                    size: 16,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Container(
-                                      height: 9,
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey[300],
-                                        borderRadius: BorderRadius.circular(5),
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 2,
+                                ),
+                                child: Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 12,
+                                      child: Text(
+                                        rating.toString(),
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12,
+                                        ),
                                       ),
-                                      child: FractionallySizedBox(
-                                        alignment: Alignment.centerLeft,
-                                        widthFactor: percent,
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            color: Color(0xFF6A1B9A),
-                                            borderRadius: BorderRadius.circular(
-                                              5,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    const Icon(
+                                      Icons.star,
+                                      color: Colors.amber,
+                                      size: 14,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Container(
+                                        height: 8,
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey[300],
+                                          borderRadius: BorderRadius.circular(
+                                            4,
+                                          ),
+                                        ),
+                                        child: FractionallySizedBox(
+                                          alignment: Alignment.centerLeft,
+                                          widthFactor: percent,
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFF6A1B9A),
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
                                             ),
                                           ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                  const SizedBox(width: 7),
-                                  Text(
-                                    count.toString(),
-                                    style: const TextStyle(fontSize: 13),
-                                  ),
-                                ],
+                                    const SizedBox(width: 8),
+                                    SizedBox(
+                                      width: 20,
+                                      child: Text(
+                                        count.toString(),
+                                        style: const TextStyle(fontSize: 12),
+                                        textAlign: TextAlign.end,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               );
                             }),
                           ),
@@ -314,6 +391,8 @@ class _ReviewsTabState extends State<ReviewsTab> {
                       padding: EdgeInsets.symmetric(vertical: 32),
                       child: Center(child: Text("No reviews yet.")),
                     ),
+                  // Add padding at bottom to avoid FAB overlap
+                  const SizedBox(height: 80),
                 ],
               ),
             );
@@ -324,13 +403,16 @@ class _ReviewsTabState extends State<ReviewsTab> {
           bottom: 16,
           right: 16,
           child: FloatingActionButton.extended(
-            onPressed: _showAddReviewDialog,
+            onPressed: () {
+              print('DEBUG: Add Review FAB pressed');
+              _showAddReviewDialog();
+            },
             icon: const Icon(Icons.add_comment, color: Colors.white),
             label: const Text(
               'Add Review',
               style: TextStyle(color: Colors.white),
             ),
-            backgroundColor: Color(0xFF6A1B9A),
+            backgroundColor: const Color(0xFF6A1B9A),
           ),
         ),
       ],
@@ -346,6 +428,7 @@ class _ReviewCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final r = review;
+    print('DEBUG: Building review card for review ID: ${r.id}');
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       child: Card(
@@ -366,34 +449,36 @@ class _ReviewCard extends StatelessWidget {
                     radius: 22,
                   ),
                   const SizedBox(width: 10),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        r.id, // Or r.reviewerName if available
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
-                        ),
-                      ),
-                      Text(
-                        _formatDate(r.createdAt),
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: Colors.black54,
-                        ),
-                      ),
-                      Row(
-                        children: List.generate(
-                          r.rating,
-                          (i) => const Icon(
-                            Icons.star,
-                            color: Colors.amber,
-                            size: 15,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          r.id, // Or r.reviewerName if available
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
                           ),
                         ),
-                      ),
-                    ],
+                        Text(
+                          _formatDate(r.createdAt),
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Colors.black54,
+                          ),
+                        ),
+                        Row(
+                          children: List.generate(
+                            r.rating,
+                            (i) => const Icon(
+                              Icons.star,
+                              color: Colors.amber,
+                              size: 15,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
