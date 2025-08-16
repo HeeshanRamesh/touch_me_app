@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:touch_me/merchant_service_list_screen.dart';
+import 'package:touch_me/pages/merchant_service_list_screen.dart';
 import '../models/merchant.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
