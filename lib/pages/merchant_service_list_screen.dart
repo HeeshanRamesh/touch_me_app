@@ -77,6 +77,30 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
     });
   }
 
+  // Helper method to calculate review statistics
+  Map<String, dynamic> _calculateReviewStats(List<Review> reviews) {
+    if (reviews.isEmpty) {
+      return {"average": 0.0, "count": 0};
+    }
+    
+    double totalRating = 0.0;
+    int validReviews = 0;
+    
+    for (final review in reviews) {
+      if (review.rating > 0 && review.rating <= 5) {
+        totalRating += review.rating;
+        validReviews++;
+      }
+    }
+    
+    double averageRating = validReviews > 0 ? totalRating / validReviews : 0.0;
+    
+    return {
+      "average": averageRating,
+      "count": validReviews,
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -123,7 +147,7 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
     );
   }
 
-  // -------- Profile Header with Dynamic Address --------
+  // -------- Profile Header with Dynamic Address and Real-time Reviews --------
   Widget _buildSalonProfileHeader() {
     return Padding(
       padding: const EdgeInsets.only(top: 18, bottom: 6),
@@ -186,20 +210,59 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
             },
           ),
           const SizedBox(height: 7),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
-              Icon(Icons.star, size: 19, color: Colors.amber),
-              SizedBox(width: 4),
-              Text(
-                '4.5',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-              ),
-              Text(
-                ' (456 review)',
-                style: TextStyle(fontSize: 13, color: Colors.black54),
-              ),
-            ],
+          // Dynamic review statistics
+          FutureBuilder<List<Review>>(
+            future: _futureReviews,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'Loading reviews...',
+                      style: TextStyle(fontSize: 13, color: Colors.black54),
+                    ),
+                  ],
+                );
+              }
+
+              final reviews = snapshot.data ?? [];
+              final stats = _calculateReviewStats(reviews);
+              final averageRating = stats["average"] as double;
+              final reviewCount = stats["count"] as int;
+
+              // Show default values if no reviews
+              final displayRating = reviewCount > 0 ? averageRating : 0.0;
+              final displayCount = reviewCount;
+
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.star, 
+                    size: 19, 
+                    color: displayCount > 0 ? Colors.amber : Colors.grey,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    displayCount > 0 ? displayRating.toStringAsFixed(1) : 'No ratings',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                  ),
+                  if (displayCount > 0) ...[
+                    Text(
+                      ' ($displayCount review${displayCount != 1 ? 's' : ''})',
+                      style: const TextStyle(fontSize: 13, color: Colors.black54),
+                    ),
+                  ],
+                ],
+              );
+            },
           ),
           const SizedBox(height: 8),
         ],
@@ -503,7 +566,7 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
     );
   }
 
-  // ---- Book Service ----
+  // ---- Book Service ---- (Rest of the booking code remains the same)
   Future<void> _showBookingDialog(BuildContext context, Service service) async {
     DateTime? selectedDate;
     TimeOfDay? selectedTime;
