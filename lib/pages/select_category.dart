@@ -93,7 +93,7 @@ class _SelectCategoryPageState extends State<SelectCategoryPage> {
                     style: TextStyle(fontSize: screenHeight * 0.02),
                   ),
                   subtitle: Text(
-                    'Saloon and Spa Owaners',
+                    'Saloon and Spa Owners',
                     style: TextStyle(fontSize: screenHeight * 0.016),
                   ),
                   value: 'Saloon Owners',

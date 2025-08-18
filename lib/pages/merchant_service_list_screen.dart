@@ -45,6 +45,9 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
   @override
   void initState() {
     super.initState();
+    print(
+      'DEBUG: Initializing MerchantServiceListScreen for merchant ${widget.merchantId}',
+    );
     _futureServices = fetchServicesByMerchant(widget.merchantId, widget.token);
     _futureReviews = fetchReviewsByMerchant(widget.merchantId, widget.token);
     _futureBookings = fetchCustomerBookings(widget.token);
@@ -54,24 +57,27 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
   // Fetch merchant details to get the address
   Future<Merchant?> _fetchMerchantDetails() async {
     try {
+      print('DEBUG: Fetching merchant details for ID: ${widget.merchantId}');
       final merchants = await fetchMerchants(widget.token);
       return merchants.firstWhere(
         (merchant) => merchant.id == widget.merchantId,
         orElse: () => throw Exception('Merchant not found'),
       );
     } catch (e) {
-      print('Error fetching merchant details: $e');
+      print('DEBUG: Error fetching merchant details: $e');
       return null;
     }
   }
 
   void refreshReviews() {
+    print('DEBUG: Refreshing reviews');
     setState(() {
       _futureReviews = fetchReviewsByMerchant(widget.merchantId, widget.token);
     });
   }
 
   void refreshBookings() {
+    print('DEBUG: Refreshing bookings');
     setState(() {
       _futureBookings = fetchCustomerBookings(widget.token);
     });
@@ -82,23 +88,20 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
     if (reviews.isEmpty) {
       return {"average": 0.0, "count": 0};
     }
-    
+
     double totalRating = 0.0;
     int validReviews = 0;
-    
+
     for (final review in reviews) {
       if (review.rating > 0 && review.rating <= 5) {
         totalRating += review.rating;
         validReviews++;
       }
     }
-    
+
     double averageRating = validReviews > 0 ? totalRating / validReviews : 0.0;
-    
-    return {
-      "average": averageRating,
-      "count": validReviews,
-    };
+
+    return {"average": averageRating, "count": validReviews};
   }
 
   @override
@@ -245,19 +248,27 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    Icons.star, 
-                    size: 19, 
+                    Icons.star,
+                    size: 19,
                     color: displayCount > 0 ? Colors.amber : Colors.grey,
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    displayCount > 0 ? displayRating.toStringAsFixed(1) : 'No ratings',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    displayCount > 0
+                        ? displayRating.toStringAsFixed(1)
+                        : 'No ratings',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
                   ),
                   if (displayCount > 0) ...[
                     Text(
                       ' ($displayCount review${displayCount != 1 ? 's' : ''})',
-                      style: const TextStyle(fontSize: 13, color: Colors.black54),
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Colors.black54,
+                      ),
                     ),
                   ],
                 ],
@@ -425,9 +436,7 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
                     children: [
                       CircleAvatar(
                         radius: 40,
-                        backgroundImage: NetworkImage(
-                          'https://via.placeholder.com/80',
-                        ),
+                        backgroundImage: NetworkImage(service.image),
                       ),
                       const SizedBox(height: 10),
                       Text(
@@ -566,8 +575,9 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
     );
   }
 
-  // ---- Book Service ---- (Rest of the booking code remains the same)
+  // ---- Book Service with Success Popup ----
   Future<void> _showBookingDialog(BuildContext context, Service service) async {
+    print('DEBUG: Opening booking dialog for service: ${service.serviceName}');
     DateTime? selectedDate;
     TimeOfDay? selectedTime;
 
@@ -598,11 +608,14 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
                             lastDate: DateTime(2026),
                           );
                           if (pickedDate != null) {
+                            print('DEBUG: Selected date: $pickedDate');
                             setState(() {
                               selectedDate = pickedDate;
                             });
                           }
-                        } catch (e) {}
+                        } catch (e) {
+                          print('DEBUG: Error selecting date: $e');
+                        }
                       },
                     ),
                     ListTile(
@@ -618,6 +631,7 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
                           initialTime: TimeOfDay.now(),
                         );
                         if (pickedTime != null) {
+                          print('DEBUG: Selected time: $pickedTime');
                           setState(() => selectedTime = pickedTime);
                         }
                       },
@@ -632,7 +646,10 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
               ),
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () {
+                    print('DEBUG: Booking cancelled');
+                    Navigator.pop(context);
+                  },
                   child: const Text('Cancel'),
                 ),
                 ElevatedButton(
@@ -640,6 +657,7 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
                       selectedDate == null || selectedTime == null
                           ? null
                           : () async {
+                            print('DEBUG: Processing booking...');
                             final formattedDate =
                                 '${selectedDate!.year}-${selectedDate!.month.toString().padLeft(2, '0')}-${selectedDate!.day.toString().padLeft(2, '0')}';
                             final formattedTime =
@@ -654,7 +672,13 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
                                     ? baseOrderId
                                     : baseOrderId.substring(0, 21);
 
+                            print('DEBUG: Order ID: $orderId');
+                            print(
+                              'DEBUG: Booking details - Date: $formattedDate, Time: $formattedTime',
+                            );
+
                             try {
+                              print('DEBUG: Initiating payment...');
                               final paymentResponse = await _initiateOnePayPayment(
                                 amount: service.price.toDouble(),
                                 orderId: orderId,
@@ -664,8 +688,15 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
                                 token: widget.token,
                               );
 
+                              print(
+                                'DEBUG: Payment response: $paymentResponse',
+                              );
+
                               if (paymentResponse['status'] == 'success' &&
                                   paymentResponse['paymentUrl'] != null) {
+                                print(
+                                  'DEBUG: Payment successful, creating booking...',
+                                );
                                 final bookingResponse = await bookService(
                                   customerId: widget.customerId,
                                   merchantId: widget.merchantId,
@@ -675,6 +706,10 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
                                   token: widget.token,
                                   ipgTransactionId:
                                       paymentResponse['ipg_transaction_id'],
+                                );
+
+                                print(
+                                  'DEBUG: Booking response: $bookingResponse',
                                 );
 
                                 if (bookingResponse['success'] == true) {
@@ -695,39 +730,24 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
                                         'N/A';
                                   }
 
-                                  // Navigate to booking confirmation page
-                                  await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder:
-                                          (context) => BookingConfirmationPage(
-                                            bookingId: bookingId,
-                                            serviceName: service.serviceName,
-                                            serviceDescription:
-                                                'Professional ${service.serviceName.toLowerCase()} service',
-                                            date: formattedDate,
-                                            time: formattedTime,
-                                            serviceId: service.id,
-                                            totalAmount:
-                                                service.price.toDouble(),
-                                            merchantId: widget.merchantId,
-                                            customerId: widget.customerId,
-                                            token: widget.token,
-                                          ),
-                                    ),
+                                  print(
+                                    'DEBUG: Booking successful! ID: $bookingId',
                                   );
 
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        'Booking created successfully! Booking ID: $bookingId 🎉',
-                                      ),
-                                      backgroundColor: Colors.green,
-                                      duration: Duration(seconds: 3),
-                                    ),
+                                  // Show success popup before navigating
+                                  await _showBookingSuccessPopup(
+                                    context,
+                                    bookingId,
+                                    service,
+                                    formattedDate,
+                                    formattedTime,
                                   );
+
                                   refreshBookings();
                                 } else {
+                                  print(
+                                    'DEBUG: Booking failed: ${bookingResponse['message']}',
+                                  );
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                       content: Text(
@@ -738,6 +758,9 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
                                   );
                                 }
                               } else {
+                                print(
+                                  'DEBUG: Payment initiation failed: ${paymentResponse['message']}',
+                                );
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(
@@ -748,6 +771,7 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
                                 );
                               }
                             } catch (e) {
+                              print('DEBUG: Booking error: $e');
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text('Error: $e'),
@@ -772,6 +796,198 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
     );
   }
 
+  // New method to show booking success popup
+  Future<void> _showBookingSuccessPopup(
+    BuildContext context,
+    String bookingId,
+    Service service,
+    String date,
+    String time,
+  ) async {
+    print('DEBUG: Showing booking success popup');
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFFE3F2FD), Color(0xFFBBDEFB)],
+              ),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Success icon
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: const BoxDecoration(
+                    color: Colors.green,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.check, color: Colors.white, size: 40),
+                ),
+                const SizedBox(height: 16),
+
+                // Success message
+                const Text(
+                  'Booking Confirmed!',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                Text(
+                  'Booking ID: $bookingId',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.purple,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Important Notes Section
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE3F2FD),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.blue.shade200),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Important Notes:',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      _buildImportantNote(
+                        Icons.access_time,
+                        'Please arrive 15 minutes before your appointment',
+                        Colors.blue,
+                      ),
+                      const SizedBox(height: 8),
+
+                      _buildImportantNote(
+                        Icons.cancel_outlined,
+                        'Cancel at least 24 hours in advance',
+                        Colors.orange,
+                      ),
+                      const SizedBox(height: 8),
+
+                      _buildImportantNote(
+                        Icons.sms_outlined,
+                        'We\'ll send you a reminder SMS',
+                        Colors.green,
+                      ),
+                      const SizedBox(height: 8),
+
+                      _buildImportantNote(
+                        Icons.bookmark_outline,
+                        'Please save your booking ID',
+                        Colors.purple,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Action button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      print('DEBUG: Navigating to booking confirmation page');
+                      Navigator.pop(context); // Close popup
+
+                      // Navigate to booking confirmation page
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (context) => BookingConfirmationPage(
+                                bookingId: bookingId,
+                                serviceName: service.serviceName,
+                                serviceDescription:
+                                    'Professional ${service.serviceName.toLowerCase()} service',
+                                date: date,
+                                time: time,
+                                serviceId: service.id,
+                                totalAmount: service.price.toDouble(),
+                                merchantId: widget.merchantId,
+                                customerId: widget.customerId,
+                                token: widget.token,
+                              ),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.purple,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 2,
+                    ),
+                    child: const Text(
+                      'Go to Booking Details',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // Helper method to build important note items
+  Widget _buildImportantNote(IconData icon, String text, Color color) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 18, color: color),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 14,
+              color: color.withOpacity(0.8),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Future<Map<String, dynamic>> _initiateOnePayPayment({
     required double amount,
     required String orderId,
@@ -779,6 +995,10 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
     required String returnUrl,
     required String token,
   }) async {
+    print(
+      'DEBUG: Initiating OnePay payment with amount: $amount, orderId: $orderId',
+    );
+
     try {
       final response = await http.post(
         Uri.parse('http://api.touchmeapp.com/api/payments/onepay-payment'),
@@ -797,27 +1017,34 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
         }),
       );
 
+      print('DEBUG: Payment API response status: ${response.statusCode}');
+      print('DEBUG: Payment API response body: ${response.body}');
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['status'] == 'success' && data['paymentUrl'] != null) {
+          print('DEBUG: Payment initiation successful');
           return {
             'status': 'success',
             'paymentUrl': data['paymentUrl'],
             'ipg_transaction_id': data['ipg_transaction_id'] ?? '',
           };
         }
+        print('DEBUG: Payment data incomplete');
         return {
           'status': 'failure',
           'message': 'Missing expected payment data',
         };
       } else {
         final error = jsonDecode(response.body);
+        print('DEBUG: Payment API error: ${error['message']}');
         return {
           'status': 'failure',
           'message': error['message'] ?? 'Payment failed',
         };
       }
     } catch (e) {
+      print('DEBUG: Payment exception: $e');
       return {'status': 'failure', 'message': e.toString()};
     }
   }
@@ -834,6 +1061,8 @@ class GiftCardsTab extends StatelessWidget {
   });
 
   Future<void> _buyGiftCard(BuildContext context, GiftCard gc) async {
+    print('DEBUG: Attempting to buy gift card: ${gc.giftCardName}');
+
     final url = Uri.parse(
       'http://api.touchmeapp.com/api/purchased-gift-cards/buy',
     );
@@ -847,8 +1076,14 @@ class GiftCardsTab extends StatelessWidget {
         body: jsonEncode({'giftCardId': gc.id, 'merchantId': merchantId}),
       );
 
+      print(
+        'DEBUG: Gift card purchase response status: ${response.statusCode}',
+      );
+      print('DEBUG: Gift card purchase response: ${response.body}');
+
       final data = jsonDecode(response.body);
       if (response.statusCode == 200 && data['success'] == true) {
+        print('DEBUG: Gift card purchased successfully');
         showDialog(
           context: context,
           builder:
@@ -890,6 +1125,7 @@ class GiftCardsTab extends StatelessWidget {
               ),
         );
       } else {
+        print('DEBUG: Gift card purchase failed: ${data['message']}');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(data['message'] ?? 'Failed to buy gift card'),
@@ -898,6 +1134,7 @@ class GiftCardsTab extends StatelessWidget {
         );
       }
     } catch (e) {
+      print('DEBUG: Gift card purchase exception: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
       );
@@ -912,11 +1149,14 @@ class GiftCardsTab extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         } else if (snapshot.hasError) {
+          print('DEBUG: Error loading gift cards: ${snapshot.error}');
           return Center(
             child: Text('Failed to load gift cards: ${snapshot.error}'),
           );
         }
         final giftCards = snapshot.data ?? [];
+        print('DEBUG: Loaded ${giftCards.length} gift cards');
+
         if (giftCards.isEmpty) {
           return const Center(child: Text('No gift cards for this merchant.'));
         }

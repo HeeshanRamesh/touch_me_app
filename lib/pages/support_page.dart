@@ -60,7 +60,7 @@ class _SupportPageState extends State<SupportPage> {
                             ),
                             const SizedBox(height: 8),
                             _buildBulletPoint(
-                              'Please save your booking ID: TM169756',
+                              'Please save your booking ID',
                               Colors.blue.shade700,
                             ),
                           ],

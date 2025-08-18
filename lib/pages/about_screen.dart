@@ -1,7 +1,41 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
+
+  Future<void> _launchURL(String url) async {
+    final Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+
+  Future<void> _launchEmail(String email) async {
+    final Uri emailUri = Uri(
+      scheme: 'mailto',
+      path: email,
+    );
+    if (await canLaunchUrl(emailUri)) {
+      await launchUrl(emailUri);
+    } else {
+      throw 'Could not launch email';
+    }
+  }
+
+  Future<void> _launchPhone(String phone) async {
+    final Uri phoneUri = Uri(
+      scheme: 'tel',
+      path: phone,
+    );
+    if (await canLaunchUrl(phoneUri)) {
+      await launchUrl(phoneUri);
+    } else {
+      throw 'Could not launch phone';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +64,7 @@ class AboutScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'About Touch Me',
+                'About TouchMe',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -48,7 +82,7 @@ class AboutScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'App Name: Touch Me',
+                      'App Name: TouchMe',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -65,7 +99,7 @@ class AboutScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      'Last Updated: May 23, 2025',
+                      'Developer: SmartTouch Digital Solutions (Pvt) Ltd',
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.black54,
@@ -82,7 +116,44 @@ class AboutScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      'Touch Me is a user-friendly app designed to manage your payments seamlessly. Whether you prefer credit card or cash payments, we’ve got you covered. Stay in control of your finances with our intuitive interface and secure payment options.',
+                      'Welcome to TouchMe – Sri Lanka\'s smart booking solution for salons and spas. Developed by SmartTouch Digital Solutions (Pvt) Ltd, TouchMe is designed to simplify your beauty and wellness experience. Whether you\'re looking to book a haircut, facial, massage, or any other pampering service, TouchMe brings convenience to your fingertips.',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black54,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Features:',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      '• Discover top-rated salons and spas near you\n'
+                      '• Book your preferred services instantly\n'
+                      '• Avoid waiting in queues and manage your time better\n'
+                      '• Receive reminders and special offers',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black54,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Our Mission:',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Our mission is to empower both customers and beauty professionals by creating a seamless, digital connection. We\'re proud to support local businesses and bring their services closer to you.',
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.black54,
@@ -98,12 +169,69 @@ class AboutScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                      'Email: support@touchmeapp.com\nPhone: +1-234-567-890',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.black54,
-                      ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          '📧 Email:',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.black54,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        GestureDetector(
+                          onTap: () => _launchEmail('touchme.bookings@outlook.com'),
+                          child: const Text(
+                            'touchme.bookings@outlook.com',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.blue,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          '📞 Hotline:',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.black54,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        GestureDetector(
+                          onTap: () => _launchPhone('+94777635225'),
+                          child: const Text(
+                            '+94 77 763 5225',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.blue,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          '🌐 Website:',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.black54,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        GestureDetector(
+                          onTap: () => _launchURL('https://www.smarttouchdigisolutions.com'),
+                          child: const Text(
+                            'www.smarttouchdigisolutions.com',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.blue,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
