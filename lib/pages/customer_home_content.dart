@@ -440,7 +440,7 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
                       },
                     ),
                   ),
-                  // Saloons Section (dynamic) - FIXED RATING DISPLAY
+                  // Saloons Section (dynamic) - FIXED RATING DISPLAY AND IMAGE
                   Text(
                     "Recommended",
                     style: TextStyle(
@@ -490,14 +490,47 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
+                                      // FIXED: Now uses actual merchant image instead of hardcoded asset
                                       ClipRRect(
                                         borderRadius: BorderRadius.circular(12 * scaleFactor),
-                                        child: Image.asset(
-                                          'assets/saloonservice.jpg',
-                                          height: 100 * scaleFactor,
-                                          width: double.infinity,
-                                          fit: BoxFit.cover,
-                                        ),
+                                        child: merchant.logoUrl.isNotEmpty
+                                            ? Image.network(
+                                                merchant.logoUrl,
+                                                height: 100 * scaleFactor,
+                                                width: double.infinity,
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (context, error, stackTrace) {
+                                                  // Fallback image if network image fails to load
+                                                  return Image.asset(
+                                                    'assets/saloonservice.jpg',
+                                                    height: 100 * scaleFactor,
+                                                    width: double.infinity,
+                                                    fit: BoxFit.cover,
+                                                  );
+                                                },
+                                                loadingBuilder: (context, child, loadingProgress) {
+                                                  if (loadingProgress == null) return child;
+                                                  return Container(
+                                                    height: 100 * scaleFactor,
+                                                    width: double.infinity,
+                                                    color: Colors.grey[200],
+                                                    child: Center(
+                                                      child: CircularProgressIndicator(
+                                                        value: loadingProgress.expectedTotalBytes != null
+                                                            ? loadingProgress.cumulativeBytesLoaded /
+                                                                loadingProgress.expectedTotalBytes!
+                                                            : null,
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
+                                              )
+                                            : Image.asset(
+                                                'assets/saloonservice.jpg', // Fallback for empty logoUrl
+                                                height: 100 * scaleFactor,
+                                                width: double.infinity,
+                                                fit: BoxFit.cover,
+                                              ),
                                       ),
                                       SizedBox(height: 8 * scaleFactor),
                                       Text(
