@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:touch_me/pages/merchant_service_list_screen.dart';
 import '../models/service.dart';
 import '../models/merchant.dart';
+import '../models/review.dart';
 import '../services/services.dart';
 import '../services/merchant_service.dart';
+import '../services/reviews.dart';
 
 class MerchantListScreen extends StatefulWidget {
   final String serviceName;
@@ -24,6 +26,7 @@ class MerchantListScreen extends StatefulWidget {
 class _MerchantListScreenState extends State<MerchantListScreen> {
   List<Merchant> merchants = [];
   Map<String, List<Service>> merchantServices = {};
+  Map<String, Map<String, dynamic>> _merchantRatings = {}; // Cache for ratings
   bool isLoading = true;
   bool hasError = false;
 
@@ -83,6 +86,46 @@ class _MerchantListScreenState extends State<MerchantListScreen> {
         hasError = true;
         isLoading = false;
       });
+    }
+  }
+
+  // Helper method to calculate review statistics
+  Map<String, dynamic> _calculateReviewStats(List<Review> reviews) {
+    if (reviews.isEmpty) {
+      return {"average": 0.0, "count": 0};
+    }
+
+    double totalRating = 0.0;
+    int validReviews = 0;
+
+    for (final review in reviews) {
+      if (review.rating > 0 && review.rating <= 5) {
+        totalRating += review.rating;
+        validReviews++;
+      }
+    }
+
+    double averageRating = validReviews > 0 ? totalRating / validReviews : 0.0;
+
+    return {"average": averageRating, "count": validReviews};
+  }
+
+  // Method to fetch and cache ratings for a merchant
+  Future<Map<String, dynamic>> _getMerchantRating(String merchantId) async {
+    if (_merchantRatings.containsKey(merchantId)) {
+      return _merchantRatings[merchantId]!;
+    }
+
+    try {
+      final reviews = await fetchReviewsByMerchant(merchantId, widget.token);
+      final stats = _calculateReviewStats(reviews);
+      _merchantRatings[merchantId] = stats;
+      return stats;
+    } catch (e) {
+      print('DEBUG: Error fetching reviews for merchant $merchantId: $e');
+      final defaultStats = {"average": 0.0, "count": 0};
+      _merchantRatings[merchantId] = defaultStats;
+      return defaultStats;
     }
   }
 
@@ -162,9 +205,10 @@ class _MerchantListScreenState extends State<MerchantListScreen> {
                                     children: [
                                       CircleAvatar(
                                         radius: 30,
-                                        backgroundImage: AssetImage(
-                                          'assets/saloonservice.jpg', // Default image
-                                        ),
+                                        backgroundImage: merchant.logoUrl.isNotEmpty
+                                            ? NetworkImage(merchant.logoUrl)
+                                            : const AssetImage('assets/saloonservice.jpg') as ImageProvider,
+                                        backgroundColor: Colors.grey[200],
                                       ),
                                       const SizedBox(width: 12),
                                       Expanded(
@@ -185,29 +229,67 @@ class _MerchantListScreenState extends State<MerchantListScreen> {
                                                 color: Colors.grey[600],
                                               ),
                                             ),
-                                            Row(
-                                              children: [
-                                                Icon(
-                                                  Icons.star,
-                                                  size: 16,
-                                                  color: Colors.amber,
-                                                ),
-                                                const SizedBox(width: 4),
-                                                Text(
-                                                  merchant.rating?.toString() ?? '5.0',
-                                                  style: const TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                                const SizedBox(width: 8),
-                                                Text(
-                                                  '${merchant.reviews ?? 0} reviews',
-                                                  style: TextStyle(
-                                                    color: Colors.grey[600],
-                                                    fontSize: 12,
-                                                  ),
-                                                ),
-                                              ],
+                                            // FIXED: Real-time rating display using FutureBuilder
+                                            FutureBuilder<Map<String, dynamic>>(
+                                              future: _getMerchantRating(merchant.id),
+                                              builder: (context, ratingSnapshot) {
+                                                if (ratingSnapshot.connectionState == ConnectionState.waiting) {
+                                                  return Row(
+                                                    children: [
+                                                      SizedBox(
+                                                        width: 12,
+                                                        height: 12,
+                                                        child: CircularProgressIndicator(
+                                                          strokeWidth: 1.5,
+                                                          color: Colors.amber,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(width: 4),
+                                                      Text(
+                                                        "Loading ratings...",
+                                                        style: TextStyle(
+                                                          fontSize: 12,
+                                                          color: Colors.grey[600],
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  );
+                                                }
+
+                                                final stats = ratingSnapshot.data ?? {"average": 0.0, "count": 0};
+                                                final averageRating = stats["average"] as double;
+                                                final reviewCount = stats["count"] as int;
+
+                                                return Row(
+                                                  children: [
+                                                    Icon(
+                                                      Icons.star,
+                                                      size: 16,
+                                                      color: reviewCount > 0 ? Colors.amber : Colors.grey,
+                                                    ),
+                                                    const SizedBox(width: 4),
+                                                    Text(
+                                                      reviewCount > 0 
+                                                          ? averageRating.toStringAsFixed(1)
+                                                          : 'No rating',
+                                                      style: TextStyle(
+                                                        fontWeight: FontWeight.bold,
+                                                        color: reviewCount > 0 ? Colors.black87 : Colors.grey,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 8),
+                                                    Text(
+                                                      reviewCount > 0 
+                                                          ? '$reviewCount review${reviewCount != 1 ? 's' : ''}'
+                                                          : 'No reviews',
+                                                      style: TextStyle(
+                                                        color: Colors.grey[600],
+                                                        fontSize: 12,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                );
+                                              },
                                             ),
                                           ],
                                         ),
@@ -244,9 +326,9 @@ class _MerchantListScreenState extends State<MerchantListScreen> {
                                               ),
                                               if (service.duration?.isNotEmpty == true)
                                                 Text(
-                                                  service.duration!,
+                                                  'Duration: ${service.duration!} minutes',
                                                   style: TextStyle(
-                                                    fontSize: 12,
+                                                    fontSize: 15,
                                                     color: Colors.grey[600],
                                                   ),
                                                 ),
@@ -271,20 +353,19 @@ class _MerchantListScreenState extends State<MerchantListScreen> {
                                     width: double.infinity,
                                     child: ElevatedButton(
                                       onPressed: () {
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => MerchantServiceListScreen(
-        merchantId: merchant.id,
-        outletName: merchant.outletName,
-        token: widget.token,
-        customerId: widget.customerId,
-        profileImageUrl: merchant.logoUrl, // make sure `logoUrl` exists
-      ),
-    ),
-  );
-},
-
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => MerchantServiceListScreen(
+                                              merchantId: merchant.id,
+                                              outletName: merchant.outletName,
+                                              token: widget.token,
+                                              customerId: widget.customerId,
+                                              profileImageUrl: merchant.logoUrl,
+                                            ),
+                                          ),
+                                        );
+                                      },
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: const Color(0xFF6A1B9A),
                                         shape: RoundedRectangleBorder(

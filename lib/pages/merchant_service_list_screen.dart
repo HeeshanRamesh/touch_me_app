@@ -431,46 +431,48 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      CircleAvatar(
-                        radius: 40,
-                        backgroundImage: NetworkImage(service.image),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        service.serviceName,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircleAvatar(
+                          radius: 40,
+                          backgroundImage: NetworkImage(service.image),
                         ),
-                      ),
-                      const SizedBox(height: 5),
-                      Text(
-                        'Rs ${service.price.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          color: Colors.purple,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 5),
-                      ElevatedButton(
-                        onPressed: () => _showBookingDialog(context, service),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.purple,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
+                        const SizedBox(height: 10),
+                        Text(
+                          service.serviceName,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
                           ),
-                          minimumSize: const Size(100, 36),
                         ),
-                        child: const Text(
-                          'Book Now',
-                          style: TextStyle(color: Colors.white, fontSize: 14),
+                        const SizedBox(height: 5),
+                        Text(
+                          'Rs ${service.price.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            color: Colors.purple,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 5),
+                        ElevatedButton(
+                          onPressed: () => _showBookingDialog(context, service),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.purple,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            minimumSize: const Size(100, 36),
+                          ),
+                          child: const Text(
+                            'Book Now',
+                            style: TextStyle(color: Colors.white, fontSize: 14),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 );
               },
