@@ -1,29 +1,14 @@
 import 'package:flutter/material.dart';
-
-class Service {
-  final int id;
-  final String name;
-  final String location;
-  final double rating;
-  final int reviews;
-  final double price;
-  final String type;
-  final String discount;
-
-  Service({
-    required this.id,
-    required this.name,
-    required this.location,
-    required this.rating,
-    required this.reviews,
-    required this.price,
-    required this.type,
-    required this.discount,
-  });
-}
+import 'package:http/http.dart' as http;
+import '../models/service.dart';
+import 'dart:convert';
+import '../services/services.dart';
 
 class ServicesScreen extends StatefulWidget {
-  const ServicesScreen({super.key});
+  final String token;
+
+  const ServicesScreen({super.key, required this.token});
+
   @override
   _ServicesScreenState createState() => _ServicesScreenState();
 }
@@ -36,69 +21,9 @@ class _ServicesScreenState extends State<ServicesScreen> {
   String serviceType = '';
   String sortBy = '';
   bool showFilters = false;
-
-  final List<Service> services = [
-    Service(
-      id: 1,
-      name: "Artistic Painting",
-      location: "77 Paintwork Rd, Galle",
-      rating: 4.7,
-      reviews: 150,
-      price: 2500,
-      type: "Beauty & Wellness",
-      discount: "Save up to 20% off",
-    ),
-    Service(
-      id: 2,
-      name: "Brows & Lashes",
-      location: "123 Beauty St, Colombo",
-      rating: 4.8,
-      reviews: 200,
-      price: 3500,
-      type: "Beauty & Wellness",
-      discount: "Save up to 15% off",
-    ),
-    Service(
-      id: 3,
-      name: "Spa Relaxation",
-      location: "45 Wellness Ave, Kandy",
-      rating: 4.6,
-      reviews: 89,
-      price: 5000,
-      type: "Spa & Massage",
-      discount: "Save up to 25% off",
-    ),
-    Service(
-      id: 4,
-      name: "Hair Styling Pro",
-      location: "78 Style Rd, Negombo",
-      rating: 4.9,
-      reviews: 312,
-      price: 2000,
-      type: "Hair & Beauty",
-      discount: "Save up to 30% off",
-    ),
-    Service(
-      id: 5,
-      name: "Nail Art Studio",
-      location: "12 Fashion St, Colombo",
-      rating: 4.5,
-      reviews: 167,
-      price: 1500,
-      type: "Beauty & Wellness",
-      discount: "Save up to 10% off",
-    ),
-    Service(
-      id: 6,
-      name: "Massage Therapy",
-      location: "34 Relax Ave, Galle",
-      rating: 4.8,
-      reviews: 245,
-      price: 4000,
-      type: "Spa & Massage",
-      discount: "Save up to 20% off",
-    ),
-  ];
+  List<Service> services = [];
+  bool isLoading = true;
+  String? errorMessage;
 
   final List<String> locations = [
     "All Locations",
@@ -118,30 +43,68 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
   final List<String> serviceTypes = [
     "Everyone",
-    "Female",
-    "Male",
-    "Kids",
-    "Door Step Service"
+    "Haircut & Styling - Ladies",
+    "Haircut & Styling - Gents",
+    "Haircut & Styling - Kids",
+    "Haircut & Styling - Adults",
+    "Massage",
+    "Bridal",
+    "Tattoo & Piercing",
+    "Facials & Skincare",
+    "Hair Removal",
+    "Nails",
+    "Eyebrow & EyeLashes",
+    "Injectable & Fillers",
+    "Makeup",
+    "Dressing",
+    "Pedicure & Manicure",
+    "Door Step Service",
+    "Custom Service"
   ];
 
   final List<String> sortOptions = [
     "Popular",
     "Price: Low to High",
     "Price: High to Low",
-    "Rating",
     "Newest"
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    _fetchServices();
+  }
+
+  Future<void> _fetchServices() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = null;
+    });
+
+    try {
+      final fetchedServices = await fetchServices(widget.token);
+      setState(() {
+        services = fetchedServices;
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+        errorMessage = 'Failed to load services: $e';
+      });
+    }
+  }
+
   List<Service> get filteredServices {
     List<Service> filtered = services.where((service) {
-      bool matchesSearch = service.name
+      bool matchesSearch = service.serviceName
           .toLowerCase()
           .contains(searchTerm.toLowerCase());
-      
+
       bool matchesLocation = selectedLocation.isEmpty ||
           selectedLocation == "All Locations" ||
-          service.location.contains(selectedLocation);
-      
+          (service.serviceDescription?.contains(selectedLocation) ?? false);
+
       bool matchesPrice = true;
       if (priceRange.isNotEmpty) {
         switch (priceRange) {
@@ -159,11 +122,11 @@ class _ServicesScreenState extends State<ServicesScreen> {
             break;
         }
       }
-      
+
       bool matchesType = serviceType.isEmpty ||
           serviceType == "Everyone" ||
-          service.type == serviceType;
-      
+          (service.serviceDescription?.toLowerCase().contains(serviceType.toLowerCase()) ?? false);
+
       return matchesSearch && matchesLocation && matchesPrice && matchesType;
     }).toList();
 
@@ -175,31 +138,16 @@ class _ServicesScreenState extends State<ServicesScreen> {
         case "Price: High to Low":
           filtered.sort((a, b) => b.price.compareTo(a.price));
           break;
-        case "Rating":
-          filtered.sort((a, b) => b.rating.compareTo(a.rating));
-          break;
-        case "Popular":
-          filtered.sort((a, b) => b.reviews.compareTo(a.reviews));
-          break;
         case "Newest":
           filtered.sort((a, b) => b.id.compareTo(a.id));
+          break;
+        case "Popular":
+          filtered.sort((a, b) => b.id.compareTo(a.id)); // Assuming ID reflects popularity
           break;
       }
     }
 
     return filtered;
-  }
-
-  List<Service> get specialOffers {
-    List<Service> offers = List.from(services);
-    offers.sort((a, b) {
-      String aDiscount = a.discount.replaceAll(RegExp(r'[^0-9]'), '');
-      String bDiscount = b.discount.replaceAll(RegExp(r'[^0-9]'), '');
-      int aPercent = int.tryParse(aDiscount) ?? 0;
-      int bPercent = int.tryParse(bDiscount) ?? 0;
-      return bPercent.compareTo(aPercent);
-    });
-    return offers.take(4).toList();
   }
 
   void _clearFilters() {
@@ -228,6 +176,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
           ),
           content: Container(
             width: double.maxFinite,
+            height: 400, // Set a fixed height to limit dialog size
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -239,35 +188,41 @@ class _ServicesScreenState extends State<ServicesScreen> {
                   ),
                 ),
                 SizedBox(height: 16),
-                ...serviceTypes.map((value) {
-                  return Container(
-                    margin: EdgeInsets.only(bottom: 8),
-                    child: ListTile(
-                      title: Text(value),
-                      leading: Radio<String>(
-                        value: value,
-                        groupValue: serviceType.isEmpty ? "Everyone" : serviceType,
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            serviceType = newValue ?? '';
-                          });
-                          Navigator.of(context).pop();
-                        },
-                        activeColor: Colors.purple[600],
-                      ),
-                      onTap: () {
-                        setState(() {
-                          serviceType = value;
-                        });
-                        Navigator.of(context).pop();
-                      },
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      tileColor: serviceType == value ? Colors.purple[50] : null,
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: serviceTypes.map((value) {
+                        return Container(
+                          margin: EdgeInsets.only(bottom: 8),
+                          child: ListTile(
+                            title: Text(value),
+                            leading: Radio<String>(
+                              value: value,
+                              groupValue: serviceType.isEmpty ? "Everyone" : serviceType,
+                              onChanged: (String? newValue) {
+                                setState(() {
+                                  serviceType = newValue ?? '';
+                                });
+                                Navigator.of(context).pop();
+                              },
+                              activeColor: Colors.purple[600],
+                            ),
+                            onTap: () {
+                              setState(() {
+                                serviceType = value;
+                              });
+                              Navigator.of(context).pop();
+                            },
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            tileColor: serviceType == value ? Colors.purple[50] : null,
+                          ),
+                        );
+                      }).toList(),
                     ),
-                  );
-                }).toList(),
+                  ),
+                ),
               ],
             ),
           ),
@@ -535,7 +490,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                           });
                         },
                         decoration: InputDecoration(
-                          hintText: 'Search by Business Name...',
+                          hintText: 'Search by Service Name...',
                           prefixIcon: Icon(Icons.search, color: Colors.grey),
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.all(16),
@@ -753,10 +708,6 @@ class _ServicesScreenState extends State<ServicesScreen> {
                       Container(
                         margin: EdgeInsets.only(top: 16),
                         padding: EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -852,253 +803,45 @@ class _ServicesScreenState extends State<ServicesScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (searchTerm.isEmpty &&
-                        selectedLocation.isEmpty &&
-                        priceRange.isEmpty &&
-                        serviceType.isEmpty &&
-                        sortBy.isEmpty) ...[
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Special Offers',
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                            ),
-                          ),
-                          Text(
-                            'View All',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.purple[600],
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
+                    Text(
+                      'All Services (${filteredServices.length})',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
                       ),
-                      SizedBox(height: 16),
-                      Container(
-                        height: 290,
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          clipBehavior: Clip.hardEdge,
-                          itemCount: specialOffers.length,
-                          itemBuilder: (context, index) {
-                            return Container(
-                              width: 200,
-                              margin: EdgeInsets.only(right: 16),
-                              child: SpecialOfferCard(service: specialOffers[index]),
-                            );
-                          },
-                        ),
-                      ),
-                      SizedBox(height: 16),
-                    ],
-                    if (searchTerm.isNotEmpty ||
-                        selectedLocation.isNotEmpty ||
-                        priceRange.isNotEmpty ||
-                        serviceType.isNotEmpty ||
-                        sortBy.isNotEmpty) ...[
-                      Text(
-                        'All Services (${filteredServices.length})',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      SizedBox(height: 16),
-                      Expanded(
-                        child: filteredServices.isEmpty
-                            ? Center(
-                                child: Text(
-                                  'No services found matching your criteria.',
-                                  style: TextStyle(color: Colors.grey[600]),
-                                ),
-                              )
-                            : ListView.builder(
-                                itemCount: filteredServices.length,
-                                itemBuilder: (context, index) {
-                                  return ServiceCard(service: filteredServices[index]);
-                                },
-                              ),
-                      ),
-                    ],
+                    ),
+                    SizedBox(height: 16),
+                    Expanded(
+                      child: isLoading
+                          ? Center(child: CircularProgressIndicator())
+                          : errorMessage != null
+                              ? Center(
+                                  child: Text(
+                                    errorMessage!,
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                )
+                              : filteredServices.isEmpty
+                                  ? Center(
+                                      child: Text(
+                                        'No services found matching your criteria.',
+                                        style: TextStyle(color: Colors.grey[600]),
+                                      ),
+                                    )
+                                  : ListView.builder(
+                                      itemCount: filteredServices.length,
+                                      itemBuilder: (context, index) {
+                                        return ServiceCard(service: filteredServices[index]);
+                                      },
+                                    ),
+                    ),
                   ],
                 ),
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class SpecialOfferCard extends StatelessWidget {
-  final Service service;
-
-  const SpecialOfferCard({Key? key, required this.service}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 250,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Stack(
-            children: [
-              Container(
-                height: 140,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                  gradient: LinearGradient(
-                    colors: [Colors.purple[200]!, Colors.pink[200]!],
-                  ),
-                ),
-                child: Center(
-                  child: Icon(
-                    Icons.local_offer,
-                    size: 40,
-                    color: Colors.purple[600],
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 8,
-                right: 8,
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    'SPECIAL',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          Padding(
-            padding: EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  constraints: BoxConstraints(maxWidth: 226),
-                  child: Text(
-                    service.name,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                SizedBox(height: 4),
-                Container(
-                  constraints: BoxConstraints(maxWidth: 226),
-                  child: Text(
-                    service.location,
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 12,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                SizedBox(height: 8),
-                Row(
-                  children: [
-                    Icon(Icons.star, color: Colors.amber, size: 14),
-                    SizedBox(width: 4),
-                    Text(
-                      service.rating.toString(),
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 12,
-                      ),
-                    ),
-                    SizedBox(width: 8),
-                    Text(
-                      '(${service.reviews})',
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Rs. ${service.price.toStringAsFixed(0)}',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.purple[600],
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        Container(
-                          constraints: BoxConstraints(maxWidth: 150),
-                          padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: Colors.purple[100],
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            service.discount,
-                            style: TextStyle(
-                              color: Colors.purple[600],
-                              fontSize: 9,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Icon(
-                      Icons.favorite_border,
-                      color: Colors.purple[600],
-                      size: 20,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -1136,12 +879,26 @@ class ServiceCard extends StatelessWidget {
                 colors: [Colors.purple[200]!, Colors.pink[200]!],
               ),
             ),
-            child: Center(
-              child: Text(
-                'Service Image',
-                style: TextStyle(color: Colors.grey[600]),
-              ),
-            ),
+            child: service.image.isNotEmpty
+                ? ClipRRect(
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                    child: Image.network(
+                      service.image,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Center(
+                        child: Text(
+                          'Image not available',
+                          style: TextStyle(color: Colors.grey[600]),
+                        ),
+                      ),
+                    ),
+                  )
+                : Center(
+                    child: Text(
+                      'Service Image',
+                      style: TextStyle(color: Colors.grey[600]),
+                    ),
+                  ),
           ),
           Padding(
             padding: EdgeInsets.all(16),
@@ -1151,7 +908,7 @@ class ServiceCard extends StatelessWidget {
                 Container(
                   constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width - 64),
                   child: Text(
-                    service.name,
+                    service.serviceName,
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -1164,35 +921,27 @@ class ServiceCard extends StatelessWidget {
                 Container(
                   constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width - 64),
                   child: Text(
-                    service.location,
+                    service.serviceDescription,
                     style: TextStyle(
                       color: Colors.grey[600],
                       fontSize: 14,
                     ),
-                    maxLines: 1,
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                SizedBox(height: 8),
-                Row(
-                  children: [
-                    Icon(Icons.star, color: Colors.amber, size: 16),
-                    SizedBox(width: 4),
-                    Text(
-                      service.rating.toString(),
-                      style: TextStyle(fontWeight: FontWeight.w500),
+                 SizedBox(height: 4),
+                Container(
+                  constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width - 64),
+                  child: Text(
+                    service.serviceDescription,
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 14,
                     ),
-                    SizedBox(width: 8),
-                    Text(
-                      '|',
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                    SizedBox(width: 8),
-                    Text(
-                      '${service.reviews} reviews',
-                      style: TextStyle(color: Colors.grey[600]),
-                    ),
-                  ],
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
                 SizedBox(height: 12),
                 Row(
@@ -1210,37 +959,39 @@ class ServiceCard extends StatelessWidget {
                               fontWeight: FontWeight.bold,
                               color: Colors.purple[600],
                             ),
-                          ), 
-                          SizedBox(height: 4),
-                          Container(
-                            constraints: BoxConstraints(maxWidth: 150),
-                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.purple[100],
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              service.discount,
-                              style: TextStyle(
-                                color: Colors.purple[600],
-                                fontSize: 10,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
                           ),
+                          if (service.specialOffer != null && service.specialOffer!.isNotEmpty)
+                            SizedBox(height: 4),
+                          if (service.specialOffer != null && service.specialOffer!.isNotEmpty)
+                            Container(
+                              constraints: BoxConstraints(maxWidth: 150),
+                              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.purple[100],
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                service.specialOffer!,
+                                style: TextStyle(
+                                  color: Colors.purple[600],
+                                  fontSize: 10,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
                         ],
                       ),
                     ),
-                    Flexible(
-                      flex: 1,
-                      child: IconButton(
-                        onPressed: () {},
-                        icon: Icon(
-                          Icons.favorite_border,
-                          color: Colors.purple[600],
-                        ),
-                      ),
-                    ),
+                    // Flexible(
+                    //   flex: 1,
+                    //   child: IconButton(
+                    //     onPressed: () {},
+                    //     icon: Icon(
+                    //       Icons.favorite_border,
+                    //       color: Colors.purple[600],
+                    //     ),
+                    //   ),
+                    // ),
                   ],
                 ),
               ],

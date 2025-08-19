@@ -41,7 +41,6 @@ class CustomerHomeHeader extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 8),
-          // App icon and location row
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -59,7 +58,6 @@ class CustomerHomeHeader extends StatelessWidget {
                   ],
                 ),
                 child: ClipRRect(
-                  // borderRadius: BorderRadius.circular(12),
                   child: Image.asset(
                     'assets/touch_logo.png',
                     fit: BoxFit.contain,
@@ -96,7 +94,6 @@ class CustomerHomeHeader extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 30),
-          // Search field
           Container(
             height: 60,
             decoration: BoxDecoration(
@@ -159,7 +156,7 @@ class CustomerHomeContent extends StatefulWidget {
 
 class _CustomerHomeContentState extends State<CustomerHomeContent> {
   Position? _userPosition;
-  Map<String, Map<String, dynamic>> _merchantRatings = {}; // Cache for ratings
+  Map<String, Map<String, dynamic>> _merchantRatings = {};
 
   double getDistanceFromUser(Position userPos, Merchant merchant) {
     return Geolocator.distanceBetween(
@@ -182,7 +179,6 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
     bool serviceEnabled;
     LocationPermission permission;
 
-    // Check service
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       setState(() {
@@ -191,7 +187,6 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
       return;
     }
 
-    // Check permissions
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
@@ -203,12 +198,10 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
       return;
     }
 
-    // Get position
     _userPosition = await Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.high,
     );
 
-    // Reverse geocode to get readable location
     if (_userPosition != null) {
       final placemarks = await placemarkFromCoordinates(
         _userPosition!.latitude,
@@ -231,9 +224,8 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
   Future<List<Merchant>> fetchNearestMerchants() async {
     final allMerchants = await fetchMerchants(widget.token);
 
-    if (_userPosition == null) return []; // Return empty list if no user position
+    if (_userPosition == null) return [];
 
-    // Filter merchants within 10 km (10,000 meters) and sort by distance
     final nearestMerchants = allMerchants.where((merchant) {
       final distance = Geolocator.distanceBetween(
         _userPosition!.latitude,
@@ -241,10 +233,9 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
         merchant.latitude,
         merchant.longitude,
       );
-      return distance <= 10000; // Filter merchants within 10 km
+      return distance <= 10000;
     }).toList();
 
-    // Sort by distance (ascending)
     nearestMerchants.sort((a, b) {
       final distA = Geolocator.distanceBetween(
         _userPosition!.latitude,
@@ -264,7 +255,6 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
     return nearestMerchants;
   }
 
-  // Helper method to calculate review statistics
   Map<String, dynamic> _calculateReviewStats(List<Review> reviews) {
     if (reviews.isEmpty) {
       return {"average": 0.0, "count": 0};
@@ -285,7 +275,6 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
     return {"average": averageRating, "count": validReviews};
   }
 
-  // Method to fetch and cache ratings for a merchant
   Future<Map<String, dynamic>> _getMerchantRating(String merchantId) async {
     if (_merchantRatings.containsKey(merchantId)) {
       return _merchantRatings[merchantId]!;
@@ -343,7 +332,6 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // SERVICES SECTION
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -359,7 +347,7 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => ServicesScreen(),
+                              builder: (_) => ServicesScreen(token: widget.token),
                             ),
                           );
                         },
@@ -440,7 +428,6 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
                       },
                     ),
                   ),
-                  // Saloons Section (dynamic) - FIXED RATING DISPLAY AND IMAGE
                   Text(
                     "Recommended",
                     style: TextStyle(
@@ -490,7 +477,6 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      // FIXED: Now uses actual merchant image instead of hardcoded asset
                                       ClipRRect(
                                         borderRadius: BorderRadius.circular(12 * scaleFactor),
                                         child: merchant.logoUrl.isNotEmpty
@@ -500,7 +486,6 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
                                                 width: double.infinity,
                                                 fit: BoxFit.cover,
                                                 errorBuilder: (context, error, stackTrace) {
-                                                  // Fallback image if network image fails to load
                                                   return Image.asset(
                                                     'assets/saloonservice.jpg',
                                                     height: 100 * scaleFactor,
@@ -526,7 +511,7 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
                                                 },
                                               )
                                             : Image.asset(
-                                                'assets/saloonservice.jpg', // Fallback for empty logoUrl
+                                                'assets/saloonservice.jpg',
                                                 height: 100 * scaleFactor,
                                                 width: double.infinity,
                                                 fit: BoxFit.cover,
@@ -549,7 +534,6 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
-                                      // FIXED: Real-time rating display using FutureBuilder
                                       FutureBuilder<Map<String, dynamic>>(
                                         future: _getMerchantRating(merchant.id),
                                         builder: (context, ratingSnapshot) {
@@ -623,7 +607,6 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
                     ),
                   ),
                   SizedBox(height: 24 * scaleFactor),
-                  // Nearest Saloon Section
                   Text(
                     "Nearest Saloon (within 10 km)",
                     style: TextStyle(
@@ -645,7 +628,7 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
 
                       final nearestMerchants = snapshot.data!;
                       return ListView.builder(
-                        itemCount: nearestMerchants.length > 3 ? 3 : nearestMerchants.length, // Show up to 3 nearest
+                        itemCount: nearestMerchants.length > 3 ? 3 : nearestMerchants.length,
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemBuilder: (context, index) {
