@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:touch_me/pages/client_page.dart';
 import 'package:touch_me/pages/merchant_login_page.dart';
 import 'package:touch_me/pages/merchant_notification.dart';
@@ -12,7 +14,7 @@ import 'package:touch_me/pages/report_page.dart';
 import 'package:touch_me/pages/saloon_dashboard_screen.dart';
 import 'package:touch_me/pages/service_merchant_page.dart';
 import 'package:touch_me/pages/team_page.dart';
-
+import 'package:touch_me/models/booking.dart';
 
 class MerchantPage extends StatefulWidget {
   final String? userName; // Make userName nullable
@@ -25,19 +27,119 @@ class MerchantPage extends StatefulWidget {
 class _MerchantPageState extends State<MerchantPage> {
   int _currentIndex = 0;
   String _displayName = ''; // Store the display name
+  int _notificationCount = 0; // Store notification count
+  final _storage = const FlutterSecureStorage();
 
   @override
   void initState() {
     super.initState();
     _loadUserName();
+    _checkNotifications();
   }
 
   Future<void> _loadUserName() async {
-    final storage = const FlutterSecureStorage();
-    String? storedUserName = await storage.read(key: "userName");
+    String? storedUserName = await _storage.read(key: "userName");
     setState(() {
       _displayName = storedUserName ?? widget.userName ?? 'Unknown';
     });
+  }
+
+  // Add method to check for new notifications
+  Future<void> _checkNotifications() async {
+    try {
+      final token = await _storage.read(key: 'token');
+      if (token == null) return;
+
+      final bookings = await fetchMerchantBookings(token);
+      final notifications = await _generateNotifications(bookings);
+      
+      setState(() {
+        _notificationCount = notifications.length;
+      });
+    } catch (e) {
+      // Handle error silently or show minimal error indication
+      setState(() {
+        _notificationCount = 0;
+      });
+    }
+  }
+
+  // Add method to fetch merchant bookings (copied from notification page)
+  Future<List<Booking>> fetchMerchantBookings(String token) async {
+    final url = Uri.parse('http://api.touchmeapp.com/api/bookings/my/bookings');
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final bookings = data['bookings'] as List<dynamic>;
+      return bookings.map((b) => Booking.fromJson(b)).toList();
+    } else {
+      throw Exception('Failed to fetch bookings: ${response.body}');
+    }
+  }
+
+  // Add method to generate notifications (copied from notification page)
+  Future<List<Map<String, dynamic>>> _generateNotifications(
+    List<Booking> bookings,
+  ) async {
+    List<Map<String, dynamic>> newNotifications = [];
+    final now = DateTime.now();
+    
+    // Get stored notification IDs to avoid duplicates
+    Set<String> readNotifications = await _getReadNotifications();
+
+    for (var booking in bookings) {
+      // Only show notifications for new bookings (created within last 24 hours)
+      // and with status 'Pending' or 'Confirmed' (newly booked)
+      if ((booking.status == 'Upcoming' || booking.status == 'Confirmed')) {
+        final notificationId = 'new_${booking.id}';
+        
+        // Skip if notification was already read/dismissed
+        if (readNotifications.contains(notificationId)) {
+          continue;
+        }
+
+        // Check if booking was created recently (within last 24 hours)
+        // Note: You might need to add a createdAt field to your Booking model
+        // For now, using booking date as a fallback
+        final bookingDate = DateTime.parse(booking.date);
+        final hoursSinceBooking = now.difference(bookingDate).inHours;
+        
+        // Show notification if booking is for today or future dates
+        if (bookingDate.isAfter(now.subtract(const Duration(hours: 24))) || 
+            bookingDate.isAfter(DateTime(now.year, now.month, now.day))) {
+          
+          newNotifications.add({
+            'id': notificationId,
+            'title': 'New Booking Received',
+            'message':
+                'New booking for ${booking.serviceName} with ${booking.customerName} scheduled for ${booking.date} at ${booking.time}.',
+            'timestamp': DateTime.now().toIso8601String(),
+            'type': 'new_booking',
+            'bookingId': booking.id,
+            'bookingStatus': booking.status,
+          });
+        }
+      }
+    }
+
+    // Sort notifications by timestamp (newest first)
+    newNotifications.sort(
+      (a, b) => DateTime.parse(b['timestamp']).compareTo(DateTime.parse(a['timestamp'])),
+    );
+    
+    return newNotifications;
+  }
+
+  // Add method to get read notifications
+  Future<Set<String>> _getReadNotifications() async {
+    final readNotificationsString = await _storage.read(key: 'read_notifications') ?? '';
+    return readNotificationsString.split(',').where((id) => id.isNotEmpty).toSet();
   }
 
   String getGreeting() {
@@ -88,6 +190,51 @@ class _MerchantPageState extends State<MerchantPage> {
     );
   }
 
+  // Add method to build notification icon with badge
+  Widget _buildNotificationIcon() {
+    return Stack(
+      children: [
+        IconButton(
+          icon: const Icon(Icons.notifications, color: Color(0xFF6A1B9A)),
+          onPressed: () async {
+            // Navigate to notification page and refresh count when returning
+            await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const NotificationPage()),
+            );
+            // Refresh notification count after returning from notification page
+            _checkNotifications();
+          },
+        ),
+        if (_notificationCount > 0)
+          Positioned(
+            right: 8,
+            top: 8,
+            child: Container(
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              constraints: const BoxConstraints(
+                minWidth: 16,
+                minHeight: 16,
+              ),
+              child: Text(
+                _notificationCount > 99 ? '99+' : '$_notificationCount',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -98,8 +245,7 @@ class _MerchantPageState extends State<MerchantPage> {
         unselectedItemColor: Colors.grey,
         onTap: (index) async {
           if (index == 2) {
-            final storage = const FlutterSecureStorage();
-            String? merchantId = await storage.read(key: "merchantId");
+            String? merchantId = await _storage.read(key: "merchantId");
             if (merchantId == null || merchantId.isEmpty) {
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -172,15 +318,8 @@ class _MerchantPageState extends State<MerchantPage> {
                   ),
                   Row(
                     children: [
-                      IconButton(
-                        icon: const Icon(Icons.notifications, color: Color(0xFF6A1B9A)),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const NotificationPage()),
-                          );
-                        },
-                      ),
+                      // Use the new notification icon with badge
+                      _buildNotificationIcon(),
                       const SizedBox(width: 10),
                       PopupMenuButton<String>(
                         offset: const Offset(0, 50), // Positions the popup below the CircleAvatar
@@ -199,9 +338,8 @@ class _MerchantPageState extends State<MerchantPage> {
                         onSelected: (value) async {
                           if (value == 'logout') {
                             // Clear stored data
-                            final storage = const FlutterSecureStorage();
-                            await storage.delete(key: "userName");
-                            await storage.delete(key: "merchantId");
+                            await _storage.delete(key: "userName");
+                            await _storage.delete(key: "merchantId");
                             //await storage.delete(key: "userEmail");
                             if (context.mounted) {
                               // Navigate to login page
@@ -380,8 +518,7 @@ class _MerchantPageState extends State<MerchantPage> {
                     title: "Team",
                     color: const Color(0xFFB71C9B),
                     onTap: () async {
-                      final storage = const FlutterSecureStorage();
-                      String? merchantId = await storage.read(key: "merchantId");
+                      String? merchantId = await _storage.read(key: "merchantId");
                       if (merchantId == null || merchantId.isEmpty) {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(

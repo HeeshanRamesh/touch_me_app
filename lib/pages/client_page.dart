@@ -68,7 +68,10 @@ class _CompletedBookingsPageState extends State<CompletedBookingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Completed Bookings'),
+         backgroundColor: const Color(0xFF6A1B9A),
+        // title: const Text('Completed Bookings',
+        //   style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        // ),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body:
