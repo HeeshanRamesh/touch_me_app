@@ -14,6 +14,7 @@ class CompletedBookingsPage extends StatefulWidget {
 class _CompletedBookingsPageState extends State<CompletedBookingsPage> {
   Future<List<Booking>>? _futureCompletedBookings;
   final _storage = const FlutterSecureStorage();
+  bool _showTable = false; // Toggle between list and table view
 
   Future<String?> _getToken() async {
     return await _storage.read(key: 'token');
@@ -64,15 +65,99 @@ class _CompletedBookingsPageState extends State<CompletedBookingsPage> {
     }
   }
 
+  Map<String, int> _getCustomerUsageCount(List<Booking> bookings) {
+    Map<String, int> customerCount = {};
+    for (var booking in bookings) {
+      String customerName =
+          booking.customerName.isEmpty ? 'N/A' : booking.customerName;
+      customerCount[customerName] = (customerCount[customerName] ?? 0) + 1;
+    }
+    return customerCount;
+  }
+
+  Widget _buildCustomerUsageTable(List<Booking> bookings) {
+    final customerUsage = _getCustomerUsageCount(bookings);
+    final sortedCustomers =
+        customerUsage.entries.toList()..sort(
+          (a, b) => b.value.compareTo(a.value),
+        ); // Sort by usage count descending
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: DataTable(
+          headingRowColor: MaterialStateColor.resolveWith(
+            (states) => const Color(0xFF6A1B9A).withOpacity(0.1),
+          ),
+          columns: const [
+            DataColumn(
+              label: Text(
+                'Customer Name',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+            ),
+            DataColumn(
+              label: Text(
+                'Service Count',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+            ),
+          ],
+          rows:
+              sortedCustomers.map((entry) {
+                return DataRow(
+                  cells: [
+                    DataCell(
+                      Text(entry.key, style: const TextStyle(fontSize: 14)),
+                    ),
+                    DataCell(
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF6A1B9A).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          '${entry.value}',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF6A1B9A),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              }).toList(),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-         backgroundColor: const Color(0xFF6A1B9A),
+        backgroundColor: const Color(0xFF6A1B9A),
         // title: const Text('Completed Bookings',
         //   style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         // ),
         iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          IconButton(
+            icon: Icon(_showTable ? Icons.list : Icons.table_chart),
+            onPressed: () {
+              setState(() {
+                _showTable = !_showTable;
+              });
+            },
+          ),
+        ],
       ),
       body:
           _futureCompletedBookings == null
@@ -90,6 +175,39 @@ class _CompletedBookingsPageState extends State<CompletedBookingsPage> {
                   if (bookings.isEmpty) {
                     return const Center(child: Text('No client found.'));
                   }
+
+                  // Show table view or list view based on toggle
+                  if (_showTable) {
+                    return Column(
+                      children: [
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF6A1B9A).withOpacity(0.1),
+                            border: Border(
+                              bottom: BorderSide(
+                                color: Colors.grey.shade300,
+                                width: 1,
+                              ),
+                            ),
+                          ),
+                          child: Text(
+                            'Customer Service Usage Summary',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF6A1B9A),
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        Expanded(child: _buildCustomerUsageTable(bookings)),
+                      ],
+                    );
+                  }
+
+                  // Original list view
                   return ListView.builder(
                     itemCount: bookings.length,
                     itemBuilder: (context, index) {

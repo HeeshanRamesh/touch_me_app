@@ -52,7 +52,7 @@ class _MerchantPageState extends State<MerchantPage> {
 
       final bookings = await fetchMerchantBookings(token);
       final notifications = await _generateNotifications(bookings);
-      
+
       setState(() {
         _notificationCount = notifications.length;
       });
@@ -89,7 +89,7 @@ class _MerchantPageState extends State<MerchantPage> {
   ) async {
     List<Map<String, dynamic>> newNotifications = [];
     final now = DateTime.now();
-    
+
     // Get stored notification IDs to avoid duplicates
     Set<String> readNotifications = await _getReadNotifications();
 
@@ -98,7 +98,7 @@ class _MerchantPageState extends State<MerchantPage> {
       // and with status 'Pending' or 'Confirmed' (newly booked)
       if ((booking.status == 'Upcoming' || booking.status == 'Confirmed')) {
         final notificationId = 'new_${booking.id}';
-        
+
         // Skip if notification was already read/dismissed
         if (readNotifications.contains(notificationId)) {
           continue;
@@ -109,11 +109,10 @@ class _MerchantPageState extends State<MerchantPage> {
         // For now, using booking date as a fallback
         final bookingDate = DateTime.parse(booking.date);
         final hoursSinceBooking = now.difference(bookingDate).inHours;
-        
+
         // Show notification if booking is for today or future dates
-        if (bookingDate.isAfter(now.subtract(const Duration(hours: 24))) || 
+        if (bookingDate.isAfter(now.subtract(const Duration(hours: 24))) ||
             bookingDate.isAfter(DateTime(now.year, now.month, now.day))) {
-          
           newNotifications.add({
             'id': notificationId,
             'title': 'New Booking Received',
@@ -130,16 +129,22 @@ class _MerchantPageState extends State<MerchantPage> {
 
     // Sort notifications by timestamp (newest first)
     newNotifications.sort(
-      (a, b) => DateTime.parse(b['timestamp']).compareTo(DateTime.parse(a['timestamp'])),
+      (a, b) => DateTime.parse(
+        b['timestamp'],
+      ).compareTo(DateTime.parse(a['timestamp'])),
     );
-    
+
     return newNotifications;
   }
 
   // Add method to get read notifications
   Future<Set<String>> _getReadNotifications() async {
-    final readNotificationsString = await _storage.read(key: 'read_notifications') ?? '';
-    return readNotificationsString.split(',').where((id) => id.isNotEmpty).toSet();
+    final readNotificationsString =
+        await _storage.read(key: 'read_notifications') ?? '';
+    return readNotificationsString
+        .split(',')
+        .where((id) => id.isNotEmpty)
+        .toSet();
   }
 
   String getGreeting() {
@@ -216,10 +221,7 @@ class _MerchantPageState extends State<MerchantPage> {
                 color: Colors.red,
                 borderRadius: BorderRadius.circular(10),
               ),
-              constraints: const BoxConstraints(
-                minWidth: 16,
-                minHeight: 16,
-              ),
+              constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
               child: Text(
                 _notificationCount > 99 ? '99+' : '$_notificationCount',
                 style: const TextStyle(
@@ -261,7 +263,8 @@ class _MerchantPageState extends State<MerchantPage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => MerchantServicesScreen(merchantId: merchantId),
+                  builder:
+                      (_) => MerchantServicesScreen(merchantId: merchantId),
                 ),
               );
             }
@@ -288,9 +291,18 @@ class _MerchantPageState extends State<MerchantPage> {
           }
         },
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.category), label: "Categories"),
-          BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: "Bookings"),
-          BottomNavigationBarItem(icon: Icon(Icons.design_services), label: "Services"),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.category),
+            label: "Categories",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_today),
+            label: "Bookings",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.design_services),
+            label: "Services",
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
         ],
       ),
@@ -322,12 +334,17 @@ class _MerchantPageState extends State<MerchantPage> {
                       _buildNotificationIcon(),
                       const SizedBox(width: 10),
                       PopupMenuButton<String>(
-                        offset: const Offset(0, 50), // Positions the popup below the CircleAvatar
+                        offset: const Offset(
+                          0,
+                          50,
+                        ), // Positions the popup below the CircleAvatar
                         child: CircleAvatar(
                           radius: 20,
                           backgroundColor: Colors.purple,
                           child: Text(
-                            _displayName.isNotEmpty ? _displayName[0].toUpperCase() : '?',
+                            _displayName.isNotEmpty
+                                ? _displayName[0].toUpperCase()
+                                : '?',
                             style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -345,7 +362,9 @@ class _MerchantPageState extends State<MerchantPage> {
                               // Navigate to login page
                               Navigator.pushReplacement(
                                 context,
-                                MaterialPageRoute(builder: (_) => const MerchantLoginPage()),
+                                MaterialPageRoute(
+                                  builder: (_) => const MerchantLoginPage(),
+                                ),
                               );
                             }
                           }
@@ -353,12 +372,15 @@ class _MerchantPageState extends State<MerchantPage> {
                         itemBuilder: (BuildContext context) {
                           return [
                             PopupMenuItem<String>(
-                              enabled: false, // Disable selection for name and email
+                              enabled:
+                                  false, // Disable selection for name and email
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    _displayName.isNotEmpty ? _displayName : 'Unknown',
+                                    _displayName.isNotEmpty
+                                        ? _displayName
+                                        : 'Unknown',
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16,
@@ -388,7 +410,10 @@ class _MerchantPageState extends State<MerchantPage> {
                                 children: const [
                                   Icon(Icons.logout, color: Colors.red),
                                   SizedBox(width: 8),
-                                  Text('Logout', style: TextStyle(color: Colors.red)),
+                                  Text(
+                                    'Logout',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
                                 ],
                               ),
                             ),
@@ -448,7 +473,10 @@ class _MerchantPageState extends State<MerchantPage> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const SaloonDashboardScreen(userName: '')),
+                        MaterialPageRoute(
+                          builder:
+                              (_) => const SaloonDashboardScreen(userName: ''),
+                        ),
                       );
                     },
                   ),
@@ -460,7 +488,9 @@ class _MerchantPageState extends State<MerchantPage> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const CompletedBookingsPage()),
+                        MaterialPageRoute(
+                          builder: (_) => const CompletedBookingsPage(),
+                        ),
                       );
                     },
                   ),
@@ -472,7 +502,11 @@ class _MerchantPageState extends State<MerchantPage> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => OnlineBookingShowPage(userName: _displayName)),
+                        MaterialPageRoute(
+                          builder:
+                              (_) =>
+                                  OnlineBookingShowPage(userName: _displayName),
+                        ),
                       );
                     },
                   ),
@@ -484,7 +518,11 @@ class _MerchantPageState extends State<MerchantPage> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => ServiceMerchantPage(userName: _displayName)),
+                        MaterialPageRoute(
+                          builder:
+                              (_) =>
+                                  ServiceMerchantPage(userName: _displayName),
+                        ),
                       );
                     },
                   ),
@@ -508,7 +546,9 @@ class _MerchantPageState extends State<MerchantPage> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const MerchantSettingPage()),
+                        MaterialPageRoute(
+                          builder: (_) => const MerchantSettingPage(),
+                        ),
                       );
                     },
                   ),
@@ -518,12 +558,16 @@ class _MerchantPageState extends State<MerchantPage> {
                     title: "Team",
                     color: const Color(0xFFB71C9B),
                     onTap: () async {
-                      String? merchantId = await _storage.read(key: "merchantId");
+                      String? merchantId = await _storage.read(
+                        key: "merchantId",
+                      );
                       if (merchantId == null || merchantId.isEmpty) {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text("Merchant ID not found. Please login again."),
+                              content: Text(
+                                "Merchant ID not found. Please login again.",
+                              ),
                               backgroundColor: Colors.red,
                             ),
                           );
@@ -533,7 +577,9 @@ class _MerchantPageState extends State<MerchantPage> {
                       if (context.mounted) {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => TeamPage(userName: _displayName)),
+                          MaterialPageRoute(
+                            builder: (_) => TeamPage(userName: _displayName),
+                          ),
                         );
                       }
                     },
