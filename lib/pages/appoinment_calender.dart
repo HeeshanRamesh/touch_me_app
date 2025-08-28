@@ -72,6 +72,90 @@ class _AppointmentBookingPageState extends State<AppointmentBookingPage> {
     }
   }
 
+  Widget _buildStatusLegend() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Status Legend',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _buildLegendItem(
+                  color: Colors.green.withOpacity(0.6),
+                  status: 'Completed',
+                ),
+              ),
+              SizedBox(width: 8),
+              Expanded(
+                child: _buildLegendItem(
+                  color: Colors.yellow.withOpacity(0.7),
+                  status: 'Confirmed',
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: _buildLegendItem(
+                  color: Colors.pink.withOpacity(0.6),
+                  status: 'Upcoming',
+                ),
+              ),
+              SizedBox(width: 8),
+              Expanded(
+                child: _buildLegendItem(color: Colors.blue, status: 'Selected'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLegendItem({required Color color, required String status}) {
+    return Row(
+      children: [
+        Container(
+          width: 20,
+          height: 20,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(4),
+          ),
+        ),
+        SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            status,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: Colors.black87,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -99,6 +183,9 @@ class _AppointmentBookingPageState extends State<AppointmentBookingPage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
+            // Status Legend
+            _buildStatusLegend(),
+
             // Calendar Header
             Container(
               padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
