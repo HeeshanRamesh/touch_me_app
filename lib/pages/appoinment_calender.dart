@@ -55,7 +55,7 @@ class _AppointmentBookingPageState extends State<AppointmentBookingPage> {
   }
 
   Future<List<Booking>> fetchMerchantBookings(String token) async {
-    final url = Uri.parse('http://api.touchmeapp.com/api/bookings/my/bookings');
+    final url = Uri.parse('http://192.168.8.133:6000/api/bookings/my/bookings');
     final response = await http.get(
       url,
       headers: {
@@ -443,11 +443,29 @@ class _AppointmentBookingPageState extends State<AppointmentBookingPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
+                      'Booking ID: ${booking.id}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
                       'Service Name: ${booking.serviceName}',
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 16,
                         color: Colors.black87,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Service Price: ${booking.price != 'N/A' ? '\Rs.${booking.price}' : 'N/A'}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                        color: Colors.green[700],
                       ),
                     ),
                     SizedBox(height: 8),
@@ -504,7 +522,14 @@ class _AppointmentBookingPageState extends State<AppointmentBookingPage> {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          _buildDetailRow('Booking ID:', booking.id),
                           _buildDetailRow('Service:', booking.serviceName),
+                          _buildDetailRow(
+                            'Price:',
+                            booking.price != 'N/A'
+                                ? '\$${booking.price}'
+                                : 'N/A',
+                          ),
                           _buildDetailRow('Customer:', booking.customerName),
                           _buildDetailRow('Date:', booking.date),
                           _buildDetailRow('Time:', booking.time),
@@ -693,7 +718,7 @@ class _AppointmentBookingPageState extends State<AppointmentBookingPage> {
                           }
                           try {
                             final url = Uri.parse(
-                              'http://api.touchmeapp.com/api/bookings',
+                              'http://192.168.8.133:6000/api/bookings',
                             );
                             final response = await http.post(
                               url,
@@ -722,6 +747,7 @@ class _AppointmentBookingPageState extends State<AppointmentBookingPage> {
                                 ).format(selectedDate),
                                 time: selectedTime.format(context),
                                 status: 'Upcoming',
+                                price: 'N/A', // Default price for new bookings
                               );
                               setState(() {
                                 bookings.add(newBooking);

@@ -5,6 +5,7 @@ class Booking {
   final String date;
   final String time;
   final String status;
+  final String price; // Added price field
 
   Booking({
     required this.id,
@@ -13,6 +14,7 @@ class Booking {
     required this.date,
     required this.time,
     required this.status,
+    required this.price, // Added price parameter
   });
 
   factory Booking.fromJson(Map<String, dynamic> json) {
@@ -26,6 +28,9 @@ class Booking {
     String serviceName = json['saloonServiceId']?['serviceName'] ??
         'N/A';
 
+    // Extract service price: handle nested saloonServiceId
+    String price = json['saloonServiceId']?['price']?.toString() ?? 'N/A';
+
     return Booking(
       id: json['_id'] ?? json['id'] ?? '',
       customerName: customerName,
@@ -33,6 +38,7 @@ class Booking {
       date: json['date'] ?? '',
       time: json['time'] ?? '',
       status: json['status'] ?? '',
+      price: price, // Added price field
     );
   }
 }
