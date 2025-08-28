@@ -48,14 +48,14 @@ class _SaloonDashboardScreenState extends State<SaloonDashboardScreen> {
             fetchedBookings.where((booking) {
               final bookingDate = DateTime.parse(booking.date);
               final isToday = _isSameDay(bookingDate, DateTime.now());
-              return isToday && booking.status == 'Completed';
+              return isToday && booking.status == 'Confirm';
             }).toList();
 
         futureCompletedBookings =
             fetchedBookings.where((booking) {
               final bookingDate = DateTime.parse(booking.date);
               final isFuture = bookingDate.isAfter(DateTime.now());
-              return isFuture && booking.status == 'Completed';
+              return isFuture && booking.status == 'Confirm';
             }).toList();
       });
     } catch (e) {

@@ -930,19 +930,19 @@ class ServiceCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                 SizedBox(height: 4),
-                Container(
-                  constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width - 64),
-                  child: Text(
-                    service.serviceDescription,
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 14,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
+                //  SizedBox(height: 4),
+                // Container(
+                //   constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width - 64),
+                //   child: Text(
+                //     service.serviceDescription,
+                //     style: TextStyle(
+                //       color: Colors.grey[600],
+                //       fontSize: 14,
+                //     ),
+                //     maxLines: 2,
+                //     overflow: TextOverflow.ellipsis,
+                //   ),
+                // ),
                 SizedBox(height: 12),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,

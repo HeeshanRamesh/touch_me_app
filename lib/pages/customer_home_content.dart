@@ -157,17 +157,9 @@ class CustomerHomeContent extends StatefulWidget {
 class _CustomerHomeContentState extends State<CustomerHomeContent> {
   Position? _userPosition;
   Map<String, Map<String, dynamic>> _merchantRatings = {};
-
-  double getDistanceFromUser(Position userPos, Merchant merchant) {
-    return Geolocator.distanceBetween(
-      userPos.latitude,
-      userPos.longitude,
-      merchant.latitude,
-      merchant.longitude,
-    );
-  }
-
+  Map<String, double> _merchantDistances = {};
   String _currentLocation = "Loading...";
+  String _fullUserAddress = "";
 
   @override
   void initState() {
@@ -191,6 +183,7 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
     }
+
     if (permission == LocationPermission.deniedForever) {
       setState(() {
         _currentLocation = "Permission denied";
@@ -212,47 +205,140 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
         final place = placemarks.first;
         setState(() {
           _currentLocation = place.locality ?? place.subAdministrativeArea ?? "Unknown";
+          _fullUserAddress = _buildFullAddress(place);
         });
       } else {
         setState(() {
           _currentLocation = "Unknown";
+          _fullUserAddress = "Unknown location";
         });
       }
     }
   }
 
-  Future<List<Merchant>> fetchNearestMerchants() async {
+  String _buildFullAddress(Placemark place) {
+    List<String> addressParts = [];
+    
+    if (place.street != null && place.street!.isNotEmpty) {
+      addressParts.add(place.street!);
+    }
+    if (place.locality != null && place.locality!.isNotEmpty) {
+      addressParts.add(place.locality!);
+    }
+    if (place.subAdministrativeArea != null && place.subAdministrativeArea!.isNotEmpty) {
+      addressParts.add(place.subAdministrativeArea!);
+    }
+    if (place.administrativeArea != null && place.administrativeArea!.isNotEmpty) {
+      addressParts.add(place.administrativeArea!);
+    }
+    if (place.country != null && place.country!.isNotEmpty) {
+      addressParts.add(place.country!);
+    }
+    
+    return addressParts.join(', ');
+  }
+
+  Future<double?> _calculateDistanceFromAddress(String merchantAddress) async {
+    if (_userPosition == null || merchantAddress.isEmpty) {
+      return null;
+    }
+
+    try {
+      // Try to get coordinates for merchant address
+      final merchantLocations = await locationFromAddress(merchantAddress);
+      
+      if (merchantLocations.isNotEmpty) {
+        final merchantLocation = merchantLocations.first;
+        
+        // Calculate distance using Geolocator
+        final distance = Geolocator.distanceBetween(
+          _userPosition!.latitude,
+          _userPosition!.longitude,
+          merchantLocation.latitude,
+          merchantLocation.longitude,
+        );
+        
+        return distance / 1000; // Convert to kilometers
+      }
+    } catch (e) {
+      print('DEBUG: Error calculating distance for address $merchantAddress: $e');
+      
+      // Fallback: Simple text-based proximity calculation
+      return _calculateTextBasedDistance(merchantAddress);
+    }
+    
+    return null;
+  }
+
+  double _calculateTextBasedDistance(String merchantAddress) {
+    // Simple text-based distance calculation as fallback
+    final userAddressLower = _fullUserAddress.toLowerCase();
+    final merchantAddressLower = merchantAddress.toLowerCase();
+    
+    // Extract key location components
+    final userParts = userAddressLower.split(',').map((s) => s.trim()).toList();
+    final merchantParts = merchantAddressLower.split(',').map((s) => s.trim()).toList();
+    
+    int matchScore = 0;
+    int totalParts = userParts.length;
+    
+    for (String userPart in userParts) {
+      for (String merchantPart in merchantParts) {
+        if (merchantPart.contains(userPart) || userPart.contains(merchantPart)) {
+          matchScore++;
+          break;
+        }
+      }
+    }
+    
+    // Convert match score to approximate distance
+    // Higher match score = closer distance
+    double approximateDistance;
+    if (matchScore >= totalParts * 0.8) {
+      approximateDistance = 1.0; // Very close
+    } else if (matchScore >= totalParts * 0.6) {
+      approximateDistance = 3.0; // Close
+    } else if (matchScore >= totalParts * 0.4) {
+      approximateDistance = 7.0; // Moderate
+    } else if (matchScore >= totalParts * 0.2) {
+      approximateDistance = 15.0; // Far
+    } else {
+      approximateDistance = 25.0; // Very far
+    }
+    
+    return approximateDistance;
+  }
+
+  Future<List<Map<String, dynamic>>> fetchNearestMerchants() async {
     final allMerchants = await fetchMerchants(widget.token);
+    
+    if (allMerchants.isEmpty) return [];
 
-    if (_userPosition == null) return [];
+    List<Map<String, dynamic>> merchantsWithDistance = [];
 
-    final nearestMerchants = allMerchants.where((merchant) {
-      final distance = Geolocator.distanceBetween(
-        _userPosition!.latitude,
-        _userPosition!.longitude,
-        merchant.latitude,
-        merchant.longitude,
-      );
-      return distance <= 10000;
-    }).toList();
+    for (Merchant merchant in allMerchants) {
+      double? distance = _merchantDistances[merchant.id];
+      
+      if (distance == null) {
+        distance = await _calculateDistanceFromAddress(merchant.address);
+        if (distance != null) {
+          _merchantDistances[merchant.id] = distance;
+        }
+      }
 
-    nearestMerchants.sort((a, b) {
-      final distA = Geolocator.distanceBetween(
-        _userPosition!.latitude,
-        _userPosition!.longitude,
-        a.latitude,
-        a.longitude,
-      );
-      final distB = Geolocator.distanceBetween(
-        _userPosition!.latitude,
-        _userPosition!.longitude,
-        b.latitude,
-        b.longitude,
-      );
-      return distA.compareTo(distB);
-    });
+      if (distance != null && distance <= 10.0) { // Within 10 km
+        merchantsWithDistance.add({
+          'merchant': merchant,
+          'distance': distance,
+        });
+      }
+    }
 
-    return nearestMerchants;
+    // Sort by distance
+    merchantsWithDistance.sort((a, b) => 
+        (a['distance'] as double).compareTo(b['distance'] as double));
+
+    return merchantsWithDistance;
   }
 
   Map<String, dynamic> _calculateReviewStats(List<Review> reviews) {
@@ -271,7 +357,6 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
     }
 
     double averageRating = validReviews > 0 ? totalRating / validReviews : 0.0;
-
     return {"average": averageRating, "count": validReviews};
   }
 
@@ -559,11 +644,9 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
                                               ],
                                             );
                                           }
-
                                           final stats = ratingSnapshot.data ?? {"average": 0.0, "count": 0};
                                           final averageRating = stats["average"] as double;
                                           final reviewCount = stats["count"] as int;
-
                                           return Row(
                                             children: [
                                               Icon(
@@ -573,7 +656,7 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
                                               ),
                                               SizedBox(width: 2 * scaleFactor),
                                               Text(
-                                                reviewCount > 0 
+                                                reviewCount > 0
                                                     ? averageRating.toStringAsFixed(1)
                                                     : 'No rating',
                                                 style: TextStyle(
@@ -584,7 +667,7 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
                                               ),
                                               SizedBox(width: 4 * scaleFactor),
                                               Text(
-                                                reviewCount > 0 
+                                                reviewCount > 0
                                                     ? "| $reviewCount Review${reviewCount != 1 ? 's' : ''}"
                                                     : "| No reviews",
                                                 style: TextStyle(
@@ -615,56 +698,117 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
                     ),
                   ),
                   SizedBox(height: 8),
-                  FutureBuilder<List<Merchant>>(
+                  FutureBuilder<List<Map<String, dynamic>>>(
                     future: fetchNearestMerchants(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(child: CircularProgressIndicator());
                       } else if (snapshot.hasError) {
-                        return const Text('Failed to load nearest saloons');
+                        return Text('Failed to load nearest saloons: ${snapshot.error}');
                       } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                         return const Text('No saloons found within 10 km');
                       }
 
-                      final nearestMerchants = snapshot.data!;
+                      final nearestMerchantsWithDistance = snapshot.data!;
+                      final displayCount = nearestMerchantsWithDistance.length > 3 
+                          ? 3 
+                          : nearestMerchantsWithDistance.length;
+
                       return ListView.builder(
-                        itemCount: nearestMerchants.length > 3 ? 3 : nearestMerchants.length,
+                        itemCount: displayCount,
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemBuilder: (context, index) {
-                          final merchant = nearestMerchants[index];
-                          final distanceInKm = (_userPosition != null)
-                              ? (getDistanceFromUser(_userPosition!, merchant) / 1000).toStringAsFixed(2)
-                              : 'N/A';
+                          final merchantData = nearestMerchantsWithDistance[index];
+                          final merchant = merchantData['merchant'] as Merchant;
+                          final distance = merchantData['distance'] as double;
 
-                          return ListTile(
-                            leading: CircleAvatar(
-                              backgroundImage: merchant.logoUrl.isNotEmpty
-                                  ? NetworkImage(merchant.logoUrl)
-                                  : const AssetImage('assets/images/default_logo.jpg') as ImageProvider,
-                              backgroundColor: Colors.grey[200],
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 8.0),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black12,
+                                  blurRadius: 4,
+                                  offset: Offset(0, 2),
+                                ),
+                              ],
                             ),
-                            title: Text(merchant.outletName),
-                            subtitle: Text('${merchant.address}, $distanceInKm km away'),
-                            trailing: ElevatedButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => MerchantServiceListScreen(
-                                      merchantId: merchant.id,
-                                      outletName: merchant.outletName,
-                                      token: widget.token,
-                                      customerId: widget.customerId,
-                                      profileImageUrl: merchant.logoUrl,
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.all(12.0),
+                              leading: CircleAvatar(
+                                radius: 25,
+                                backgroundImage: merchant.logoUrl.isNotEmpty
+                                    ? NetworkImage(merchant.logoUrl)
+                                    : const AssetImage('assets/images/default_logo.jpg') as ImageProvider,
+                                backgroundColor: Colors.grey[200],
+                              ),
+                              title: Text(
+                                merchant.outletName,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    merchant.address,
+                                    style: const TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: 13,
                                     ),
                                   ),
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color.fromARGB(255, 133, 18, 179),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.location_on,
+                                        size: 16,
+                                        color: Colors.green,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        '${distance.toStringAsFixed(1)} km away',
+                                        style: const TextStyle(
+                                          color: Colors.green,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
-                              child: const Text('Visit Now', style: TextStyle(color: Colors.white)),
+                              trailing: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => MerchantServiceListScreen(
+                                        merchantId: merchant.id,
+                                        outletName: merchant.outletName,
+                                        token: widget.token,
+                                        customerId: widget.customerId,
+                                        profileImageUrl: merchant.logoUrl,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color.fromARGB(255, 133, 18, 179),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Visit Now',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
                             ),
                           );
                         },
