@@ -55,7 +55,7 @@ class _AppointmentBookingPageState extends State<AppointmentBookingPage> {
   }
 
   Future<List<Booking>> fetchMerchantBookings(String token) async {
-    final url = Uri.parse('http://192.168.8.133:6000/api/bookings/my/bookings');
+    final url = Uri.parse('http://api.touchmeapp.com/api/bookings/my/bookings');
     final response = await http.get(
       url,
       headers: {
@@ -718,7 +718,7 @@ class _AppointmentBookingPageState extends State<AppointmentBookingPage> {
                           }
                           try {
                             final url = Uri.parse(
-                              'http://192.168.8.133:6000/api/bookings',
+                              'http://api.touchmeapp.com/api/bookings',
                             );
                             final response = await http.post(
                               url,

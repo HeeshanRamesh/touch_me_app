@@ -65,12 +65,30 @@ class _CompletedBookingsPageState extends State<CompletedBookingsPage> {
     }
   }
 
-  Map<String, int> _getCustomerUsageCount(List<Booking> bookings) {
-    Map<String, int> customerCount = {};
+  Map<String, Map<String, dynamic>> _getCustomerUsageCount(
+    List<Booking> bookings,
+  ) {
+    Map<String, Map<String, dynamic>> customerCount = {};
     for (var booking in bookings) {
       String customerName =
           booking.customerName.isEmpty ? 'N/A' : booking.customerName;
-      customerCount[customerName] = (customerCount[customerName] ?? 0) + 1;
+
+      if (!customerCount.containsKey(customerName)) {
+        customerCount[customerName] = {'count': 0, 'totalAmount': 0.0};
+      }
+
+      customerCount[customerName]!['count']++;
+
+      // Parse price and add to total
+      double price = 0.0;
+      try {
+        if (booking.price != 'N/A' && booking.price.isNotEmpty) {
+          price = double.parse(booking.price.replaceAll(RegExp(r'[^\d.]'), ''));
+        }
+      } catch (e) {
+        price = 0.0;
+      }
+      customerCount[customerName]!['totalAmount'] += price;
     }
     return customerCount;
   }
@@ -79,7 +97,7 @@ class _CompletedBookingsPageState extends State<CompletedBookingsPage> {
     final customerUsage = _getCustomerUsageCount(bookings);
     final sortedCustomers =
         customerUsage.entries.toList()..sort(
-          (a, b) => b.value.compareTo(a.value),
+          (a, b) => b.value['count'].compareTo(a.value['count']),
         ); // Sort by usage count descending
 
     return SingleChildScrollView(
@@ -93,13 +111,19 @@ class _CompletedBookingsPageState extends State<CompletedBookingsPage> {
           columns: const [
             DataColumn(
               label: Text(
-                'Customer Name',
+                'Customer\nName',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
             ),
             DataColumn(
               label: Text(
-                'Service Count',
+                'Service\nCount',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+            ),
+            DataColumn(
+              label: Text(
+                'Total\nAmount',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
             ),
@@ -122,11 +146,31 @@ class _CompletedBookingsPageState extends State<CompletedBookingsPage> {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
-                          '${entry.value}',
+                          '${entry.value['count']}',
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF6A1B9A),
+                          ),
+                        ),
+                      ),
+                    ),
+                    DataCell(
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          '\Rs.${entry.value['totalAmount'].toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green,
                           ),
                         ),
                       ),
@@ -207,7 +251,7 @@ class _CompletedBookingsPageState extends State<CompletedBookingsPage> {
                     );
                   }
 
-                  // Original list view
+                  // Original list view with price added
                   return ListView.builder(
                     itemCount: bookings.length,
                     itemBuilder: (context, index) {
@@ -222,14 +266,44 @@ class _CompletedBookingsPageState extends State<CompletedBookingsPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                booking.customerName.isEmpty
-                                    ? 'N/A'
-                                    : booking.customerName,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      booking.customerName.isEmpty
+                                          ? 'N/A'
+                                          : booking.customerName,
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(
+                                        0xFF6A1B9A,
+                                      ).withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Text(
+                                      booking.price == 'N/A'
+                                          ? 'N/A'
+                                          : '\Rs.${booking.price}',
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF6A1B9A),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                               const SizedBox(height: 4),
                               Text(
