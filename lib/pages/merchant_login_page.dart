@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // Add this import
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:touch_me/pages/merchant_forgot_password.dart';
 import 'package:touch_me/pages/merchant_page.dart';
 import 'package:touch_me/pages/merchant_signup_main.dart';
 import 'package:touch_me/services/merchant_auth_service.dart';
+import 'dart:convert'; // Added for json.encode
 
 class MerchantLoginPage extends StatefulWidget {
   final String? username;
@@ -23,8 +24,6 @@ class _MerchantLoginPageState extends State<MerchantLoginPage> {
   String? _passwordError;
   final _usernameFocus = FocusNode();
   final _passwordFocus = FocusNode();
-  
-  // Add this line - declare storage
   final storage = const FlutterSecureStorage();
 
   @override
@@ -72,99 +71,115 @@ class _MerchantLoginPageState extends State<MerchantLoginPage> {
   }
 
   Future<void> _login() async {
-  _validateUsername();
-  _validatePassword();
+    _validateUsername();
+    _validatePassword();
 
-  if (_usernameError != null || _passwordError != null) {
-    return;
-  }
+    if (_usernameError != null || _passwordError != null) {
+      return;
+    }
 
-  final username = _usernameController.text.trim();
-  final password = _passwordController.text.trim();
-
-  setState(() {
-    _isLoading = true;
-  });
-
-  try {
-    final response = await MerchantAuthService().loginMerchant(
-      username,
-      password,
-    );
+    final username = _usernameController.text.trim();
+    final password = _passwordController.text.trim();
 
     setState(() {
-      _isLoading = false;
+      _isLoading = true;
     });
 
-    if (!mounted) return;
+    try {
+      final response = await MerchantAuthService().loginMerchant(
+        username,
+        password,
+      );
 
-    if (response['success']) {
-      // Debug line
-      print("Login full response: $response");
+      setState(() {
+        _isLoading = false;
+      });
 
-      // Save authentication token - THIS IS THE IMPORTANT PART
-      if (response['token'] != null) {
-        await storage.write(key: "authToken", value: response['token']);
-        print("Auth token saved: ${response['token']}");
-      } else if (response['accessToken'] != null) {
-        // Some APIs use 'accessToken' instead of 'token'
-        await storage.write(key: "authToken", value: response['accessToken']);
-        print("Auth token saved: ${response['accessToken']}");
-      } else if (response['jwt'] != null) {
-        // Some APIs use 'jwt' instead of 'token'
-        await storage.write(key: "authToken", value: response['jwt']);
-        print("Auth token saved: ${response['jwt']}");
+      if (!mounted) return;
+
+      if (response['success']) {
+        print("Login full response: $response");
+
+        if (response['token'] != null) {
+          await storage.write(key: "authToken", value: response['token']);
+          print("Auth token saved: ${response['token']}");
+        } else if (response['accessToken'] != null) {
+          await storage.write(key: "authToken", value: response['accessToken']);
+          print("Auth token saved: ${response['accessToken']}");
+        } else if (response['jwt'] != null) {
+          await storage.write(key: "authToken", value: response['jwt']);
+          print("Auth token saved: ${response['jwt']}");
+        } else {
+          print("Warning: Auth token not found in response");
+          print("Available keys: ${response.keys.toList()}");
+        }
+
+        if (response['merchant'] != null && response['merchant']['_id'] != null) {
+          await storage.write(key: "merchantId", value: response['merchant']['_id']);
+          print("Merchant ID saved: ${response['merchant']['_id']}");
+        } else if (response['merchant'] != null && response['merchant']['id'] != null) {
+          await storage.write(key: "merchantId", value: response['merchant']['id']);
+          print("Merchant ID saved: ${response['merchant']['id']}");
+        } else {
+          print("Warning: Merchant ID not found in response");
+          print("Merchant object: ${response['merchant']}");
+        }
+
+        String ownerName = "Merchant";
+        if (response['merchant'] != null &&
+            response['merchant']['owner'] != null &&
+            response['merchant']['owner']['name'] != null &&
+            response['merchant']['owner']['name'].toString().isNotEmpty) {
+          ownerName = response['merchant']['owner']['name'];
+        }
+
+        // Added: Store user role and ownerName
+        await storage.write(key: 'user_role', value: 'merchant');
+        await storage.write(key: 'ownerName', value: ownerName);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Login successful! Redirecting...'),
+            backgroundColor: Colors.green.shade700,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        );
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MerchantPage(userName: ownerName),
+          ),
+        );
       } else {
-        print("Warning: Auth token not found in response");
-        print("Available keys: ${response.keys.toList()}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              response['message'] ??
+                  'Authentication failed. Please check your credentials or account type.',
+            ),
+            backgroundColor: Colors.red.shade700,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            duration: const Duration(seconds: 4),
+          ),
+        );
       }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
 
-      // Save merchant ID to storage
-      if (response['merchant'] != null && response['merchant']['_id'] != null) {
-        await storage.write(key: "merchantId", value: response['merchant']['_id']);
-        print("Merchant ID saved: ${response['merchant']['_id']}");
-      } else if (response['merchant'] != null && response['merchant']['id'] != null) {
-        // Try 'id' instead of '_id'
-        await storage.write(key: "merchantId", value: response['merchant']['id']);
-        print("Merchant ID saved: ${response['merchant']['id']}");
-      } else {
-        print("Warning: Merchant ID not found in response");
-        print("Merchant object: ${response['merchant']}");
-      }
-
-      // Get owner name from response['merchant']['owner']['name']
-      String ownerName = "Merchant";
-      if (response['merchant'] != null &&
-          response['merchant']['owner'] != null &&
-          response['merchant']['owner']['name'] != null &&
-          response['merchant']['owner']['name'].toString().isNotEmpty) {
-        ownerName = response['merchant']['owner']['name'];
-      }
+      if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Login successful! Redirecting...'),
-          backgroundColor: Colors.green.shade700,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-      );
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => MerchantPage(userName: ownerName),
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            response['message'] ??
-                'Authentication failed. Please check your credentials or account type.',
-          ),
+          content: Text('Network error: ${e.toString()}'),
           backgroundColor: Colors.red.shade700,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
@@ -174,26 +189,7 @@ class _MerchantLoginPageState extends State<MerchantLoginPage> {
         ),
       );
     }
-  } catch (e) {
-    setState(() {
-      _isLoading = false;
-    });
-
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Network error: ${e.toString()}'),
-        backgroundColor: Colors.red.shade700,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-        duration: const Duration(seconds: 4),
-      ),
-    );
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -217,7 +213,7 @@ class _MerchantLoginPageState extends State<MerchantLoginPage> {
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
           child: Column(
             children: [
               Container(
@@ -227,18 +223,15 @@ class _MerchantLoginPageState extends State<MerchantLoginPage> {
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: Colors.grey.shade300),
                 ),
-                child: Image.asset(
-                  'assets/app_icon.png',
-                  height: 80,
-                ),
+                child: Image.asset('assets/app_icon.png', height: 80),
               ),
               const SizedBox(height: 20),
               const Text(
                 'Merchant Login',
                 style: TextStyle(
-                  fontSize: 24,
+                  fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: Color.fromARGB(255, 127, 9, 143),
+                  color: Color(0xFF6A1B9A),
                 ),
               ),
               const SizedBox(height: 30),
@@ -310,13 +303,13 @@ class _MerchantLoginPageState extends State<MerchantLoginPage> {
                 alignment: Alignment.centerRight,
                 child: GestureDetector(
                   onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const MerchantForgetPasswordPage(),
-                        ),
-                      );
-                    }, // TODO: Implement forgot password
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const MerchantForgetPasswordPage(),
+                      ),
+                    );
+                  },
                   child: const Text(
                     'Forgot Password?',
                     style: TextStyle(

@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:touch_me/pages/onbording1page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'pages/firebase_options.dart';
+import 'dart:convert';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:touch_me/pages/customer_home_scaffold.dart';
+import 'package:touch_me/pages/merchant_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,7 +22,7 @@ class MyApp extends StatelessWidget {
       title: 'Your Next Look',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        fontFamily: 'Poppins', // Set your font here if you like
+        fontFamily: 'Poppins',
         primarySwatch: Colors.purple,
         scaffoldBackgroundColor: Colors.white,
         textTheme: const TextTheme(bodyMedium: TextStyle(fontSize: 16.0)),
@@ -54,17 +58,42 @@ class _SplashScreenState extends State<SplashScreen>
     _controller.forward();
 
     // Navigate after 3.5 seconds
-    Future.delayed(const Duration(milliseconds: 3500), () {
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          PageRouteBuilder(
-            pageBuilder: (_, __, ___) => const Onboarding1Page(),
-            transitionsBuilder: (_, animation, __, child) {
-              return FadeTransition(opacity: animation, child: child);
-            },
-          ),
+    Future.delayed(const Duration(milliseconds: 3500), () async {
+      if (!mounted) return;
+
+      final _storage = const FlutterSecureStorage();
+      final role = await _storage.read(key: 'user_role');
+
+      Widget destination;
+
+      if (role == 'customer') {
+        final token = await _storage.read(key: 'auth_token') ?? '';
+        final customerId = await _storage.read(key: 'user_id') ?? '';
+        final userDataJson = await _storage.read(key: 'user_data') ?? '{}';
+        final userData = json.decode(userDataJson) as Map<String, dynamic>;
+
+        destination = CustomerHomeScaffold(
+          token: token,
+          customerId: customerId,
+          user: userData,
         );
+      } else if (role == 'merchant') {
+        final ownerName = await _storage.read(key: 'ownerName') ?? 'Merchant';
+
+        destination = MerchantPage(userName: ownerName);
+      } else {
+        // Not logged in, go to onboarding
+        destination = const Onboarding1Page();
       }
+
+      Navigator.of(context).pushReplacement(
+        PageRouteBuilder(
+          pageBuilder: (_, __, ___) => destination,
+          transitionsBuilder: (_, animation, __, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+        ),
+      );
     });
   }
 
@@ -92,32 +121,7 @@ class _SplashScreenState extends State<SplashScreen>
           child: Column(
             children: [
               SizedBox(height: logoHeight * 0.5),
-              // Add a logo here if you have one
-              // Center(
-              //   child: Image.asset('assets/logo.png', height: logoHeight),
-              // ),
               const Spacer(),
-              //const SizedBox(height: 18),
-              // Padding(
-              //   padding: const EdgeInsets.only(bottom: 24.0),
-              //   child: Text(
-              //     'A product of VVH Solutions',
-              //     style: TextStyle(
-              //       fontSize: 12,
-              //       fontWeight: FontWeight.w600,
-              //       color: Colors.black54,
-              //       letterSpacing: 1.1,
-              //       shadows: [
-              //         Shadow(
-              //           blurRadius: 3,
-              //           color: Colors.white,
-              //           offset: Offset(0, 1),
-              //         ),
-              //       ],
-              //     ),
-              //     textAlign: TextAlign.center,
-              //   ),
-              // ),
             ],
           ),
         ),

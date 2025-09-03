@@ -1049,7 +1049,7 @@ if (result['success'] == true) {
             TextFormField(
               controller: _outletAddressController,
               decoration: _inputDecoration(
-                "Outlet Address",
+                "Outlet Full Address",
                 icon: Icons.location_on,
 
               ),

@@ -5,6 +5,7 @@ import 'package:touch_me/pages/customer_home_scaffold.dart';
 import 'package:touch_me/pages/signup_page.dart';
 import 'package:touch_me/services/auth_service.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'dart:convert'; // Added for json.encode
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -138,12 +139,14 @@ class _LoginPageState extends State<LoginPage> {
       if (response['success']) {
         final userId = response['user']?['id']?.toString() ?? '';
 
-  await _storage.write(key: 'auth_token', value: response['token']);
-  await _storage.write(key: 'user_id', value: userId);
+        await _storage.write(key: 'auth_token', value: response['token']);
+        await _storage.write(key: 'user_id', value: userId);
+        // Added: Store user role and user data
+        await _storage.write(key: 'user_role', value: 'customer');
+        await _storage.write(key: 'user_data', value: json.encode(response['user'] ?? {}));
 
-  // 🔍 Print user ID in debug
-  debugPrint('User ID stored securely: $userId');
-        //await _storage.write(key: 'auth_token', value: response['token']); // Ensure token is saved
+        // 🔍 Print user ID in debug
+        debugPrint('User ID stored securely: $userId');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Login successful! Redirecting...'),
@@ -220,14 +223,14 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 20),
               const Text(
-                'Welcome Back!',
+                'Welcome Back',
                 style: TextStyle(
-                  fontSize: 24,
+                  fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: Color.fromARGB(255, 127, 9, 143),
+                  color: Color(0xFF6A1B9A),
                 ),
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 20),
               TextField(
                 controller: _usernameController,
                 focusNode: _usernameFocus,

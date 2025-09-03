@@ -201,6 +201,7 @@ class _MerchantProfilePageState extends State<MerchantProfilePage> {
         },
         'manager': {
           'name': _managerNameController.text.trim(),
+          'email': _managerEmailController.text.trim(),
           'phone': _managerPhoneController.text.trim(),
         },
         'bankDetails': {
@@ -232,30 +233,12 @@ class _MerchantProfilePageState extends State<MerchantProfilePage> {
       }
     } catch (e) {
       if (!mounted) return;
-      _showErrorSnackBar('Network error: ${e.toString()}');
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      _showErrorSnackBar('Error updating profile: ${e.toString()}');
     }
-  }
 
-  Future<void> _logout() async {
-    try {
-      await _storage.delete(key: "token");
-      await _storage.delete(key: "merchantId");
-      if (!mounted) return;
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const MerchantLoginPage()),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      _showErrorSnackBar('Error logging out: ${e.toString()}');
-    }
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   void _showErrorSnackBar(String message) {
@@ -267,21 +250,6 @@ class _MerchantProfilePageState extends State<MerchantProfilePage> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
-        duration: const Duration(seconds: 4),
-      ),
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          color: Color(0xFF6A1B9A),
-        ),
       ),
     );
   }
@@ -289,18 +257,13 @@ class _MerchantProfilePageState extends State<MerchantProfilePage> {
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
+    TextInputType keyboardType = TextInputType.text,
     String? errorText,
-    bool enabled = true,
-    FocusNode? focusNode,
-    VoidCallback? onSubmitted,
-    TextInputType? keyboardType,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
       child: TextField(
         controller: controller,
-        focusNode: focusNode,
-        enabled: enabled,
         keyboardType: keyboardType,
         decoration: InputDecoration(
           labelText: label,
@@ -308,20 +271,11 @@ class _MerchantProfilePageState extends State<MerchantProfilePage> {
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
           ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: Colors.grey),
-          ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
             borderSide: const BorderSide(color: Color(0xFF6A1B9A)),
           ),
-          disabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: Colors.grey),
-          ),
         ),
-        onSubmitted: onSubmitted != null ? (_) => onSubmitted() : null,
       ),
     );
   }
@@ -330,217 +284,136 @@ class _MerchantProfilePageState extends State<MerchantProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-       // title: Text('Welcome'),
+        title: const Text('Merchant Profile'),
         backgroundColor: const Color(0xFF6A1B9A),
-        foregroundColor: Colors.white,
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : SafeArea(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Welcome to Merchant Profile',
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Owner Information',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 10),
+                  _buildTextField(
+                    controller: _ownerNameController,
+                    label: 'Owner Name',
+                    errorText: _ownerNameError,
+                  ),
+                  _buildTextField(
+                    controller: _ownerEmailController,
+                    label: 'Owner Email',
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  _buildTextField(
+                    controller: _ownerPhoneController,
+                    label: 'Owner Phone',
+                    keyboardType: TextInputType.phone,
+                    errorText: _ownerPhoneError,
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Outlet Information',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 10),
+                  _buildTextField(
+                    controller: _outletNameController,
+                    label: 'Outlet Name',
+                    errorText: _outletNameError,
+                  ),
+                  _buildTextField(
+                    controller: _outletEmailController,
+                    label: 'Outlet Email',
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  _buildTextField(
+                    controller: _outletPhoneController,
+                    label: 'Outlet Phone',
+                    keyboardType: TextInputType.phone,
+                    errorText: _outletPhoneError,
+                  ),
+                  _buildTextField(
+                    controller: _outletAddressController,
+                    label: 'Outlet Address',
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Manager Information',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 10),
+                  _buildTextField(
+                    controller: _managerNameController,
+                    label: 'Manager Name',
+                  ),
+                  _buildTextField(
+                    controller: _managerEmailController,
+                    label: 'Manager Email',
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  _buildTextField(
+                    controller: _managerPhoneController,
+                    label: 'Manager Phone',
+                    keyboardType: TextInputType.phone,
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Bank Details',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 10),
+                  _buildTextField(
+                    controller: _beneficiaryNameController,
+                    label: 'Beneficiary Name',
+                  ),
+                  _buildTextField(
+                    controller: _accountNumberController,
+                    label: 'Account Number',
+                    keyboardType: TextInputType.number,
+                  ),
+                  _buildTextField(
+                    controller: _bankPhoneController,
+                    label: 'Bank Phone',
+                    keyboardType: TextInputType.phone,
+                  ),
+                  _buildTextField(
+                    controller: _bankNameController,
+                    label: 'Bank Name',
+                  ),
+                  _buildTextField(
+                    controller: _bankBranchController,
+                    label: 'Bank Branch',
+                  ),
+                  const SizedBox(height: 20),
+                  OutlinedButton(
+                    onPressed: () => _showLogoutDialog(context),
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      side: const BorderSide(color: Color(0xFF6A1B9A)),
+                    ),
+                    child: const Text(
+                      'Logout',
                       style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF6A1B9A),
-                      ),
+                          fontSize: 18,
+                          color: Color(0xFF6A1B9A),
+                          fontWeight: FontWeight.bold),
                     ),
-                    const SizedBox(height: 20),
-
-                    // Owner Information Section
-                    _buildSectionTitle('Owner Information'),
-                    _buildTextField(
-                      controller: _ownerNameController,
-                      label: 'Owner Name',
-                      errorText: _ownerNameError,
-                      focusNode: _ownerNameFocus,
-                      onSubmitted: () {
-                        if (_ownerNameError == null) {
-                          _ownerPhoneFocus.requestFocus();
-                        }
-                      },
-                    ),
-                    _buildTextField(
-                      controller: _ownerEmailController,
-                      label: 'Owner Email',
-                      enabled: false,
-                      keyboardType: TextInputType.emailAddress,
-                    ),
-                    _buildTextField(
-                      controller: _ownerPhoneController,
-                      label: 'Owner Phone',
-                      errorText: _ownerPhoneError,
-                      focusNode: _ownerPhoneFocus,
-                      keyboardType: TextInputType.phone,
-                    ),
-
-                    // Outlet Information Section
-                    _buildSectionTitle('Outlet Information'),
-                    _buildTextField(
-                      controller: _outletNameController,
-                      label: 'Outlet Name',
-                      errorText: _outletNameError,
-                      focusNode: _outletNameFocus,
-                      onSubmitted: () {
-                        if (_outletNameError == null) {
-                          _outletPhoneFocus.requestFocus();
-                        }
-                      },
-                    ),
-                    _buildTextField(
-                      controller: _outletEmailController,
-                      label: 'Outlet Email',
-                      enabled: false,
-                      keyboardType: TextInputType.emailAddress,
-                    ),
-                    _buildTextField(
-                      controller: _outletPhoneController,
-                      label: 'Outlet Phone',
-                      errorText: _outletPhoneError,
-                      focusNode: _outletPhoneFocus,
-                      keyboardType: TextInputType.phone,
-                    ),
-                    _buildTextField(
-                      controller: _outletAddressController,
-                      label: 'Outlet Address',
-                    ),
-
-                    // // Manager Information Section
-                    // _buildSectionTitle('Manager Information'),
-                    // _buildTextField(
-                    //   controller: _managerNameController,
-                    //   label: 'Manager Name',
-                    // ),
-                    // _buildTextField(
-                    //   controller: _managerEmailController,
-                    //   label: 'Manager Email',
-                    //   enabled: false,
-                    //   keyboardType: TextInputType.emailAddress,
-                    // ),
-                    // _buildTextField(
-                    //   controller: _managerPhoneController,
-                    //   label: 'Manager Phone',
-                    //   keyboardType: TextInputType.phone,
-                    // ),
-
-                    // Bank Details Section
-                    _buildSectionTitle('Bank Details'),
-                    _buildTextField(
-                      controller: _beneficiaryNameController,
-                      label: 'Beneficiary Name',
-                    ),
-                    _buildTextField(
-                      controller: _accountNumberController,
-                      label: 'Account Number',
-                      keyboardType: TextInputType.number, 
-                    ),
-                    // _buildTextField(
-                    //   controller: _bankPhoneController,
-                    //   label: 'Bank Phone',
-                    //   keyboardType: TextInputType.phone,
-                    // ),
-                    _buildTextField(
-                      controller: _bankNameController,
-                      label: 'Bank Name',
-                    ),
-                    _buildTextField(
-                      controller: _bankBranchController,
-                      label: 'Bank Branch',
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // Update Profile Button
-                    // ElevatedButton(
-                    //   onPressed: _isLoading ||
-                    //           _ownerNameError != null ||
-                    //           _ownerPhoneError != null ||
-                    //           _outletNameError != null ||
-                    //           _outletPhoneError != null
-                    //       ? null
-                    //       : _updateProfile,
-                    //   style: ElevatedButton.styleFrom(
-                    //     backgroundColor: const Color(0xFF6A1B9A),
-                    //     minimumSize: const Size(double.infinity, 50),
-                    //     shape: RoundedRectangleBorder(
-                    //       borderRadius: BorderRadius.circular(8),
-                    //     ),
-                    //   ),
-                    //   child: const Text(
-                    //     'Update Profile',
-                    //     style: TextStyle(
-                    //         fontSize: 18,
-                    //         color: Colors.white,
-                    //         fontWeight: FontWeight.bold),
-                    //   ),
-                    // ),
-                    // const SizedBox(height: 15),
-
-                    // Logout Button
-                    OutlinedButton(
-                      onPressed: () => _showLogoutDialog(context),
-                      style: OutlinedButton.styleFrom(
-                        minimumSize: const Size(double.infinity, 50),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        side: const BorderSide(color: Color(0xFF6A1B9A)),
-                      ),
-                      child: const Text(
-                        'Logout',
-                        style: TextStyle(
-                            fontSize: 18,
-                            color: Color(0xFF6A1B9A),
-                            fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
     );
   }
 
-  @override
-  void dispose() {
-    // Owner Controllers
-    _ownerNameController.dispose();
-    _ownerEmailController.dispose();
-    _ownerPhoneController.dispose();
-    
-    // Outlet Controllers
-    _outletNameController.dispose();
-    _outletEmailController.dispose();
-    _outletPhoneController.dispose();
-    _outletAddressController.dispose();
-    
-    // Manager Controllers
-    _managerNameController.dispose();
-    _managerEmailController.dispose();
-    _managerPhoneController.dispose();
-    
-    // Bank Controllers
-    _beneficiaryNameController.dispose();
-    _accountNumberController.dispose();
-    _bankPhoneController.dispose();
-    _bankNameController.dispose();
-    _bankBranchController.dispose();
-    
-    // Focus Nodes
-    _ownerNameFocus.dispose();
-    _ownerPhoneFocus.dispose();
-    _outletNameFocus.dispose();
-    _outletPhoneFocus.dispose();
-    
-    super.dispose();
-  }
-}
-void _showLogoutDialog(BuildContext context) {
+  void _showLogoutDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -571,7 +444,10 @@ void _showLogoutDialog(BuildContext context) {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async {
+                        // Added: Clear all secure storage
+                        final _storage = const FlutterSecureStorage();
+                        await _storage.deleteAll();
                         // Perform logout action
                         Navigator.pushAndRemoveUntil(
                           context,
@@ -623,4 +499,37 @@ void _showLogoutDialog(BuildContext context) {
     );
   }
 
-
+  @override
+  void dispose() {
+    // Owner Controllers
+    _ownerNameController.dispose();
+    _ownerEmailController.dispose();
+    _ownerPhoneController.dispose();
+    
+    // Outlet Controllers
+    _outletNameController.dispose();
+    _outletEmailController.dispose();
+    _outletPhoneController.dispose();
+    _outletAddressController.dispose();
+    
+    // Manager Controllers
+    _managerNameController.dispose();
+    _managerEmailController.dispose();
+    _managerPhoneController.dispose();
+    
+    // Bank Controllers
+    _beneficiaryNameController.dispose();
+    _accountNumberController.dispose();
+    _bankPhoneController.dispose();
+    _bankNameController.dispose();
+    _bankBranchController.dispose();
+    
+    // Focus Nodes
+    _ownerNameFocus.dispose();
+    _ownerPhoneFocus.dispose();
+    _outletNameFocus.dispose();
+    _outletPhoneFocus.dispose();
+    
+    super.dispose();
+  }
+}
