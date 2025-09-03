@@ -12,6 +12,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:touch_me/services/nic_validation.dart';
 
 class MerchantSignupMain extends StatefulWidget {
   const MerchantSignupMain({super.key});
@@ -58,52 +59,137 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
   }
 
   String? _validateAccountNumber(String? value) {
+  // Debug line - remove after testing
+  print("DEBUG: _selectedBank = '$_selectedBank'");
+  
   if (value == null || value.trim().isEmpty) {
     return "Please enter an account number";
   }
   
   final cleanedValue = value.trim().replaceAll(RegExp(r'[^0-9]'), ''); // Remove non-digits
   
+  // Basic length check
   if (cleanedValue.length < 8) {
     return "Account number must be at least 8 digits";
   }
   
-  if (cleanedValue.length > 18) {
-    return "Account number cannot exceed 18 digits";
+  if (cleanedValue.length > 20) {
+    return "Account number cannot exceed 20 digits";
   }
   
-  // Bank-specific validation (optional - you can customize based on selected bank)
-  if (_selectedBank != null) {
-    switch (_selectedBank) {
+  // Bank-specific validation - only if bank is selected
+  if (_selectedBank != null && _selectedBank!.isNotEmpty) {
+    switch (_selectedBank!) {
       case "BOC": // Bank of Ceylon - typically 10-12 digits
         if (cleanedValue.length < 10 || cleanedValue.length > 12) {
           return "BOC account numbers are typically 10-12 digits";
         }
         break;
+        
       case "PB": // People's Bank - typically 10-15 digits
         if (cleanedValue.length < 10 || cleanedValue.length > 15) {
           return "People's Bank account numbers are typically 10-15 digits";
         }
         break;
+        
       case "COMB": // Commercial Bank - typically 10-15 digits
         if (cleanedValue.length < 10 || cleanedValue.length > 15) {
           return "Commercial Bank account numbers are typically 10-15 digits";
         }
         break;
+        
       case "HNB": // Hatton National Bank - typically 12-15 digits
         if (cleanedValue.length < 12 || cleanedValue.length > 15) {
           return "HNB account numbers are typically 12-15 digits";
         }
         break;
+        
       case "SAMPATH": // Sampath Bank - typically 10-15 digits
         if (cleanedValue.length < 10 || cleanedValue.length > 15) {
           return "Sampath Bank account numbers are typically 10-15 digits";
         }
         break;
-      // Add more bank-specific validations as needed
+        
+      case "SB": // Seylan Bank - typically 10-15 digits
+        if (cleanedValue.length < 10 || cleanedValue.length > 15) {
+          return "Seylan Bank account numbers are typically 10-15 digits";
+        }
+        break;
+        
+      case "DFCC": // DFCC Bank - typically 10-15 digits
+        if (cleanedValue.length < 10 || cleanedValue.length > 15) {
+          return "DFCC Bank account numbers are typically 10-15 digits";
+        }
+        break;
+        
+      case "NDB": // National Development Bank - typically 10-15 digits
+        if (cleanedValue.length < 10 || cleanedValue.length > 15) {
+          return "NDB account numbers are typically 10-15 digits";
+        }
+        break;
+        
+      case "AMANA": // Amana Bank - typically 10-15 digits
+        if (cleanedValue.length < 10 || cleanedValue.length > 15) {
+          return "Amana Bank account numbers are typically 10-15 digits";
+        }
+        break;
+        
+      case "CARGILLS": // Cargills Bank - typically 10-15 digits
+        if (cleanedValue.length < 10 || cleanedValue.length > 15) {
+          return "Cargills Bank account numbers are typically 10-15 digits";
+        }
+        break;
+        
+      case "NTB": // Nations Trust Bank - typically 10-15 digits
+        if (cleanedValue.length < 10 || cleanedValue.length > 15) {
+          return "NTB account numbers are typically 10-15 digits";
+        }
+        break;
+        
+      case "UNION": // Union Bank - typically 10-15 digits
+        if (cleanedValue.length < 10 || cleanedValue.length > 15) {
+          return "Union Bank account numbers are typically 10-15 digits";
+        }
+        break;
+        
+      case "PAN_ASIA": // Pan Asia Bank - typically 10-15 digits
+        if (cleanedValue.length < 10 || cleanedValue.length > 15) {
+          return "Pan Asia Bank account numbers are typically 10-15 digits";
+        }
+        break;
+        
+      case "HABIB": // Habib Bank - typically 10-15 digits
+        if (cleanedValue.length < 10 || cleanedValue.length > 15) {
+          return "Habib Bank account numbers are typically 10-15 digits";
+        }
+        break;
+        
+      case "DEUTSCHE": // Deutsche Bank - typically 10-15 digits
+        if (cleanedValue.length < 10 || cleanedValue.length > 15) {
+          return "Deutsche Bank account numbers are typically 10-15 digits";
+        }
+        break;
+        
+      case "CITIBANK": // Citibank - typically 10-15 digits
+        if (cleanedValue.length < 10 || cleanedValue.length > 15) {
+          return "Citibank account numbers are typically 10-15 digits";
+        }
+        break;
+        
+      case "STANDARD_CHARTERED": // Standard Chartered - typically 10-15 digits
+        if (cleanedValue.length < 10 || cleanedValue.length > 15) {
+          return "Standard Chartered account numbers are typically 10-15 digits";
+        }
+        break;
+        
+      case "HSBC": // HSBC Bank - typically 10-15 digits
+        if (cleanedValue.length < 10 || cleanedValue.length > 15) {
+          return "HSBC account numbers are typically 10-15 digits";
+        }
+        break;
       default:
         // Generic validation for other banks
-        if (cleanedValue.length < 8 || cleanedValue.length > 18) {
+        if (cleanedValue.length < 8 || cleanedValue.length > 20) {
           return "Account number must be 8-18 digits";
         }
         break;
@@ -180,6 +266,7 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
     _beneficiaryNameController.dispose();
     _accountNumberController.dispose();
     _controller.dispose();
+     NICValidationService.dispose(); 
     super.dispose();
   }
 
@@ -544,129 +631,254 @@ if (result['success'] == true) {
   }
 
   Future<String?> uploadFileToFirebase({
-    required String fileType,
-    required String userId,
-  }) async {
-    PermissionStatus status;
+  required String fileType,
+  required String userId,
+  bool validateNIC = false,
+  bool isNICFront = false,
+}) async {
+  PermissionStatus status;
 
-    try {
-      if (Theme.of(context).platform == TargetPlatform.android) {
-        final androidInfo = await DeviceInfoPlugin().androidInfo;
-        if (androidInfo.version.sdkInt >= 33) {
-          status = await Permission.photos.request();
-        } else {
-          status = await Permission.storage.request();
-        }
-      } else {
+  try {
+    if (Theme.of(context).platform == TargetPlatform.android) {
+      final androidInfo = await DeviceInfoPlugin().androidInfo;
+      if (androidInfo.version.sdkInt >= 33) {
         status = await Permission.photos.request();
+      } else {
+        status = await Permission.storage.request();
       }
+    } else {
+      status = await Permission.photos.request();
+    }
 
-      if (status.isDenied) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                "Permission denied. Please grant media/photos permission in settings.",
-              ),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-        return null;
-      }
-
-      if (status.isPermanentlyDenied) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text(
-                "Permission permanently denied. Please enable it in app settings.",
-              ),
-              backgroundColor: Colors.red,
-              action: SnackBarAction(
-                label: 'Open Settings',
-                onPressed: () => openAppSettings(),
-              ),
-            ),
-          );
-        }
-        return null;
-      }
-
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.image,
-        allowMultiple: false,
-      );
-
-      if (result == null || result.files.isEmpty) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("No file selected."),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-        return null;
-      }
-
-      final file = result.files.first;
-      final fileName = file.name;
-
-      Uint8List? fileBytes = file.bytes;
-      String? filePath = file.path;
-
-      if (fileBytes == null && filePath == null) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Invalid file selected."),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-        return null;
-      }
-
-      try {
-        final ref = FirebaseStorage.instance.ref(
-          'merchant_uploads/$userId/${fileType}_$fileName',
-        );
-
-        UploadTask uploadTask;
-        if (fileBytes != null) {
-          uploadTask = ref.putData(fileBytes);
-        } else {
-          uploadTask = ref.putFile(File(filePath!));
-        }
-
-        final snapshot = await uploadTask;
-        final url = await snapshot.ref.getDownloadURL();
-        return url;
-      } catch (e) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text("Upload failed: $e"),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-        return null;
-      }
-    } catch (e) {
+    if (status.isDenied) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Error during file upload: $e"),
+          const SnackBar(
+            content: Text(
+              "Permission denied. Please grant media/photos permission in settings.",
+            ),
             backgroundColor: Colors.red,
           ),
         );
       }
       return null;
     }
-  }
 
+    if (status.isPermanentlyDenied) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text(
+              "Permission permanently denied. Please enable it in app settings.",
+            ),
+            backgroundColor: Colors.red,
+            action: SnackBarAction(
+              label: 'Open Settings',
+              onPressed: () => openAppSettings(),
+            ),
+          ),
+        );
+      }
+      return null;
+    }
+
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      allowMultiple: false,
+    );
+
+    if (result == null || result.files.isEmpty) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("No file selected."),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return null;
+    }
+
+    final file = result.files.first;
+    final fileName = file.name;
+
+    Uint8List? fileBytes = file.bytes;
+    String? filePath = file.path;
+
+    if (fileBytes == null && filePath == null) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Invalid file selected."),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return null;
+    }
+
+    // Read file bytes if not available
+    if (fileBytes == null && filePath != null) {
+      fileBytes = await File(filePath).readAsBytes();
+    }
+
+    // Validate NIC if required
+    if (validateNIC && fileBytes != null) {
+      if (context.mounted) {
+        // Show loading dialog during validation
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const AlertDialog(
+            content: Row(
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(width: 20),
+                Text("Validating NIC image..."),
+              ],
+            ),
+          ),
+        );
+      }
+
+      try {
+        final validationResult = await NICValidationService.validateNICImage(
+          imageBytes: fileBytes,
+          isFrontSide: isNICFront,
+        );
+
+        if (context.mounted) {
+          Navigator.of(context).pop(); // Close loading dialog
+        }
+
+        if (!validationResult.isValid) {
+          if (context.mounted) {
+            // Show detailed validation error
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: Text(
+                  "Invalid ${isNICFront ? 'NIC Front' : 'NIC Back'} Image",
+                  style: const TextStyle(color: Colors.red),
+                ),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      validationResult.errorMessage ?? 
+                      "The uploaded image does not appear to be a valid ${isNICFront ? 'NIC front side' : 'NIC back side'}.",
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      "Confidence: ${validationResult.confidence.toStringAsFixed(1)}%",
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    if (validationResult.foundFeatures.isNotEmpty) ...[
+                      const SizedBox(height: 10),
+                      const Text(
+                        "Found features:",
+                        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green),
+                      ),
+                      ...validationResult.foundFeatures.map(
+                        (feature) => Text("• $feature", style: const TextStyle(color: Colors.green)),
+                      ),
+                    ],
+                    if (validationResult.missingFeatures.isNotEmpty) ...[
+                      const SizedBox(height: 10),
+                      const Text(
+                        "Missing features:",
+                        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
+                      ),
+                      ...validationResult.missingFeatures.map(
+                        (feature) => Text("• $feature", style: const TextStyle(color: Colors.red)),
+                      ),
+                    ],
+                    const SizedBox(height: 15),
+                     Text(
+                      "Please upload a clear image of your ${isNICFront ? 'NIC front side' : 'NIC back side'}.",
+                      style: TextStyle(fontStyle: FontStyle.italic),
+                    ),
+                  ],
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text("Try Again"),
+                  ),
+                ],
+              ),
+            );
+          }
+          return null;
+        } else {
+          // Show success message for valid NIC
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  "${isNICFront ? 'NIC Front' : 'NIC Back'} validated successfully! (${validationResult.confidence.toStringAsFixed(1)}% confidence)"
+                ),
+                backgroundColor: Colors.green,
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          }
+        }
+      } catch (e) {
+        if (context.mounted) {
+          Navigator.of(context).pop(); // Close loading dialog if still open
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("Error validating NIC: $e"),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+        // Continue with upload even if validation fails due to technical error
+      }
+    }
+
+    // Proceed with Firebase upload
+    try {
+      final ref = FirebaseStorage.instance.ref(
+        'merchant_uploads/$userId/${fileType}_$fileName',
+      );
+
+      UploadTask uploadTask;
+      if (fileBytes != null) {
+        uploadTask = ref.putData(fileBytes);
+      } else {
+        uploadTask = ref.putFile(File(filePath!));
+      }
+
+      final snapshot = await uploadTask;
+      final url = await snapshot.ref.getDownloadURL();
+      return url;
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Upload failed: $e"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return null;
+    }
+  } catch (e) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error during file upload: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+    return null;
+  }
+}
   // NEW: Method to show Terms & Conditions in a scrollable modal
   void _showTermsAndConditions() {
     showDialog(
@@ -1921,68 +2133,58 @@ GestureDetector(
           ),
           Center(child: _buildFieldLabel("NIC Front Image *")),
           Center(
-            child: _purpleUploadButton(
-              "Upload",
-              isUploaded: _nicFrontUploaded,
-              onPressed: () async {
-                final url = await uploadFileToFirebase(
-                  fileType: "nic_front",
-                  userId: _emailController.text.trim(),
-                );
-                if (url != null) {
-                  setState(() {
-                    _nicFrontUploaded = true;
-                    _nicFrontImageUrl = url;
-                  });
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("NIC front image uploaded successfully!"),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Failed to upload NIC front image."),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              },
-            ),
+  child: _purpleUploadButton(
+    "Upload",
+    isUploaded: _nicFrontUploaded,
+    onPressed: () async {
+      final url = await uploadFileToFirebase(
+        fileType: "nic_front",
+        userId: _emailController.text.trim(),
+        validateNIC: true,  // Enable NIC validation
+        isNICFront: true,   // Specify this is front side
+      );
+      if (url != null) {
+        setState(() {
+          _nicFrontUploaded = true;
+          _nicFrontImageUrl = url;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("NIC front image uploaded successfully!"),
+            backgroundColor: Colors.green,
           ),
+        );
+      }
+    },
+  ),
+),
           Center(child: _buildFieldLabel("NIC Back Image *")),
           Center(
-            child: _purpleUploadButton(
-              "Upload",
-              isUploaded: _nicBackUploaded,
-              onPressed: () async {
-                final url = await uploadFileToFirebase(
-                  fileType: "nic_back",
-                  userId: _emailController.text.trim(),
-                );
-                if (url != null) {
-                  setState(() {
-                    _nicBackUploaded = true;
-                    _nicBackImageUrl = url;
-                  });
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("NIC back image uploaded successfully!"),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Failed to upload NIC back image."),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              },
-            ),
+  child: _purpleUploadButton(
+    "Upload",
+    isUploaded: _nicBackUploaded,
+    onPressed: () async {
+      final url = await uploadFileToFirebase(
+        fileType: "nic_back",
+        userId: _emailController.text.trim(),
+        validateNIC: true,  // Enable NIC validation
+        isNICFront: false,  // Specify this is back side
+      );
+      if (url != null) {
+        setState(() {
+          _nicBackUploaded = true;
+          _nicBackImageUrl = url;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("NIC back image uploaded successfully!"),
+            backgroundColor: Colors.green,
           ),
+        );
+      }
+    },
+  ),
+),
           
           const SizedBox(height: 20),
           Center(
