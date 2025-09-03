@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:intl/intl.dart';
 import 'package:touch_me/pages/merchant_login_page.dart';
@@ -55,6 +56,62 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
     }
     return null;
   }
+
+  String? _validateAccountNumber(String? value) {
+  if (value == null || value.trim().isEmpty) {
+    return "Please enter an account number";
+  }
+  
+  final cleanedValue = value.trim().replaceAll(RegExp(r'[^0-9]'), ''); // Remove non-digits
+  
+  if (cleanedValue.length < 8) {
+    return "Account number must be at least 8 digits";
+  }
+  
+  if (cleanedValue.length > 18) {
+    return "Account number cannot exceed 18 digits";
+  }
+  
+  // Bank-specific validation (optional - you can customize based on selected bank)
+  if (_selectedBank != null) {
+    switch (_selectedBank) {
+      case "BOC": // Bank of Ceylon - typically 10-12 digits
+        if (cleanedValue.length < 10 || cleanedValue.length > 12) {
+          return "BOC account numbers are typically 10-12 digits";
+        }
+        break;
+      case "PB": // People's Bank - typically 10-15 digits
+        if (cleanedValue.length < 10 || cleanedValue.length > 15) {
+          return "People's Bank account numbers are typically 10-15 digits";
+        }
+        break;
+      case "COMB": // Commercial Bank - typically 10-15 digits
+        if (cleanedValue.length < 10 || cleanedValue.length > 15) {
+          return "Commercial Bank account numbers are typically 10-15 digits";
+        }
+        break;
+      case "HNB": // Hatton National Bank - typically 12-15 digits
+        if (cleanedValue.length < 12 || cleanedValue.length > 15) {
+          return "HNB account numbers are typically 12-15 digits";
+        }
+        break;
+      case "SAMPATH": // Sampath Bank - typically 10-15 digits
+        if (cleanedValue.length < 10 || cleanedValue.length > 15) {
+          return "Sampath Bank account numbers are typically 10-15 digits";
+        }
+        break;
+      // Add more bank-specific validations as needed
+      default:
+        // Generic validation for other banks
+        if (cleanedValue.length < 8 || cleanedValue.length > 18) {
+          return "Account number must be 8-18 digits";
+        }
+        break;
+    }
+  }
+  
+  return null;
+}
 
   // Form controllers
   final TextEditingController _outletNameController = TextEditingController();
@@ -1996,13 +2053,21 @@ GestureDetector(
               textAlign: TextAlign.center,
             ),
             _buildFieldLabel("Account Number *"),
-            TextFormField(
-              controller: _accountNumberController,
-              decoration: _inputDecoration("Account Number"),
-              keyboardType: TextInputType.number,
-              validator: (value) => _validateRequired(value, "account number"),
-              textAlign: TextAlign.center,
-            ),
+              TextFormField(
+                controller: _accountNumberController,
+                decoration: _inputDecoration("Account Number"),
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly, // Only allow digits
+                  LengthLimitingTextInputFormatter(18), // Max 18 digits
+                ],
+                validator: _validateAccountNumber, // Use the new validator
+                textAlign: TextAlign.center,
+                onChanged: (value) {
+                  // Optional: Real-time validation feedback
+                  setState(() {});
+                },
+              ),
             _buildFieldLabel("Bank Name *"),
             DropdownButtonFormField<String>(
               value: _selectedBank,
