@@ -17,6 +17,9 @@ class _MerchantProfileEditPageState extends State<MerchantProfileEditPage> {
   String? _ownerPhoneError;
   String? _outletNameError;
   String? _outletPhoneError;
+  
+  // Store current merchant data to preserve existing fields
+  Map<String, dynamic>? _currentMerchantData;
 
   // Owner Information Controllers
   final TextEditingController _ownerNameController = TextEditingController();
@@ -74,6 +77,10 @@ class _MerchantProfileEditPageState extends State<MerchantProfileEditPage> {
 
       if (response['success'] && response['merchant'] != null) {
         final merchant = response['merchant'];
+        
+        // Store the complete merchant data for later use
+        _currentMerchantData = Map<String, dynamic>.from(merchant);
+        
         setState(() {
           // Owner Information
           _ownerNameController.text = merchant['owner']?['name'] ?? '';
@@ -117,66 +124,64 @@ class _MerchantProfileEditPageState extends State<MerchantProfileEditPage> {
 
   void _validateOwnerName() {
     final name = _ownerNameController.text.trim();
-    if (name.isEmpty) {
-      setState(() {
-        _ownerNameError = 'Owner name is required';
-      });
-    } else {
-      setState(() {
-        _ownerNameError = null;
-      });
-    }
+    setState(() {
+      _ownerNameError = name.isEmpty ? 'Owner name is required' : null;
+    });
   }
 
   void _validateOwnerPhone() {
     final phone = _ownerPhoneController.text.trim();
-    if (phone.isNotEmpty && !RegExp(r'^\+?[1-9]\d{1,14}$').hasMatch(phone)) {
-      setState(() {
+    setState(() {
+      if (phone.isNotEmpty && !RegExp(r'^\+?[1-9]\d{1,14}$').hasMatch(phone)) {
         _ownerPhoneError = 'Enter a valid phone number';
-      });
-    } else {
-      setState(() {
+      } else {
         _ownerPhoneError = null;
-      });
-    }
+      }
+    });
   }
 
   void _validateOutletName() {
     final name = _outletNameController.text.trim();
-    if (name.isEmpty) {
-      setState(() {
-        _outletNameError = 'Outlet name is required';
-      });
-    } else {
-      setState(() {
-        _outletNameError = null;
-      });
-    }
+    setState(() {
+      _outletNameError = name.isEmpty ? 'Outlet name is required' : null;
+    });
   }
 
   void _validateOutletPhone() {
     final phone = _outletPhoneController.text.trim();
-    if (phone.isNotEmpty && !RegExp(r'^\+?[1-9]\d{1,14}$').hasMatch(phone)) {
-      setState(() {
+    setState(() {
+      if (phone.isNotEmpty && !RegExp(r'^\+?[1-9]\d{1,14}$').hasMatch(phone)) {
         _outletPhoneError = 'Enter a valid phone number';
-      });
-    } else {
-      setState(() {
+      } else {
         _outletPhoneError = null;
-      });
-    }
+      }
+    });
+  }
+
+  bool _hasValidationErrors() {
+    return _ownerNameError != null || 
+           _ownerPhoneError != null || 
+           _outletNameError != null || 
+           _outletPhoneError != null ||
+           _ownerEmailController.text.trim().isEmpty;
   }
 
   Future<void> _updateProfile() async {
+    // Run all validations
     _validateOwnerName();
     _validateOwnerPhone();
     _validateOutletName();
     _validateOutletPhone();
 
-    if (_ownerNameError != null || _ownerPhoneError != null || 
-        _outletNameError != null || _outletPhoneError != null ||
-        _ownerEmailController.text.trim().isEmpty) {
+    // Check for validation errors
+    if (_hasValidationErrors()) {
       _showErrorSnackBar('Please fill all required fields correctly');
+      return;
+    }
+
+    // Check if we have current merchant data
+    if (_currentMerchantData == null) {
+      _showErrorSnackBar('Profile data not loaded. Please refresh and try again.');
       return;
     }
 
@@ -190,37 +195,58 @@ class _MerchantProfileEditPageState extends State<MerchantProfileEditPage> {
         throw Exception('Merchant ID not found');
       }
 
-      final updatedData = {
-        'owner': {
-          'name': _ownerNameController.text.trim(),
-          'email': _ownerEmailController.text.trim(),
-          'phone': _ownerPhoneController.text.trim(),
-        },
-        'outlet': {
-          'name': _outletNameController.text.trim(),
-          'email': _outletEmailController.text.trim(),
-          'phone': _outletPhoneController.text.trim(),
-          'address': _outletAddressController.text.trim(),
-        },
-        'manager': {
-          'name': _managerNameController.text.trim(),
-          'email': _managerEmailController.text.trim(),
-          'phone': _managerPhoneController.text.trim(),
-        },
-        'bankDetails': {
-          'beneficiaryName': _beneficiaryNameController.text.trim(),
-          'accountNumber': _accountNumberController.text.trim(),
-          'phone': _bankPhoneController.text.trim(),
-          'bankName': _bankNameController.text.trim(),
-          'bankBranch': _bankBranchController.text.trim(),
-        },
+      // Create updated data by merging with existing data to preserve all fields
+      final updatedData = Map<String, dynamic>.from(_currentMerchantData!);
+      
+      // Update owner information (preserve existing fields like password, role, etc.)
+      updatedData['owner'] = {
+        ...(_currentMerchantData!['owner'] ?? {}),
+        'name': _ownerNameController.text.trim(),
+        'phone': _ownerPhoneController.text.trim(),
+        // Note: email is disabled in UI, so we don't update it
       };
 
+      // Update outlet information
+      updatedData['outlet'] = {
+        ...(_currentMerchantData!['outlet'] ?? {}),
+        'name': _outletNameController.text.trim(),
+        'email': _outletEmailController.text.trim(),
+        'phone': _outletPhoneController.text.trim(),
+        'address': _outletAddressController.text.trim(),
+      };
+
+      // Update manager information
+      updatedData['manager'] = {
+        ...(_currentMerchantData!['manager'] ?? {}),
+        'name': _managerNameController.text.trim(),
+        'email': _managerEmailController.text.trim(),
+        'phone': _managerPhoneController.text.trim(),
+      };
+
+      // Update bank details
+      updatedData['bankDetails'] = {
+        ...(_currentMerchantData!['bankDetails'] ?? {}),
+        'beneficiaryName': _beneficiaryNameController.text.trim(),
+        'accountNumber': _accountNumberController.text.trim(),
+        'phone': _bankPhoneController.text.trim(),
+        'bankName': _bankNameController.text.trim(),
+        'bankBranch': _bankBranchController.text.trim(),
+      };
+
+      // Update timestamps
+      final now = DateTime.now().toIso8601String();
+      updatedData['updated_date'] = now;
+      updatedData['updatedAt'] = now;
+
+      // Send update request
       final response = await MerchantAuthService().updateMerchantProfile(merchantId, updatedData);
 
       if (!mounted) return;
 
       if (response['success']) {
+        // Update our local copy of the data
+        _currentMerchantData = updatedData;
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Profile updated successfully!'),
@@ -229,6 +255,7 @@ class _MerchantProfileEditPageState extends State<MerchantProfileEditPage> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
+            duration: const Duration(seconds: 3),
           ),
         );
       } else {
@@ -244,6 +271,10 @@ class _MerchantProfileEditPageState extends State<MerchantProfileEditPage> {
         });
       }
     }
+  }
+
+  Future<void> _refreshProfile() async {
+    await _loadProfile();
   }
 
   Future<void> _logout() async {
@@ -298,6 +329,7 @@ class _MerchantProfileEditPageState extends State<MerchantProfileEditPage> {
     FocusNode? focusNode,
     VoidCallback? onSubmitted,
     TextInputType? keyboardType,
+    bool required = false,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
@@ -307,7 +339,7 @@ class _MerchantProfileEditPageState extends State<MerchantProfileEditPage> {
         enabled: enabled,
         keyboardType: keyboardType,
         decoration: InputDecoration(
-          labelText: label,
+          labelText: required ? '$label *' : label,
           errorText: errorText,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
@@ -319,6 +351,14 @@ class _MerchantProfileEditPageState extends State<MerchantProfileEditPage> {
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
             borderSide: const BorderSide(color: Color(0xFF6A1B9A)),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(color: Colors.red),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(color: Colors.red),
           ),
           disabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
@@ -334,12 +374,21 @@ class _MerchantProfileEditPageState extends State<MerchantProfileEditPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Welcome'),
+        title: const Text('Welcome'),
         backgroundColor: const Color(0xFF6A1B9A),
         foregroundColor: Colors.white,
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Loading profile...'),
+                ],
+              ),
+            )
           : SafeArea(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
@@ -354,6 +403,7 @@ class _MerchantProfileEditPageState extends State<MerchantProfileEditPage> {
                         color: Color(0xFF6A1B9A),
                       ),
                     ),
+                    
                     const SizedBox(height: 20),
 
                     // Owner Information Section
@@ -363,6 +413,7 @@ class _MerchantProfileEditPageState extends State<MerchantProfileEditPage> {
                       label: 'Owner Name',
                       errorText: _ownerNameError,
                       focusNode: _ownerNameFocus,
+                      required: true,
                       onSubmitted: () {
                         if (_ownerNameError == null) {
                           _ownerPhoneFocus.requestFocus();
@@ -390,6 +441,7 @@ class _MerchantProfileEditPageState extends State<MerchantProfileEditPage> {
                       label: 'Outlet Name',
                       errorText: _outletNameError,
                       focusNode: _outletNameFocus,
+                      required: true,
                       onSubmitted: () {
                         if (_outletNameError == null) {
                           _outletPhoneFocus.requestFocus();
@@ -414,24 +466,6 @@ class _MerchantProfileEditPageState extends State<MerchantProfileEditPage> {
                       label: 'Outlet Address',
                     ),
 
-                    // // Manager Information Section
-                    // _buildSectionTitle('Manager Information'),
-                    // _buildTextField(
-                    //   controller: _managerNameController,
-                    //   label: 'Manager Name',
-                    // ),
-                    // _buildTextField(
-                    //   controller: _managerEmailController,
-                    //   label: 'Manager Email',
-                    //   enabled: false,
-                    //   keyboardType: TextInputType.emailAddress,
-                    // ),
-                    // _buildTextField(
-                    //   controller: _managerPhoneController,
-                    //   label: 'Manager Phone',
-                    //   keyboardType: TextInputType.phone,
-                    // ),
-
                     // Bank Details Section
                     _buildSectionTitle('Bank Details'),
                     _buildTextField(
@@ -443,11 +477,6 @@ class _MerchantProfileEditPageState extends State<MerchantProfileEditPage> {
                       label: 'Account Number',
                       keyboardType: TextInputType.number,
                     ),
-                    // _buildTextField(
-                    //   controller: _bankPhoneController,
-                    //   label: 'Bank Phone',
-                    //   keyboardType: TextInputType.phone,
-                    // ),
                     _buildTextField(
                       controller: _bankNameController,
                       label: 'Bank Name',
@@ -461,48 +490,48 @@ class _MerchantProfileEditPageState extends State<MerchantProfileEditPage> {
 
                     // Update Profile Button
                     ElevatedButton(
-                      onPressed: _isLoading ||
-                              _ownerNameError != null ||
-                              _ownerPhoneError != null ||
-                              _outletNameError != null ||
-                              _outletPhoneError != null
-                          ? null
-                          : _updateProfile,
+                      onPressed: (_isLoading || _hasValidationErrors()) ? null : _updateProfile,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF6A1B9A),
                         minimumSize: const Size(double.infinity, 50),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
+                        disabledBackgroundColor: Colors.grey[400],
                       ),
-                      child: const Text(
-                        'Update Profile',
-                        style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold),
-                      ),
+                      child: _isLoading
+                          ? const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                                SizedBox(width: 12),
+                                Text(
+                                  'Updating...',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            )
+                          : const Text(
+                              'Update Profile',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                     ),
                     const SizedBox(height: 15),
-
-                    // Logout Button
-                    // OutlinedButton(
-                    //   onPressed: _logout,
-                    //   style: OutlinedButton.styleFrom(
-                    //     minimumSize: const Size(double.infinity, 50),
-                    //     shape: RoundedRectangleBorder(
-                    //       borderRadius: BorderRadius.circular(8),
-                    //     ),
-                    //     side: const BorderSide(color: Color(0xFF6A1B9A)),
-                    //   ),
-                    //   child: const Text(
-                    //     'Logout',
-                    //     style: TextStyle(
-                    //         fontSize: 18,
-                    //         color: Color(0xFF6A1B9A),
-                    //         fontWeight: FontWeight.bold),
-                    //   ),
-                    // ),
                   ],
                 ),
               ),
