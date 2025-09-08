@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:touch_me/pages/about_screen.dart';
 import 'package:touch_me/pages/login_page.dart';
-import 'package:touch_me/pages/payment_method_screen.dart';
 import 'package:touch_me/pages/profile_personal_details_screen.dart';
 import 'package:touch_me/pages/support_page.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // Added import
@@ -52,20 +51,20 @@ class ProfileScreen extends StatelessWidget {
                       );
                     },
                   ),
-                  _ProfileMenuItem(
-                    icon: Icons.credit_card,
-                    label: "Payment Method",
-                    iconBg: iconBgColor,
-                    iconColor: mainColor,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const PaymentMethodScreen(),
-                        ),
-                      );
-                    },
-                  ),
+                  // _ProfileMenuItem(
+                  //   icon: Icons.credit_card,
+                  //   label: "Payment Method",
+                  //   iconBg: iconBgColor,
+                  //   iconColor: mainColor,
+                  //   onTap: () {
+                  //     Navigator.push(
+                  //       context,
+                  //       MaterialPageRoute(
+                  //         builder: (context) => const PaymentMethodScreen(),
+                  //       ),
+                  //     );
+                  //   },
+                  // ),
                   _ProfileMenuItem(
                     icon: Icons.info,
                     label: "About",
