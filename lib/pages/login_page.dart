@@ -138,15 +138,21 @@ class _LoginPageState extends State<LoginPage> {
 
       if (response['success']) {
         final userId = response['user']?['id']?.toString() ?? '';
+        final firstName = response['user']?['first_name']?.toString() ?? '';
+        final lastName = response['user']?['last_name']?.toString() ?? '';
+        final userName = '$firstName $lastName';
 
         await _storage.write(key: 'auth_token', value: response['token']);
         await _storage.write(key: 'user_id', value: userId);
+        await _storage.write(key: 'user_name', value: userName);  
         // Added: Store user role and user data
         await _storage.write(key: 'user_role', value: 'customer');
         await _storage.write(key: 'user_data', value: json.encode(response['user'] ?? {}));
 
         // 🔍 Print user ID in debug
         debugPrint('User ID stored securely: $userId');
+        // 🔍 Print user Name in debug
+        debugPrint('User Name stored securely: $userName');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Login successful! Redirecting...'),

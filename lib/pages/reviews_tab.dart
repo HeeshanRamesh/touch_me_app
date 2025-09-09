@@ -113,8 +113,8 @@ class _ReviewsTabState extends State<ReviewsTab> {
                             if (val == null || val.trim().isEmpty) {
                               return 'Please enter your review';
                             }
-                            if (val.trim().length < 10) {
-                              return 'Review must be at least 10 characters long';
+                            if (val.trim().length < 5) {
+                              return 'Review must be at least 5 characters long';
                             }
                             return null;
                           },
@@ -126,7 +126,7 @@ class _ReviewsTabState extends State<ReviewsTab> {
                         TextFormField(
                           controller: improvementsController,
                           decoration: const InputDecoration(
-                            labelText: 'Any suggestions? (optional)',
+                            labelText: 'Any suggestions?',
                             border: OutlineInputBorder(),
                             hintText: 'How can we improve?',
                           ),
