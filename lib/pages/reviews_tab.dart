@@ -538,6 +538,25 @@ class _ReviewCard extends StatelessWidget {
     final r = review;
     print('DEBUG: Building review card for review ID: ${r.id}');
     
+    // Get the display name - prefer reviewerName over ID
+    final displayName = (r.reviewerName != null && r.reviewerName!.isNotEmpty) 
+        ? r.reviewerName! 
+        : (r.id.length > 10 ? '${r.id.substring(0, 10)}...' : r.id);
+    
+    // Get initials for avatar - prefer reviewerName initials over ID initials
+    String getInitials() {
+      if (r.reviewerName != null && r.reviewerName!.isNotEmpty) {
+        final nameParts = r.reviewerName!.trim().split(' ');
+        if (nameParts.length >= 2) {
+          return '${nameParts.first[0]}${nameParts.last[0]}'.toUpperCase();
+        } else {
+          return r.reviewerName!.substring(0, 1).toUpperCase();
+        }
+      } else {
+        return r.id.isNotEmpty ? r.id[0].toUpperCase() : 'U';
+      }
+    }
+    
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: Card(
@@ -552,17 +571,46 @@ class _ReviewCard extends StatelessWidget {
               Row(
                 children: [
                   CircleAvatar(
-                    backgroundImage: NetworkImage(
-                      r.reviewerAvatarUrl ?? "https://randomuser.me/api/portraits/lego/1.jpg",
-                    ),
                     radius: 24,
-                    onBackgroundImageError: (_, __) {},
-                    child: r.reviewerAvatarUrl == null 
-                        ? Text(
-                            (r.reviewerName?.isNotEmpty == true ? r.reviewerName![0] : r.id.isNotEmpty ? r.id[0] : 'U').toUpperCase(),
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                    backgroundColor: const Color(0xFF6A1B9A),
+                    child: r.reviewerAvatarUrl != null && r.reviewerAvatarUrl!.isNotEmpty
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(24),
+                            child: Image.network(
+                              r.reviewerAvatarUrl!,
+                              width: 48,
+                              height: 48,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Text(
+                                  getInitials(),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Colors.black54,
+                                  ),
+                                );
+                              },
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                );
+                              },
+                            ),
                           )
-                        : null,
+                        : Text(
+                            getInitials(),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: Colors.white,
+                            ),
+                          ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -570,7 +618,7 @@ class _ReviewCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          r.reviewerName ?? (r.id.length > 10 ? '${r.id.substring(0, 10)}...' : r.id),
+                          displayName,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
