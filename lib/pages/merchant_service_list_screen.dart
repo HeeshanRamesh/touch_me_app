@@ -13,6 +13,7 @@ import '../services/bookings.dart';
 import '../services/reviews.dart';
 import '../services/gift_cards.dart';
 import '../services/merchant_service.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class MerchantServiceListScreen extends StatefulWidget {
   final String merchantId;
@@ -41,6 +42,10 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
   late Future<List<Booking>> _futureBookings;
   late Future<Merchant?> _futureMerchant;
   int _selectedIndex = 1; // Default to Service tab
+  bool _isFavorite = false;
+  bool _isLoadingFavorite = false;
+  String? _userId;
+  final _storage = const FlutterSecureStorage();
 
   @override
   void initState() {
@@ -52,6 +57,173 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
     _futureReviews = fetchReviewsByMerchant(widget.merchantId, widget.token);
     _futureBookings = fetchCustomerBookings(widget.token);
     _futureMerchant = _fetchMerchantDetails();
+    //_initializeUserData();
+    _initializeUserData().then((_) {
+      // Ensure _checkFavoriteStatus is called after _userId is set
+      if (_userId != null) {
+        _checkFavoriteStatus();
+      }
+    });
+  }
+
+  // Initialize user data and check favorite status
+  Future<void> _initializeUserData() async {
+    try {
+      _userId = await _storage.read(key: 'user_id');
+      print('DEBUG: Retrieved user ID: $_userId');
+    } catch (e) {
+      print('DEBUG: Error initializing user data: $e');
+    }
+  }
+
+  // Check if merchant is in user's favorites
+  Future<void> _checkFavoriteStatus() async {
+    if (_userId == null) return;
+
+    setState(() {
+      _isLoadingFavorite = true;
+    });
+
+    try {
+      final response = await http.get(
+        Uri.parse('http://api.touchmeapp.com/api/users/$_userId/favorites'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${widget.token}',
+        },
+      );
+
+      print('DEBUG: Check favorite status: ${response.statusCode}');
+      print(
+        'DEBUG: Check favorite response: ${jsonEncode(jsonDecode(response.body))}',
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        List favorites = [];
+        if (data['favorites'] != null) {
+          favorites = data['favorites'] as List;
+        } else if (data['user'] != null && data['user']['favorites'] != null) {
+          favorites = data['user']['favorites'] as List;
+        }
+
+        final isFav = favorites.any((fav) {
+          String favId = fav['_id']?.toString() ?? '';
+          print(
+            'DEBUG: Comparing merchantId ${widget.merchantId} with favId $favId',
+          );
+          return favId == widget.merchantId;
+        });
+
+        setState(() {
+          _isFavorite = isFav;
+          print('DEBUG: Initial favorite status set to: $_isFavorite');
+        });
+      }
+    } catch (e) {
+      print('DEBUG: Error checking favorite status: $e');
+    } finally {
+      setState(() {
+        _isLoadingFavorite = false;
+      });
+    }
+  }
+
+  // Toggle favorite status
+  Future<void> _toggleFavorite() async {
+    if (_userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('User ID not found. Please login again.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoadingFavorite = true;
+    });
+
+    try {
+      final url = Uri.parse(
+        'http://api.touchmeapp.com/api/users/$_userId/favorites',
+      );
+
+      http.Response response;
+      if (_isFavorite) {
+        // Remove from favorites (DELETE request)
+        response = await http.delete(
+          url,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ${widget.token}',
+          },
+          body: jsonEncode({'merchantId': widget.merchantId}),
+        );
+      } else {
+        // Add to favorites (POST request)
+        response = await http.post(
+          url,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ${widget.token}',
+          },
+          body: jsonEncode({'merchantId': widget.merchantId}),
+        );
+      }
+
+      print('DEBUG: Toggle favorite response: ${response.statusCode}');
+      print('DEBUG: Toggle favorite body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print('DEBUG: Response data: $data'); // Add this for debugging
+        if (data['success'] == true ||
+            data['message'] == 'Merchant added to favorites') {
+          setState(() {
+            _isFavorite = !_isFavorite;
+            print(
+              'DEBUG: Updated _isFavorite to: $_isFavorite',
+            ); // Add this for debugging
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                _isFavorite ? 'Added to favorites!' : 'Removed from favorites!',
+              ),
+              backgroundColor: _isFavorite ? Colors.green : Colors.orange,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          );
+
+          print(
+            'DEBUG: Successfully toggled favorite. New status: $_isFavorite',
+          );
+        } else {
+          throw Exception(data['message'] ?? 'Failed to toggle favorite');
+        }
+      } else {
+        final errorData = jsonDecode(response.body);
+        throw Exception(errorData['message'] ?? 'Server error');
+      }
+    } catch (e) {
+      print('DEBUG: Error toggling favorite: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+
+    setState(() {
+      _isLoadingFavorite = false;
+    });
   }
 
   // Fetch merchant details to get the address
@@ -120,6 +292,34 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
         iconTheme: const IconThemeData(
           color: Colors.white, // Change back button color to white
         ),
+        actions: [
+          // Heart icon for favorites
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child:
+                _isLoadingFavorite
+                    ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                    : IconButton(
+                      onPressed: _toggleFavorite,
+                      icon: Icon(
+                        _isFavorite ? Icons.favorite : Icons.favorite_border,
+                        color: _isFavorite ? Colors.yellow : Colors.white,
+                        size: 28,
+                      ),
+                      tooltip:
+                          _isFavorite
+                              ? 'Remove from favorites'
+                              : 'Add to favorites',
+                    ),
+          ),
+        ],
       ),
       body: Column(
         children: [

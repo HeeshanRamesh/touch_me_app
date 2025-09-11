@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:touch_me/pages/merchant_service_list_screen.dart';
-import '../../models/merchant.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../models/review.dart'; // Import Review model
+import '../services/reviews.dart'; // Import review service
 
 class FavouriteScreen extends StatefulWidget {
-  final String token; // Add token for navigation
-  final String customerId; // Add customerId for navigation
+  final String token;
+  final String customerId;
 
   const FavouriteScreen({
     super.key,
@@ -20,101 +22,276 @@ class FavouriteScreen extends StatefulWidget {
 }
 
 class _FavouriteScreenState extends State<FavouriteScreen> {
-  String _selectedFilter = 'All';
-  List<Map<String, dynamic>> _filteredSalons = [];
-  List<Merchant> _favoriteMerchants = [];
+  List<Map<String, dynamic>> _favoriteSalons = [];
+  bool _isLoading = false;
+  final _storage = FlutterSecureStorage();
+  Map<String, Map<String, dynamic>> _merchantRatings =
+      {}; // Cache for merchant ratings
 
   @override
   void initState() {
     super.initState();
-    _loadFavoriteMerchants();
+    _loadFavoriteSalons();
   }
 
-  // Load favorite merchants from SharedPreferences and fetch their details
-  Future<void> _loadFavoriteMerchants() async {
-    final prefs = await SharedPreferences.getInstance();
-    final favoriteIds = prefs.getStringList('favorite_salons') ?? [];
-    if (favoriteIds.isEmpty) {
-      setState(() {
-        _filteredSalons = [];
-        _favoriteMerchants = [];
-      });
-      return;
-    }
-
-    // Fetch merchant details from API
-    final merchants = await _fetchMerchants(favoriteIds);
+  // Load favorite salons from API
+  Future<void> _loadFavoriteSalons() async {
     setState(() {
-      _favoriteMerchants = merchants;
-      _applyFilter(_selectedFilter);
+      _isLoading = true;
     });
-  }
 
-  // Fetch merchant details from API
-  Future<List<Merchant>> _fetchMerchants(List<String> ids) async {
     try {
+      final userId = await _storage.read(key: 'user_id') ?? widget.customerId;
+      debugPrint('Loading favorites for user ID: $userId');
+
       final response = await http.get(
-        Uri.parse(
-          'http://api.touchmeapp.com/api/merchants?ids=${ids.join(',')}',
-        ),
-        headers: {'Content-Type': 'application/json'},
+        Uri.parse('http://api.touchmeapp.com/api/users/$userId/favorites'),
+        headers: {
+          'Authorization': 'Bearer ${widget.token}',
+          'Content-Type': 'application/json',
+        },
       );
+
+      debugPrint('API Response Status: ${response.statusCode}');
+      debugPrint('API Response Body: ${response.body}');
+
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        return data.map((json) => Merchant.fromJson(json)).toList();
+        final Map<String, dynamic> data = json.decode(response.body);
+
+        if (data['favorites'] != null) {
+          final List<dynamic> favorites = data['favorites'];
+
+          setState(() {
+            _favoriteSalons =
+                favorites
+                    .map((favorite) {
+                      final owner = favorite['owner'] ?? {};
+                      final outlet = favorite['outlet'] ?? {};
+                      final businessRegistration =
+                          favorite['businessRegistration'] ?? {};
+
+                      // Enhanced logging for debugging
+                      debugPrint('Processing favorite: ${favorite.toString()}');
+                      debugPrint(
+                        'Business Registration: $businessRegistration',
+                      );
+
+                      // Use 'logo' instead of 'logoUrl'
+                      String imageUrl =
+                          businessRegistration['logo']?.isNotEmpty == true
+                              ? businessRegistration['logo']
+                              : '';
+
+                      String salonName =
+                          outlet['name'] ?? owner['name'] ?? 'Unknown Salon';
+
+                      debugPrint('Logo URL for $salonName: $imageUrl');
+                      debugPrint(
+                        'Owner Phone: ${owner['phone']}, Outlet Phone: ${outlet['phone']}, Outlet Address: ${outlet['address']}',
+                      );
+
+                      // Skip salons with no name or invalid data (optional)
+                      if (salonName == 'Unknown Salon' && imageUrl.isEmpty) {
+                        debugPrint(
+                          'Skipping salon with insufficient data: $favorite',
+                        );
+                        return null;
+                      }
+
+                      return {
+                        'name': salonName,
+                        'location':
+                            owner['phone'] ??
+                            outlet['phone'] ??
+                            'Phone not available', // Phone number
+                        'imagePath': imageUrl,
+                        'isFavorite': true,
+                        'merchantId': favorite['merchantId'] ?? '',
+                        'outletPhone':
+                            owner['phone'] ??
+                            outlet['phone'] ??
+                            '', // Phone number
+                        'outletAddress': outlet['address'] ?? '', // Address
+                        'email':
+                            owner['email'] ??
+                            '', // Store email separately if needed
+                        'openingHours': outlet['openingHours'] ?? {},
+                      };
+                    })
+                    .where((salon) => salon != null)
+                    .cast<Map<String, dynamic>>()
+                    .toList();
+          });
+
+          // Fetch ratings for all favorite salons
+          for (var salon in _favoriteSalons) {
+            await _getMerchantRating(salon['merchantId']);
+          }
+
+          debugPrint(
+            'Loaded ${_favoriteSalons.length} favorite salons from API',
+          );
+        } else {
+          debugPrint('No favorites array found in API response');
+          setState(() {
+            _favoriteSalons = [];
+          });
+        }
+      } else if (response.statusCode == 404) {
+        debugPrint('No favorites found for user');
+        setState(() {
+          _favoriteSalons = [];
+        });
       } else {
-        debugPrint('Failed to fetch merchants: ${response.statusCode}');
-        return [];
+        debugPrint('API Error: ${response.statusCode} - ${response.body}');
+        _showErrorMessage('Failed to load favorites. Please try again.');
       }
     } catch (e) {
-      debugPrint('Error fetching merchants: $e');
-      return [];
+      debugPrint('Error loading favorites: $e');
+      _showErrorMessage('Network error. Please check your connection.');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
-  // Toggle favorite status and save to SharedPreferences
-  Future<void> _toggleFavorite(int index) async {
-    final prefs = await SharedPreferences.getInstance();
-    final favorites = prefs.getStringList('favorite_salons') ?? [];
-    final merchantId = _filteredSalons[index]['merchantId'];
+  // Calculate review stats
+  Map<String, dynamic> _calculateReviewStats(List<Review> reviews) {
+    if (reviews.isEmpty) {
+      return {"average": 0.0, "count": 0};
+    }
 
-    setState(() {
-      favorites.remove(merchantId);
-      prefs.setStringList('favorite_salons', favorites);
-      _filteredSalons.removeAt(index);
-      _favoriteMerchants.removeWhere((merchant) => merchant.id == merchantId);
-      _applyFilter(_selectedFilter); // Re-apply filter to update UI
-    });
+    double totalRating = 0.0;
+    int validReviews = 0;
+
+    for (final review in reviews) {
+      if (review.rating > 0 && review.rating <= 5) {
+        totalRating += review.rating;
+        validReviews++;
+      }
+    }
+
+    double averageRating = validReviews > 0 ? totalRating / validReviews : 0.0;
+    return {"average": averageRating, "count": validReviews};
   }
 
-  // Apply filter to _filteredSalons
-  void _applyFilter(String filter) {
-    final prefs = SharedPreferences.getInstance();
-    setState(() {
-      _selectedFilter = filter;
-      _filteredSalons =
-          _favoriteMerchants
-              .where((merchant) {
-                if (filter == 'All') return true;
-                if (filter == 'Salons') {
-                  return merchant.outletName.toLowerCase().contains('saloon') ||
-                      merchant.outletName.toLowerCase().contains('salon');
-                }
-                return false;
-              })
-              .map(
-                (merchant) => {
-                  'name': merchant.outletName,
-                  'rating': 5.0, // Static rating for consistency
-                  'reviews': 127, // Static reviews for consistency
-                  'location': '12/214, ${merchant.outletPhone}',
-                  'imagePath': merchant.logoUrl,
-                  'isFavorite': true, // All merchants here are favorites
-                  'merchantId': merchant.id,
-                },
-              )
-              .toList();
-    });
+  // Fetch merchant rating
+  Future<Map<String, dynamic>> _getMerchantRating(String merchantId) async {
+    if (_merchantRatings.containsKey(merchantId)) {
+      return _merchantRatings[merchantId]!;
+    }
+
+    try {
+      final reviews = await fetchReviewsByMerchant(merchantId, widget.token);
+      final stats = _calculateReviewStats(reviews);
+      setState(() {
+        _merchantRatings[merchantId] = stats;
+      });
+      return stats;
+    } catch (e) {
+      debugPrint('Error fetching reviews for merchant $merchantId: $e');
+      final defaultStats = {"average": 0.0, "count": 0};
+      setState(() {
+        _merchantRatings[merchantId] = defaultStats;
+      });
+      return defaultStats;
+    }
+  }
+
+  // Show error message
+  void _showErrorMessage(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red.shade700,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
+
+  // Remove favorite via API
+  Future<void> _removeFavorite(int index) async {
+    final merchantId = _favoriteSalons[index]['merchantId'];
+    final userId = await _storage.read(key: 'user_id') ?? widget.customerId;
+
+    debugPrint('Removing favorite: merchantId=$merchantId, userId=$userId');
+
+    try {
+      final response = await http.delete(
+        Uri.parse('http://api.touchmeapp.com/api/users/$userId/favorites'),
+        headers: {
+          'Authorization': 'Bearer ${widget.token}',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({'merchantId': merchantId}),
+      );
+
+      debugPrint(
+        'Remove favorite response: ${response.statusCode} - ${response.body}',
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          _favoriteSalons.removeAt(index);
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Removed from favorites'),
+            backgroundColor: Colors.orange.shade700,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        );
+      } else if (response.statusCode == 404) {
+        debugPrint('Favorite not found: ${response.body}');
+        _showErrorMessage('Favorite not found. Please try again.');
+      } else {
+        debugPrint('API Error: ${response.statusCode} - ${response.body}');
+        _showErrorMessage('Failed to remove from favorites');
+      }
+    } catch (e) {
+      debugPrint('Error removing favorite: $e');
+      _showErrorMessage('Network error. Please try again.');
+    }
+  }
+
+  // Add a new favorite salon via API
+  Future<void> _addFavorite(String merchantId) async {
+    final userId = await _storage.read(key: 'user_id') ?? widget.customerId;
+
+    try {
+      final response = await http.post(
+        Uri.parse('http://api.touchmeapp.com/api/users/$userId/favorites'),
+        headers: {
+          'Authorization': 'Bearer ${widget.token}',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({'merchantId': merchantId}),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        debugPrint('Added merchant $merchantId to favorites');
+        await _loadFavoriteSalons();
+      } else {
+        debugPrint(
+          'Failed to add favorite: ${response.statusCode} - ${response.body}',
+        );
+        _showErrorMessage('Failed to add to favorites');
+      }
+    } catch (e) {
+      debugPrint('Error adding favorite: $e');
+      _showErrorMessage('Network error. Please try again.');
+    }
+  }
+
+  // Refresh favorites
+  Future<void> _refreshFavorites() async {
+    await _loadFavoriteSalons();
   }
 
   @override
@@ -122,104 +299,97 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 244, 244, 245),
-        // leading: IconButton(
-        //   icon: const Icon(Icons.arrow_back, color: Colors.black),
-        //   onPressed: () {
-        //     Navigator.pop(context);
-        //   },
-        // ),
         title: const Text(
           'Favorites',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        automaticallyImplyLeading: false, 
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildFilterButton('All', _selectedFilter == 'All'),
-                _buildFilterButton('Salons', _selectedFilter == 'Salons'),
-                // _buildFilterButton('Spas', _selectedFilter == 'Spas'),
-              ],
-            ),
-          ),
-          Expanded(
-            child:
-                _filteredSalons.isEmpty
-                    ? const Center(
-                      child: Text(
-                        'No favorite salons yet.',
-                        style: TextStyle(fontSize: 16, color: Colors.grey),
-                      ),
-                    )
-                    : ListView.builder(
-                      padding: const EdgeInsets.all(16.0),
-                      itemCount: _filteredSalons.length,
-                      itemBuilder: (context, index) {
-                        final salon = _filteredSalons[index];
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder:
-                                    (_) => MerchantServiceListScreen(
-                                      merchantId: salon['merchantId'],
-                                      outletName: salon['name'],
-                                      token: widget.token,
-                                      customerId: widget.customerId,
-                                      profileImageUrl: salon['imagePath'],
-                                    ),
-                              ),
-                            );
-                          },
-                          child: _buildSalonCard(
-                            salon['name'],
-                            salon['rating'],
-                            salon['reviews'],
-                            salon['location'],
-                            salon['imagePath'],
-                            salon['isFavorite'],
-                            index,
-                          ),
-                        );
-                      },
-                    ),
+        automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh, color: Colors.black),
+            onPressed: _refreshFavorites,
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildFilterButton(String label, bool isSelected) {
-    return ElevatedButton(
-      onPressed: () => _applyFilter(label),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: isSelected ? Colors.purple : Colors.grey[300],
-        foregroundColor: isSelected ? Colors.white : Colors.black,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-        ),
-      ),
+      body:
+          _isLoading
+              ? const Center(
+                child: CircularProgressIndicator(color: Color(0xFF6A1B9A)),
+              )
+              : _favoriteSalons.isEmpty
+              ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.favorite_border,
+                      size: 64,
+                      color: Colors.grey,
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'No favorite salons yet.',
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                    ),
+                    const SizedBox(height: 8),
+                    TextButton(
+                      onPressed: _refreshFavorites,
+                      child: const Text(
+                        'Tap to refresh',
+                        style: TextStyle(color: Color(0xFF6A1B9A)),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+              : RefreshIndicator(
+                onRefresh: _refreshFavorites,
+                color: const Color(0xFF6A1B9A),
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(16.0),
+                  itemCount: _favoriteSalons.length,
+                  itemBuilder: (context, index) {
+                    final salon = _favoriteSalons[index];
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (_) => MerchantServiceListScreen(
+                                  merchantId: salon['merchantId'],
+                                  outletName: salon['name'],
+                                  token: widget.token,
+                                  customerId: widget.customerId,
+                                  profileImageUrl: salon['imagePath'],
+                                ),
+                          ),
+                        );
+                      },
+                      child: _buildSalonCard(
+                        salon['name'],
+                        salon['merchantId'],
+                        salon['location'], // Phone number
+                        salon['outletPhone'], // Phone number
+                        salon['outletAddress'], // Address
+                        salon['imagePath'],
+                        salon['isFavorite'],
+                        index,
+                      ),
+                    );
+                  },
+                ),
+              ),
     );
   }
 
   Widget _buildSalonCard(
     String name,
-    double rating,
-    int reviews,
+    String merchantId,
     String location,
+    String phone,
+    String address,
     String imagePath,
     bool isFavorite,
     int index,
@@ -227,6 +397,7 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 2,
       child: Row(
         children: [
           Container(
@@ -237,13 +408,81 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
                 topLeft: Radius.circular(12),
                 bottomLeft: Radius.circular(12),
               ),
-              image: DecorationImage(
-                image: NetworkImage(imagePath),
-                fit: BoxFit.cover,
-                onError: (exception, stackTrace) {
-                  debugPrint('Error loading $imagePath: $exception');
-                },
+            ),
+            child: ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(12),
+                bottomLeft: Radius.circular(12),
               ),
+              child:
+                  imagePath.isNotEmpty
+                      ? Image.network(
+                        imagePath,
+                        fit: BoxFit.cover,
+                        width: 100,
+                        height: 100,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Container(
+                            color: Colors.grey.shade300,
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                value:
+                                    loadingProgress.expectedTotalBytes != null
+                                        ? loadingProgress
+                                                .cumulativeBytesLoaded /
+                                            loadingProgress.expectedTotalBytes!
+                                        : null,
+                                color: const Color(0xFF6A1B9A),
+                                strokeWidth: 2,
+                              ),
+                            ),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          debugPrint(
+                            'Error loading logo for $name: $imagePath, Error: $error',
+                          );
+                          return Image.asset(
+                            'assets/saloonservice.jpg',
+                            height: 100,
+                            width: 100,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              debugPrint(
+                                'Error loading fallback asset for $name: $error',
+                              );
+                              return Container(
+                                color: Colors.grey.shade300,
+                                child: const Icon(
+                                  Icons.storefront,
+                                  size: 40,
+                                  color: Colors.grey,
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      )
+                      : Image.asset(
+                        'assets/saloonservice.jpg',
+                        height: 100,
+                        width: 100,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          debugPrint(
+                            'Error loading fallback asset for $name: $error',
+                          );
+                          return Container(
+                            color: Colors.grey.shade300,
+                            child: const Icon(
+                              Icons.storefront,
+                              size: 40,
+                              color: Colors.grey,
+                            ),
+                          );
+                        },
+                      ),
             ),
           ),
           Expanded(
@@ -262,6 +501,7 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       IconButton(
@@ -270,37 +510,94 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
                           color: isFavorite ? Colors.purple : Colors.grey,
                           size: 20,
                         ),
-                        onPressed: () => _toggleFavorite(index),
+                        onPressed: () => _removeFavorite(index),
                       ),
                     ],
                   ),
                   const SizedBox(height: 4),
+                  FutureBuilder<Map<String, dynamic>>(
+                    future: _getMerchantRating(merchantId),
+                    builder: (context, ratingSnapshot) {
+                      if (ratingSnapshot.connectionState ==
+                          ConnectionState.waiting) {
+                        return Row(
+                          children: [
+                            SizedBox(
+                              width: 12,
+                              height: 12,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 1.5,
+                                color: Colors.amber,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              "Loading...",
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        );
+                      }
+                      final stats =
+                          ratingSnapshot.data ?? {"average": 0.0, "count": 0};
+                      final averageRating = stats["average"] as double;
+                      final reviewCount = stats["count"] as int;
+                      return Row(
+                        children: [
+                          Icon(
+                            Icons.star,
+                            size: 16,
+                            color: reviewCount > 0 ? Colors.amber : Colors.grey,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            reviewCount > 0
+                                ? '${averageRating.toStringAsFixed(1)} ($reviewCount Review${reviewCount != 1 ? 's' : ''})'
+                                : 'No rating',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color:
+                                  reviewCount > 0
+                                      ? Colors.black87
+                                      : Colors.grey,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(Icons.star, color: Colors.yellow, size: 16),
+                      const Icon(Icons.phone, color: Colors.grey, size: 16),
                       const SizedBox(width: 4),
-                      Text(
-                        '$rating ($reviews Reviews)',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
+                      Expanded(
+                        child: Text(
+                          phone, // Display phone number
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 4),
-
                   Row(
                     children: [
                       const Icon(
-                        Icons.location_pin,
+                        Icons.location_on,
                         color: Colors.grey,
                         size: 16,
                       ),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
-                          location,
+                          address, // Display address
                           style: const TextStyle(
                             fontSize: 12,
                             color: Colors.grey,
