@@ -3,6 +3,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:touch_me/pages/add_member_page.dart';
 import 'package:touch_me/pages/merchant_page.dart';
 import 'package:touch_me/pages/merchant_services_screen.dart';
+import 'package:touch_me/pages/merchant_show_review_page.dart';
 import 'package:touch_me/pages/my_bookings_page.dart';
 import 'package:touch_me/pages/show_member_page.dart';
 
@@ -83,6 +84,17 @@ class _TeamPageState extends State<TeamPage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) => const GetMembersScreen()),
+                        );
+                      },
+                    ),
+                    ListTile(
+                      leading:  Icon(Icons.reviews_outlined),
+                      title: const Text('See Reviews'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const MerchantReviewsPage()),
                         );
                       },
                     ),
