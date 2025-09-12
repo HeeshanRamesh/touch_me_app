@@ -31,9 +31,9 @@ class _MerchantProfilePageState extends State<MerchantProfilePage> {
   final TextEditingController _outletAddressController = TextEditingController();
 
   // Manager Information Controllers
-  final TextEditingController _managerNameController = TextEditingController();
-  final TextEditingController _managerEmailController = TextEditingController();
-  final TextEditingController _managerPhoneController = TextEditingController();
+  // final TextEditingController _managerNameController = TextEditingController();
+  // final TextEditingController _managerEmailController = TextEditingController();
+  // final TextEditingController _managerPhoneController = TextEditingController();
 
   // Bank Details Controllers
   final TextEditingController _beneficiaryNameController = TextEditingController();
@@ -88,9 +88,9 @@ class _MerchantProfilePageState extends State<MerchantProfilePage> {
           _outletAddressController.text = merchant['outlet']?['address'] ?? '';
 
           // Manager Information
-          _managerNameController.text = merchant['manager']?['name'] ?? '';
-          _managerEmailController.text = merchant['manager']?['email'] ?? '';
-          _managerPhoneController.text = merchant['manager']?['phone'] ?? '';
+          // _managerNameController.text = merchant['manager']?['name'] ?? '';
+          // _managerEmailController.text = merchant['manager']?['email'] ?? '';
+          // _managerPhoneController.text = merchant['manager']?['phone'] ?? '';
 
           // Bank Details
           _beneficiaryNameController.text = merchant['bankDetails']?['beneficiaryName'] ?? '';
@@ -199,11 +199,11 @@ class _MerchantProfilePageState extends State<MerchantProfilePage> {
           'phone': _outletPhoneController.text.trim(),
           'address': _outletAddressController.text.trim(),
         },
-        'manager': {
-          'name': _managerNameController.text.trim(),
-          'email': _managerEmailController.text.trim(),
-          'phone': _managerPhoneController.text.trim(),
-        },
+        // 'manager': {
+        //   'name': _managerNameController.text.trim(),
+        //   'email': _managerEmailController.text.trim(),
+        //   'phone': _managerPhoneController.text.trim(),
+        // },
         'bankDetails': {
           'beneficiaryName': _beneficiaryNameController.text.trim(),
           'accountNumber': _accountNumberController.text.trim(),
@@ -341,26 +341,26 @@ class _MerchantProfilePageState extends State<MerchantProfilePage> {
                     controller: _outletAddressController,
                     label: 'Outlet Address',
                   ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Manager Information',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 10),
-                  _buildTextField(
-                    controller: _managerNameController,
-                    label: 'Manager Name',
-                  ),
-                  _buildTextField(
-                    controller: _managerEmailController,
-                    label: 'Manager Email',
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-                  _buildTextField(
-                    controller: _managerPhoneController,
-                    label: 'Manager Phone',
-                    keyboardType: TextInputType.phone,
-                  ),
+                  // const SizedBox(height: 20),
+                  // const Text(
+                  //   'Manager Information',
+                  //   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  // ),
+                  // const SizedBox(height: 10),
+                  // _buildTextField(
+                  //   controller: _managerNameController,
+                  //   label: 'Manager Name',
+                  // ),
+                  // _buildTextField(
+                  //   controller: _managerEmailController,
+                  //   label: 'Manager Email',
+                  //   keyboardType: TextInputType.emailAddress,
+                  // ),
+                  // _buildTextField(
+                  //   controller: _managerPhoneController,
+                  //   label: 'Manager Phone',
+                  //   keyboardType: TextInputType.phone,
+                  // ),
                   const SizedBox(height: 20),
                   const Text(
                     'Bank Details',
@@ -513,9 +513,9 @@ class _MerchantProfilePageState extends State<MerchantProfilePage> {
     _outletAddressController.dispose();
     
     // Manager Controllers
-    _managerNameController.dispose();
-    _managerEmailController.dispose();
-    _managerPhoneController.dispose();
+    // _managerNameController.dispose();
+    // _managerEmailController.dispose();
+    // _managerPhoneController.dispose();
     
     // Bank Controllers
     _beneficiaryNameController.dispose();
