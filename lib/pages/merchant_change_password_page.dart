@@ -237,6 +237,9 @@ class _MerchantChangePasswordPageState extends State<MerchantChangePasswordPage>
           _newPasswordController.clear();
           _confirmPasswordController.clear();
           _validatePassword();
+
+          // Navigate back to previous page after successful password change
+          Navigator.of(context).pop();
         }
       } else {
         // Handle error response
