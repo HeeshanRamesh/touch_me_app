@@ -58,146 +58,149 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
     return null;
   }
 
+  // COMMENTED OUT: Bank account validation
+  /*
   String? _validateAccountNumber(String? value) {
-  // Debug line - remove after testing
-  print("DEBUG: _selectedBank = '$_selectedBank'");
-  
-  if (value == null || value.trim().isEmpty) {
-    return "Please enter an account number";
-  }
-  
-  final cleanedValue = value.trim().replaceAll(RegExp(r'[^0-9]'), ''); // Remove non-digits
-  
-  // Basic length check
-  if (cleanedValue.length < 8) {
-    return "Account number must be at least 8 digits";
-  }
-  
-  if (cleanedValue.length > 20) {
-    return "Account number cannot exceed 20 digits";
-  }
-  
-  // Bank-specific validation - only if bank is selected
-  if (_selectedBank != null && _selectedBank!.isNotEmpty) {
-    switch (_selectedBank!) {
-      case "BOC": // Bank of Ceylon - typically 10-12 digits
-        if (cleanedValue.length < 10 || cleanedValue.length > 12) {
-          return "BOC account numbers are typically 10-12 digits";
-        }
-        break;
-        
-      case "PB": // People's Bank - typically 10-15 digits
-        if (cleanedValue.length < 10 || cleanedValue.length > 15) {
-          return "People's Bank account numbers are typically 10-15 digits";
-        }
-        break;
-        
-      case "COMB": // Commercial Bank - typically 10-15 digits
-        if (cleanedValue.length < 10 || cleanedValue.length > 15) {
-          return "Commercial Bank account numbers are typically 10-15 digits";
-        }
-        break;
-        
-      case "HNB": // Hatton National Bank - typically 12-15 digits
-        if (cleanedValue.length < 12 || cleanedValue.length > 15) {
-          return "HNB account numbers are typically 12-15 digits";
-        }
-        break;
-        
-      case "SAMPATH": // Sampath Bank - typically 10-15 digits
-        if (cleanedValue.length < 10 || cleanedValue.length > 15) {
-          return "Sampath Bank account numbers are typically 10-15 digits";
-        }
-        break;
-        
-      case "SB": // Seylan Bank - typically 10-15 digits
-        if (cleanedValue.length < 10 || cleanedValue.length > 15) {
-          return "Seylan Bank account numbers are typically 10-15 digits";
-        }
-        break;
-        
-      case "DFCC": // DFCC Bank - typically 10-15 digits
-        if (cleanedValue.length < 10 || cleanedValue.length > 15) {
-          return "DFCC Bank account numbers are typically 10-15 digits";
-        }
-        break;
-        
-      case "NDB": // National Development Bank - typically 10-15 digits
-        if (cleanedValue.length < 10 || cleanedValue.length > 15) {
-          return "NDB account numbers are typically 10-15 digits";
-        }
-        break;
-        
-      case "AMANA": // Amana Bank - typically 10-15 digits
-        if (cleanedValue.length < 10 || cleanedValue.length > 15) {
-          return "Amana Bank account numbers are typically 10-15 digits";
-        }
-        break;
-        
-      case "CARGILLS": // Cargills Bank - typically 10-15 digits
-        if (cleanedValue.length < 10 || cleanedValue.length > 15) {
-          return "Cargills Bank account numbers are typically 10-15 digits";
-        }
-        break;
-        
-      case "NTB": // Nations Trust Bank - typically 10-15 digits
-        if (cleanedValue.length < 10 || cleanedValue.length > 15) {
-          return "NTB account numbers are typically 10-15 digits";
-        }
-        break;
-        
-      case "UNION": // Union Bank - typically 10-15 digits
-        if (cleanedValue.length < 10 || cleanedValue.length > 15) {
-          return "Union Bank account numbers are typically 10-15 digits";
-        }
-        break;
-        
-      case "PAN_ASIA": // Pan Asia Bank - typically 10-15 digits
-        if (cleanedValue.length < 10 || cleanedValue.length > 15) {
-          return "Pan Asia Bank account numbers are typically 10-15 digits";
-        }
-        break;
-        
-      case "HABIB": // Habib Bank - typically 10-15 digits
-        if (cleanedValue.length < 10 || cleanedValue.length > 15) {
-          return "Habib Bank account numbers are typically 10-15 digits";
-        }
-        break;
-        
-      case "DEUTSCHE": // Deutsche Bank - typically 10-15 digits
-        if (cleanedValue.length < 10 || cleanedValue.length > 15) {
-          return "Deutsche Bank account numbers are typically 10-15 digits";
-        }
-        break;
-        
-      case "CITIBANK": // Citibank - typically 10-15 digits
-        if (cleanedValue.length < 10 || cleanedValue.length > 15) {
-          return "Citibank account numbers are typically 10-15 digits";
-        }
-        break;
-        
-      case "STANDARD_CHARTERED": // Standard Chartered - typically 10-15 digits
-        if (cleanedValue.length < 10 || cleanedValue.length > 15) {
-          return "Standard Chartered account numbers are typically 10-15 digits";
-        }
-        break;
-        
-      case "HSBC": // HSBC Bank - typically 10-15 digits
-        if (cleanedValue.length < 10 || cleanedValue.length > 15) {
-          return "HSBC account numbers are typically 10-15 digits";
-        }
-        break;
-      default:
-        // Generic validation for other banks
-        if (cleanedValue.length < 8 || cleanedValue.length > 20) {
-          return "Account number must be 8-18 digits";
-        }
-        break;
+    // Debug line - remove after testing
+    print("DEBUG: _selectedBank = '$_selectedBank'");
+    
+    if (value == null || value.trim().isEmpty) {
+      return "Please enter an account number";
     }
+    
+    final cleanedValue = value.trim().replaceAll(RegExp(r'[^0-9]'), ''); // Remove non-digits
+    
+    // Basic length check
+    if (cleanedValue.length < 8) {
+      return "Account number must be at least 8 digits";
+    }
+    
+    if (cleanedValue.length > 20) {
+      return "Account number cannot exceed 20 digits";
+    }
+    
+    // Bank-specific validation - only if bank is selected
+    if (_selectedBank != null && _selectedBank!.isNotEmpty) {
+      switch (_selectedBank!) {
+        case "BOC": // Bank of Ceylon - typically 10-12 digits
+          if (cleanedValue.length < 10 || cleanedValue.length > 12) {
+            return "BOC account numbers are typically 10-12 digits";
+          }
+          break;
+          
+        case "PB": // People's Bank - typically 10-15 digits
+          if (cleanedValue.length < 10 || cleanedValue.length > 15) {
+            return "People's Bank account numbers are typically 10-15 digits";
+          }
+          break;
+          
+        case "COMB": // Commercial Bank - typically 10-15 digits
+          if (cleanedValue.length < 10 || cleanedValue.length > 15) {
+            return "Commercial Bank account numbers are typically 10-15 digits";
+          }
+          break;
+          
+        case "HNB": // Hatton National Bank - typically 12-15 digits
+          if (cleanedValue.length < 12 || cleanedValue.length > 15) {
+            return "HNB account numbers are typically 12-15 digits";
+          }
+          break;
+          
+        case "SAMPATH": // Sampath Bank - typically 10-15 digits
+          if (cleanedValue.length < 10 || cleanedValue.length > 15) {
+            return "Sampath Bank account numbers are typically 10-15 digits";
+          }
+          break;
+          
+        case "SB": // Seylan Bank - typically 10-15 digits
+          if (cleanedValue.length < 10 || cleanedValue.length > 15) {
+            return "Seylan Bank account numbers are typically 10-15 digits";
+          }
+          break;
+          
+        case "DFCC": // DFCC Bank - typically 10-15 digits
+          if (cleanedValue.length < 10 || cleanedValue.length > 15) {
+            return "DFCC Bank account numbers are typically 10-15 digits";
+          }
+          break;
+          
+        case "NDB": // National Development Bank - typically 10-15 digits
+          if (cleanedValue.length < 10 || cleanedValue.length > 15) {
+            return "NDB account numbers are typically 10-15 digits";
+          }
+          break;
+          
+        case "AMANA": // Amana Bank - typically 10-15 digits
+          if (cleanedValue.length < 10 || cleanedValue.length > 15) {
+            return "Amana Bank account numbers are typically 10-15 digits";
+          }
+          break;
+          
+        case "CARGILLS": // Cargills Bank - typically 10-15 digits
+          if (cleanedValue.length < 10 || cleanedValue.length > 15) {
+            return "Cargills Bank account numbers are typically 10-15 digits";
+          }
+          break;
+          
+        case "NTB": // Nations Trust Bank - typically 10-15 digits
+          if (cleanedValue.length < 10 || cleanedValue.length > 15) {
+            return "NTB account numbers are typically 10-15 digits";
+          }
+          break;
+          
+        case "UNION": // Union Bank - typically 10-15 digits
+          if (cleanedValue.length < 10 || cleanedValue.length > 15) {
+            return "Union Bank account numbers are typically 10-15 digits";
+          }
+          break;
+          
+        case "PAN_ASIA": // Pan Asia Bank - typically 10-15 digits
+          if (cleanedValue.length < 10 || cleanedValue.length > 15) {
+            return "Pan Asia Bank account numbers are typically 10-15 digits";
+          }
+          break;
+          
+        case "HABIB": // Habib Bank - typically 10-15 digits
+          if (cleanedValue.length < 10 || cleanedValue.length > 15) {
+            return "Habib Bank account numbers are typically 10-15 digits";
+          }
+          break;
+          
+        case "DEUTSCHE": // Deutsche Bank - typically 10-15 digits
+          if (cleanedValue.length < 10 || cleanedValue.length > 15) {
+            return "Deutsche Bank account numbers are typically 10-15 digits";
+          }
+          break;
+          
+        case "CITIBANK": // Citibank - typically 10-15 digits
+          if (cleanedValue.length < 10 || cleanedValue.length > 15) {
+            return "Citibank account numbers are typically 10-15 digits";
+          }
+          break;
+          
+        case "STANDARD_CHARTERED": // Standard Chartered - typically 10-15 digits
+          if (cleanedValue.length < 10 || cleanedValue.length > 15) {
+            return "Standard Chartered account numbers are typically 10-15 digits";
+          }
+          break;
+          
+        case "HSBC": // HSBC Bank - typically 10-15 digits
+          if (cleanedValue.length < 10 || cleanedValue.length > 15) {
+            return "HSBC account numbers are typically 10-15 digits";
+          }
+          break;
+        default:
+          // Generic validation for other banks
+          if (cleanedValue.length < 8 || cleanedValue.length > 20) {
+            return "Account number must be 8-18 digits";
+          }
+          break;
+      }
+    }
+    
+    return null;
   }
-  
-  return null;
-}
+  */
 
   // Form controllers
   final TextEditingController _outletNameController = TextEditingController();
@@ -209,13 +212,18 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
   // final TextEditingController _managerNameController = TextEditingController();
   // final TextEditingController _managerEmailController = TextEditingController();
   // final TextEditingController _managerPasswordController = TextEditingController();
+  
+  // COMMENTED OUT: Bank-related controllers
+  /*
   final TextEditingController _beneficiaryNameController = TextEditingController();
   final TextEditingController _accountNumberController = TextEditingController();
+  */
 
   // Form keys for validation
   final GlobalKey<FormState> _outletInfoFormKey = GlobalKey<FormState>();
   final GlobalKey<FormState> _contactInfoFormKey = GlobalKey<FormState>();
-  final GlobalKey<FormState> _bankInfoFormKey = GlobalKey<FormState>();
+  // COMMENTED OUT: Bank info form key
+  // final GlobalKey<FormState> _bankInfoFormKey = GlobalKey<FormState>();
 
   // State for uploads and selections
   String? _phoneNumber;
@@ -226,20 +234,25 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
   bool _nicBackUploaded = false;
   bool _businessRegUploaded = false;
   bool _logoUploaded = false;
-  bool _bankStatementUploaded = false;
+  // COMMENTED OUT: Bank statement upload
+  // bool _bankStatementUploaded = false;
   bool _outletPictureUploaded = false;
   String? _outletPictureUrl;
+  
+  // COMMENTED OUT: Bank-related variables
+  /*
   String? _selectedBank;
   String? _selectedBranch;
+  String? _bankStatementImageUrl;
+  */
+  
   String? _businessRegImageUrl;
   String? _logoImageUrl;
   String? _nicFrontImageUrl;
   String? _nicBackImageUrl;
-  String? _bankStatementImageUrl;
   bool _hasAgreed = false;
   bool _isTaxRegisteredYes = false;
   bool _isTaxRegisteredNo = false;
-
 
   // Opening hours
   final Map<String, Map<String, String>> _openingHours = {
@@ -263,10 +276,15 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
     // _managerNameController.dispose();
     // _managerEmailController.dispose();
     // _managerPasswordController.dispose();
+    
+    // COMMENTED OUT: Bank controller disposal
+    /*
     _beneficiaryNameController.dispose();
     _accountNumberController.dispose();
+    */
+    
     _controller.dispose();
-     NICValidationService.dispose(); 
+    NICValidationService.dispose(); 
     super.dispose();
   }
 
@@ -304,7 +322,6 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
         }
         break;
       case 1:
-      
         // isValid = _contactInfoFormKey.currentState?.validate() ?? false;
         // if (isValid && _ownerPhoneNumber == null) {
         //   ScaffoldMessenger.of(context).showSnackBar(
@@ -319,18 +336,21 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
       case 2:
         isValid = _validateBusinessInfoStep();
         break;
+      
+      // COMMENTED OUT: Bank info validation (case 3)
+      /*
       case 3:
-      //   isValid = _bankInfoFormKey.currentState?.validate() ?? false;
-      //  if (isValid) isValid = _validateBankInfoStep();
-      //   if (isValid && _bankPhoneNumber == null) {
-      //     ScaffoldMessenger.of(context).showSnackBar(
-      //       const SnackBar(
-      //         content: Text("Please enter a valid bank phone number"),
-      //         backgroundColor: Colors.red,
-      //       ),
-      //     );
-      //     isValid = false;
-      //   }
+        isValid = _bankInfoFormKey.currentState?.validate() ?? false;
+        if (isValid) isValid = _validateBankInfoStep();
+        if (isValid && _bankPhoneNumber == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Please enter a valid bank phone number"),
+              backgroundColor: Colors.red,
+            ),
+          );
+          isValid = false;
+        }
         if (!_termsAccepted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -341,11 +361,13 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
           isValid = false;
         }
         break;
+      */
     }
 
     if (!isValid) return;
 
-    if (_page < 3) {
+    // Updated: Only allow navigation to step 2 (index 1)
+    if (_page < 2) {
       setState(() => _isSubmitting = true);
       Future.delayed(const Duration(seconds: 1), () {
         setState(() => _isSubmitting = false);
@@ -371,8 +393,11 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
         return "Contact information saved!";
       case 2:
         return "Business information saved!";
+      // COMMENTED OUT: Bank info success message
+      /*
       case 3:
         return "Bank information saved!";
+      */
       default:
         return "Step completed!";
     }
@@ -419,6 +444,8 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
     return isValid;
   }
 
+  // COMMENTED OUT: Bank info validation
+  /*
   bool _validateBankInfoStep() {
     bool isValid = true;
     if (_selectedBank == null || _selectedBank!.isEmpty) {
@@ -450,13 +477,18 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
     }
     return isValid;
   }
+  */
 
   Future<void> _submitForm() async {
+    // COMMENTED OUT: Bank form validation
+    /*
     if (!_bankInfoFormKey.currentState!.validate()) return;
     if (!_validateBankInfoStep()) return;
-    if (_phoneNumber == null){
-        //_OwnerPhoneNumber == null){
-        //_bankPhoneNumber == null) {
+    */
+    
+    if (_phoneNumber == null) {
+      // _OwnerPhoneNumber == null){
+      // _bankPhoneNumber == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Please ensure all phone numbers are provided"),
@@ -504,11 +536,16 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
         // managerEmail: _managerEmailController.text.trim(),
         // managerPhone: _managerPhoneNumber!,
         // managerPassword: _managerPasswordController.text.trim(),
+        
+        // COMMENTED OUT: Bank-related parameters
+        /*
         beneficiaryName: _beneficiaryNameController.text.trim(),
         accountNumber: _accountNumberController.text.trim(),
         //bankPhone: _bankPhoneNumber!,
         bankName: _selectedBank!,
         bankBranch: _selectedBranch!,
+        */
+        
         businessRegImage: _businessRegImageUrl!,
         logoImage: _logoImageUrl!,
         nicFrontImage: _nicFrontImageUrl!,
@@ -517,94 +554,94 @@ class _MerchantSignupMainState extends State<MerchantSignupMain> {
       );
 
       // Option 1: Show success dialog instead of immediately navigating
-if (result['success'] == true) {
-  if (mounted) {
-    // Show success dialog first
-    showDialog(
-      context: context,
-      barrierDismissible: false, // Prevent dismissing by tapping outside
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Success icon
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Theme.of(context).primaryColor,
-                    width: 3,
-                  ),
+      if (result['success'] == true) {
+        if (mounted) {
+          // Show success dialog first
+          showDialog(
+            context: context,
+            barrierDismissible: false, // Prevent dismissing by tapping outside
+            builder: (BuildContext context) {
+              return AlertDialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(
-                  Icons.check,
-                  size: 40,
-                  color: Theme.of(context).primaryColor,
-                ),
-              ),
-              const SizedBox(height: 20),
-              // Success message
-              const Text(
-                'Registration successfully completed',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'as a merchant',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 30),
-              // OK button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Close dialog
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => MerchantLoginPage(),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Success icon
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Theme.of(context).primaryColor,
+                          width: 3,
+                        ),
                       ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).primaryColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
+                      child: Icon(
+                        Icons.check,
+                        size: 40,
+                        color: Theme.of(context).primaryColor,
+                      ),
                     ),
-                  ),
-                  child: const Text(
-                    'OK',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                    const SizedBox(height: 20),
+                    // Success message
+                    const Text(
+                      'Registration successfully completed',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                  ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'as a merchant',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 30),
+                    // OK button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.of(context).pop(); // Close dialog
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => MerchantLoginPage(),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).primaryColor,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                        child: const Text(
+                          'OK',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-    } else {
+              );
+            },
+          );
+        }
+      } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -631,254 +668,255 @@ if (result['success'] == true) {
   }
 
   Future<String?> uploadFileToFirebase({
-  required String fileType,
-  required String userId,
-  bool validateNIC = false,
-  bool isNICFront = false,
-}) async {
-  PermissionStatus status;
+    required String fileType,
+    required String userId,
+    bool validateNIC = false,
+    bool isNICFront = false,
+  }) async {
+    PermissionStatus status;
 
-  try {
-    if (Theme.of(context).platform == TargetPlatform.android) {
-      final androidInfo = await DeviceInfoPlugin().androidInfo;
-      if (androidInfo.version.sdkInt >= 33) {
-        status = await Permission.photos.request();
-      } else {
-        status = await Permission.storage.request();
-      }
-    } else {
-      status = await Permission.photos.request();
-    }
-
-    if (status.isDenied) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              "Permission denied. Please grant media/photos permission in settings.",
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-      return null;
-    }
-
-    if (status.isPermanentlyDenied) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text(
-              "Permission permanently denied. Please enable it in app settings.",
-            ),
-            backgroundColor: Colors.red,
-            action: SnackBarAction(
-              label: 'Open Settings',
-              onPressed: () => openAppSettings(),
-            ),
-          ),
-        );
-      }
-      return null;
-    }
-
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.image,
-      allowMultiple: false,
-    );
-
-    if (result == null || result.files.isEmpty) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("No file selected."),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-      return null;
-    }
-
-    final file = result.files.first;
-    final fileName = file.name;
-
-    Uint8List? fileBytes = file.bytes;
-    String? filePath = file.path;
-
-    if (fileBytes == null && filePath == null) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Invalid file selected."),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-      return null;
-    }
-
-    // Read file bytes if not available
-    if (fileBytes == null && filePath != null) {
-      fileBytes = await File(filePath).readAsBytes();
-    }
-
-    // Validate NIC if required
-    if (validateNIC && fileBytes != null) {
-      if (context.mounted) {
-        // Show loading dialog during validation
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => const AlertDialog(
-            content: Row(
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(width: 20),
-                Text("Validating NIC image..."),
-              ],
-            ),
-          ),
-        );
-      }
-
-      try {
-        final validationResult = await NICValidationService.validateNICImage(
-          imageBytes: fileBytes,
-          isFrontSide: isNICFront,
-        );
-
-        if (context.mounted) {
-          Navigator.of(context).pop(); // Close loading dialog
-        }
-
-        if (!validationResult.isValid) {
-          if (context.mounted) {
-            // Show detailed validation error
-            showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: Text(
-                  "Invalid ${isNICFront ? 'NIC Front' : 'NIC Back'} Image",
-                  style: const TextStyle(color: Colors.red),
-                ),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      validationResult.errorMessage ?? 
-                      "The uploaded image does not appear to be a valid ${isNICFront ? 'NIC front side' : 'NIC back side'}.",
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      "Confidence: ${validationResult.confidence.toStringAsFixed(1)}%",
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    if (validationResult.foundFeatures.isNotEmpty) ...[
-                      const SizedBox(height: 10),
-                      const Text(
-                        "Found features:",
-                        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green),
-                      ),
-                      ...validationResult.foundFeatures.map(
-                        (feature) => Text("• $feature", style: const TextStyle(color: Colors.green)),
-                      ),
-                    ],
-                    if (validationResult.missingFeatures.isNotEmpty) ...[
-                      const SizedBox(height: 10),
-                      const Text(
-                        "Missing features:",
-                        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
-                      ),
-                      ...validationResult.missingFeatures.map(
-                        (feature) => Text("• $feature", style: const TextStyle(color: Colors.red)),
-                      ),
-                    ],
-                    const SizedBox(height: 15),
-                     Text(
-                      "Please upload a clear image of your ${isNICFront ? 'NIC front side' : 'NIC back side'}.",
-                      style: TextStyle(fontStyle: FontStyle.italic),
-                    ),
-                  ],
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: const Text("Try Again"),
-                  ),
-                ],
-              ),
-            );
-          }
-          return null;
+    try {
+      if (Theme.of(context).platform == TargetPlatform.android) {
+        final androidInfo = await DeviceInfoPlugin().androidInfo;
+        if (androidInfo.version.sdkInt >= 33) {
+          status = await Permission.photos.request();
         } else {
-          // Show success message for valid NIC
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  "${isNICFront ? 'NIC Front' : 'NIC Back'} validated successfully! (${validationResult.confidence.toStringAsFixed(1)}% confidence)"
-                ),
-                backgroundColor: Colors.green,
-                duration: const Duration(seconds: 2),
-              ),
-            );
-          }
+          status = await Permission.storage.request();
         }
-      } catch (e) {
+      } else {
+        status = await Permission.photos.request();
+      }
+
+      if (status.isDenied) {
         if (context.mounted) {
-          Navigator.of(context).pop(); // Close loading dialog if still open
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text("Error validating NIC: $e"),
-              backgroundColor: Colors.orange,
+            const SnackBar(
+              content: Text(
+                "Permission denied. Please grant media/photos permission in settings.",
+              ),
+              backgroundColor: Colors.red,
             ),
           );
         }
-        // Continue with upload even if validation fails due to technical error
+        return null;
       }
-    }
 
-    // Proceed with Firebase upload
-    try {
-      final ref = FirebaseStorage.instance.ref(
-        'merchant_uploads/$userId/${fileType}_$fileName',
+      if (status.isPermanentlyDenied) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text(
+                "Permission permanently denied. Please enable it in app settings.",
+              ),
+              backgroundColor: Colors.red,
+              action: SnackBarAction(
+                label: 'Open Settings',
+                onPressed: () => openAppSettings(),
+              ),
+            ),
+          );
+        }
+        return null;
+      }
+
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.image,
+        allowMultiple: false,
       );
 
-      UploadTask uploadTask;
-      if (fileBytes != null) {
-        uploadTask = ref.putData(fileBytes);
-      } else {
-        uploadTask = ref.putFile(File(filePath!));
+      if (result == null || result.files.isEmpty) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("No file selected."),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return null;
       }
 
-      final snapshot = await uploadTask;
-      final url = await snapshot.ref.getDownloadURL();
-      return url;
+      final file = result.files.first;
+      final fileName = file.name;
+
+      Uint8List? fileBytes = file.bytes;
+      String? filePath = file.path;
+
+      if (fileBytes == null && filePath == null) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Invalid file selected."),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return null;
+      }
+
+      // Read file bytes if not available
+      if (fileBytes == null && filePath != null) {
+        fileBytes = await File(filePath).readAsBytes();
+      }
+
+      // Validate NIC if required
+      if (validateNIC && fileBytes != null) {
+        if (context.mounted) {
+          // Show loading dialog during validation
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => const AlertDialog(
+              content: Row(
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(width: 20),
+                  Text("Validating NIC image..."),
+                ],
+              ),
+            ),
+          );
+        }
+
+        try {
+          final validationResult = await NICValidationService.validateNICImage(
+            imageBytes: fileBytes,
+            isFrontSide: isNICFront,
+          );
+
+          if (context.mounted) {
+            Navigator.of(context).pop(); // Close loading dialog
+          }
+
+          if (!validationResult.isValid) {
+            if (context.mounted) {
+              // Show detailed validation error
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: Text(
+                    "Invalid ${isNICFront ? 'NIC Front' : 'NIC Back'} Image",
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        validationResult.errorMessage ?? 
+                        "The uploaded image does not appear to be a valid ${isNICFront ? 'NIC front side' : 'NIC back side'}.",
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        "Confidence: ${validationResult.confidence.toStringAsFixed(1)}%",
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      if (validationResult.foundFeatures.isNotEmpty) ...[
+                        const SizedBox(height: 10),
+                        const Text(
+                          "Found features:",
+                          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green),
+                        ),
+                        ...validationResult.foundFeatures.map(
+                          (feature) => Text("• $feature", style: const TextStyle(color: Colors.green)),
+                        ),
+                      ],
+                      if (validationResult.missingFeatures.isNotEmpty) ...[
+                        const SizedBox(height: 10),
+                        const Text(
+                          "Missing features:",
+                          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
+                        ),
+                        ...validationResult.missingFeatures.map(
+                          (feature) => Text("• $feature", style: const TextStyle(color: Colors.red)),
+                        ),
+                      ],
+                      const SizedBox(height: 15),
+                      Text(
+                        "Please upload a clear image of your ${isNICFront ? 'NIC front side' : 'NIC back side'}.",
+                        style: TextStyle(fontStyle: FontStyle.italic),
+                      ),
+                    ],
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text("Try Again"),
+                    ),
+                  ],
+                ),
+              );
+            }
+            return null;
+          } else {
+            // Show success message for valid NIC
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    "${isNICFront ? 'NIC Front' : 'NIC Back'} validated successfully! (${validationResult.confidence.toStringAsFixed(1)}% confidence)"
+                  ),
+                  backgroundColor: Colors.green,
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            }
+          }
+        } catch (e) {
+          if (context.mounted) {
+            Navigator.of(context).pop(); // Close loading dialog if still open
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text("Error validating NIC: $e"),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
+          // Continue with upload even if validation fails due to technical error
+        }
+      }
+
+      // Proceed with Firebase upload
+      try {
+        final ref = FirebaseStorage.instance.ref(
+          'merchant_uploads/$userId/${fileType}_$fileName',
+        );
+
+        UploadTask uploadTask;
+        if (fileBytes != null) {
+          uploadTask = ref.putData(fileBytes);
+        } else {
+          uploadTask = ref.putFile(File(filePath!));
+        }
+
+        final snapshot = await uploadTask;
+        final url = await snapshot.ref.getDownloadURL();
+        return url;
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("Upload failed: $e"),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return null;
+      }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Upload failed: $e"),
+            content: Text("Error during file upload: $e"),
             backgroundColor: Colors.red,
           ),
         );
       }
       return null;
     }
-  } catch (e) {
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Error during file upload: $e"),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-    return null;
   }
-}
+
   // NEW: Method to show Terms & Conditions in a scrollable modal
   void _showTermsAndConditions() {
     showDialog(
@@ -897,59 +935,59 @@ if (result['success'] == true) {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                          "TouchMe - Terms & Conditions and Refund Policy for Merchants\n\n"
-                          "Effective Date: July 01, 2025\n\n"
-                          "By registering as a merchant on the TouchMe platform, you agree to the following Terms & Conditions, including our refund and cancellation policies. These terms govern your relationship with SmartTouch Digital Solutions (P) Ltd.\n\n"
-                          "1. Acceptance of Terms\n\n"
-                          "By using TouchMe, you confirm that you agree to these Terms. If you do not agree, you must not register as a merchant.\n\n"
-                          "2. Merchant Responsibilities\n\n"
-                          "- Maintain accurate service listings, pricing, and availability.\n"
-                          "- Honor all confirmed bookings, or notify clients promptly of unavoidable changes.\n"
-                          "- Provide services at a professional standard.\n\n"
-                          "3. Booking and Cancellation Policy\n\n"
-                          "- You must define your cancellation policy during onboarding.\n"
-                          "- Customers may cancel within your defined window without penalty.\n"
-                          "- You may charge a 'no-show fee' if a client cancels too late or does not show up.\n\n"
-                          "4. Refund Policy\n\n"
-                          "- Refunds will only be provided for missed services, duplicate payments, or technical issues.\n"
-                          "- Requests for refunds must be submitted within 48 hours of the appointment.\n"
-                          "- Refunds will be processed through TouchMe and may take 5-7 business days.\n\n"
-                          "5. Dispute Resolution\n\n"
-                          "- TouchMe will act as a neutral party in disputes.\n"
-                          "- We will evaluate both sides and issue a fair resolution.\n"
-                          "- The final decision rests with TouchMe's support team.\n\n"
-                          "6. Service Fees and Payouts\n\n"
-                          "- Commissions will be deducted per the agreed terms.\n"
-                          "- Payouts are made weekly, net of fees.\n\n"
-                          "7. Privacy & Data Protection\n\n"
-                          "TouchMe is committed to protecting the privacy and confidentiality of all users, including both clients and merchants. All personal information and data collected through the TouchMe app, including but not limited to names, contact details, appointment history, and business information, will be stored securely and treated with strict confidentiality.\n\n"
-                          "We hereby assure you that your data will not be shared, sold, rented, or disclosed to any third parties without your explicit consent, except as required by law or to comply with legal obligations. Our systems are designed with appropriate security measures to safeguard your data against unauthorized access, misuse, or disclosure.\n\n"
-                          "By using the TouchMe app, you agree to our commitment to maintaining your privacy and trust.\n\n"
-                          "8. Termination\n\n"
-                          "- Breach of terms may result in account suspension or termination.\n"
-                          "- Merchants may exit the platform with 7 days' notice.\n\n"
-                          "9. Changes to Terms\n\n"
-                          "- We reserve the right to update these terms. Continued use of the app indicates acceptance.\n\n"
-                          "For support or questions, contact:\n\n"
-                          "Email: digitaltouch@outlook.com\n"
-                          "Hotline: +94 777 763 5225\n\n"
-                          "© 2025 SmartTouch Digital Solutions (Pvt) Ltd. All rights reserved.",
-                          style: TextStyle(fontSize: 14),
-                        ),
+                  "TouchMe - Terms & Conditions and Refund Policy for Merchants\n\n"
+                  "Effective Date: July 01, 2025\n\n"
+                  "By registering as a merchant on the TouchMe platform, you agree to the following Terms & Conditions, including our refund and cancellation policies. These terms govern your relationship with SmartTouch Digital Solutions (P) Ltd.\n\n"
+                  "1. Acceptance of Terms\n\n"
+                  "By using TouchMe, you confirm that you agree to these Terms. If you do not agree, you must not register as a merchant.\n\n"
+                  "2. Merchant Responsibilities\n\n"
+                  "- Maintain accurate service listings, pricing, and availability.\n"
+                  "- Honor all confirmed bookings, or notify clients promptly of unavoidable changes.\n"
+                  "- Provide services at a professional standard.\n\n"
+                  "3. Booking and Cancellation Policy\n\n"
+                  "- You must define your cancellation policy during onboarding.\n"
+                  "- Customers may cancel within your defined window without penalty.\n"
+                  "- You may charge a 'no-show fee' if a client cancels too late or does not show up.\n\n"
+                  "4. Refund Policy\n\n"
+                  "- Refunds will only be provided for missed services, duplicate payments, or technical issues.\n"
+                  "- Requests for refunds must be submitted within 48 hours of the appointment.\n"
+                  "- Refunds will be processed through TouchMe and may take 5-7 business days.\n\n"
+                  "5. Dispute Resolution\n\n"
+                  "- TouchMe will act as a neutral party in disputes.\n"
+                  "- We will evaluate both sides and issue a fair resolution.\n"
+                  "- The final decision rests with TouchMe's support team.\n\n"
+                  "6. Service Fees and Payouts\n\n"
+                  "- Commissions will be deducted per the agreed terms.\n"
+                  "- Payouts are made weekly, net of fees.\n\n"
+                  "7. Privacy & Data Protection\n\n"
+                  "TouchMe is committed to protecting the privacy and confidentiality of all users, including both clients and merchants. All personal information and data collected through the TouchMe app, including but not limited to names, contact details, appointment history, and business information, will be stored securely and treated with strict confidentiality.\n\n"
+                  "We hereby assure you that your data will not be shared, sold, rented, or disclosed to any third parties without your explicit consent, except as required by law or to comply with legal obligations. Our systems are designed with appropriate security measures to safeguard your data against unauthorized access, misuse, or disclosure.\n\n"
+                  "By using the TouchMe app, you agree to our commitment to maintaining your privacy and trust.\n\n"
+                  "8. Termination\n\n"
+                  "- Breach of terms may result in account suspension or termination.\n"
+                  "- Merchants may exit the platform with 7 days' notice.\n\n"
+                  "9. Changes to Terms\n\n"
+                  "- We reserve the right to update these terms. Continued use of the app indicates acceptance.\n\n"
+                  "For support or questions, contact:\n\n"
+                  "Email: digitaltouch@outlook.com\n"
+                  "Hotline: +94 777 763 5225\n\n"
+                  "© 2025 SmartTouch Digital Solutions (Pvt) Ltd. All rights reserved.",
+                  style: TextStyle(fontSize: 14),
+                ),
               ],
             ),
           ),
           actions: [
             TextButton(
-                onPressed: () {
-                  setState(() {
-                    _hasAgreed = true;
-                  });
-                  Navigator.of(context).pop();
-                },
-                child: const Text("Accept & Agree"),
-              ),
-             TextButton(
+              onPressed: () {
+                setState(() {
+                  _hasAgreed = true;
+                });
+                Navigator.of(context).pop();
+              },
+              child: const Text("Accept & Agree"),
+            ),
+            TextButton(
               onPressed: () {
                 setState(() {
                   _hasAgreed = false;
@@ -961,7 +999,6 @@ if (result['success'] == true) {
                 style: TextStyle(color: Color(0xFF6A1B9A)),
               ),
             ),
-            
           ],
         );
       },
@@ -988,7 +1025,8 @@ if (result['success'] == true) {
                 _progressStep(isActive: _page >= 0),
                 _progressStep(isActive: _page >= 1),
                 _progressStep(isActive: _page >= 2),
-                _progressStep(isActive: _page >= 3),
+                // COMMENTED OUT: Fourth progress step for bank info
+                // _progressStep(isActive: _page >= 3),
               ],
             ),
             Padding(
@@ -1008,7 +1046,8 @@ if (result['success'] == true) {
                   _buildOutletInfoStep(),
                   _buildContactInfoStep(),
                   _buildBusinessInfoStep(),
-                  _buildBankInfoStep(),
+                  // COMMENTED OUT: Bank info step
+                  // _buildBankInfoStep(),
                 ],
               ),
             ),
@@ -1028,7 +1067,7 @@ if (result['success'] == true) {
             const SizedBox(height: 20),
             const Center(
               child: Text(
-                "Outlet Information - Step 1 of 4",
+                "Outlet Information - Step 1 of 3", // Updated step count
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -1039,19 +1078,17 @@ if (result['success'] == true) {
             const SizedBox(height: 20),
             _buildFieldLabel("Outlet Name *"),
             TextFormField(
-              
               controller: _outletNameController,
               decoration: _inputDecoration("Outlet Name", icon: Icons.store),
               validator: (value) => _validateRequired(value, "outlet name"),
               textAlign: TextAlign.center,
             ),
-             _buildFieldLabel("Outlet Address *"),
+            _buildFieldLabel("Outlet Address *"),
             TextFormField(
               controller: _outletAddressController,
               decoration: _inputDecoration(
                 "Outlet Full Address",
                 icon: Icons.location_on,
-
               ),
               validator: (value) => _validateRequired(value, "outlet address"),
               textAlign: TextAlign.center,
@@ -1079,7 +1116,6 @@ if (result['success'] == true) {
                 initialCountryCode: 'LK',
                 onChanged: (phone) => _phoneNumber = phone.completeNumber,
                 validator: (p) => _validatePhoneNumber(p?.number),
-                
               ),
             ),
             _buildFieldLabel("Outlet Picture *"),
@@ -1143,13 +1179,12 @@ if (result['success'] == true) {
               ),
             ),
             const SizedBox(height: 20),
-            Text( "Need Help with registation?",
+            Text(
+              "Need Help with registation?",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
               ),
-              
-            
             ),
             const SizedBox(height: 10),
             Center(
@@ -1213,498 +1248,22 @@ if (result['success'] == true) {
     );
   }
 
+  // COMMENTED OUT: Branch options method for bank selection
+  /*
   List<DropdownMenuItem<String>> _getBranchOptions() {
-  if (_selectedBank == null) return [];
-  
-  switch (_selectedBank) {
-    case "BOC": // Bank of Ceylon
-      return [
-        // Colombo District
-        const DropdownMenuItem(value: "BOC_Colombo_Main", child: Text("Colombo Main Branch")),
-        const DropdownMenuItem(value: "BOC_Colombo_Fort", child: Text("Colombo Fort")),
-        const DropdownMenuItem(value: "BOC_Colombo_Pettah", child: Text("Colombo Pettah")),
-        const DropdownMenuItem(value: "BOC_Colombo_Bambalapitiya", child: Text("Bambalapitiya")),
-        const DropdownMenuItem(value: "BOC_Colombo_Dehiwala", child: Text("Dehiwala")),
-        const DropdownMenuItem(value: "BOC_Colombo_Maharagama", child: Text("Maharagama")),
-        const DropdownMenuItem(value: "BOC_Colombo_Nugegoda", child: Text("Nugegoda")),
-        const DropdownMenuItem(value: "BOC_Colombo_Wellawatta", child: Text("Wellawatta")),
-        const DropdownMenuItem(value: "BOC_Colombo_Kotte", child: Text("Kotte")),
-        const DropdownMenuItem(value: "BOC_Colombo_Rajagiriya", child: Text("Rajagiriya")),
-        const DropdownMenuItem(value: "BOC_Colombo_Borella", child: Text("Borella")),
-        const DropdownMenuItem(value: "BOC_Colombo_Maradana", child: Text("Maradana")),
-        const DropdownMenuItem(value: "BOC_Colombo_Grandpass", child: Text("Grandpass")),
-        const DropdownMenuItem(value: "BOC_Colombo_Kelaniya", child: Text("Kelaniya")),
-        const DropdownMenuItem(value: "BOC_Colombo_Kirulapone", child: Text("Kirulapone")),
-        const DropdownMenuItem(value: "BOC_Colombo_Kolonnawa", child: Text("Kolonnawa")),
-        const DropdownMenuItem(value: "BOC_Colombo_Kotahena", child: Text("Kotahena")),
-        const DropdownMenuItem(value: "BOC_Colombo_Mount_Lavinia", child: Text("Mount Lavinia")),
-        const DropdownMenuItem(value: "BOC_Colombo_Moratuwa", child: Text("Moratuwa")),
-        const DropdownMenuItem(value: "BOC_Colombo_Piliyandala", child: Text("Piliyandala")),
-        const DropdownMenuItem(value: "BOC_Colombo_Homagama", child: Text("Homagama")),
-        const DropdownMenuItem(value: "BOC_Colombo_Pannipitiya", child: Text("Pannipitiya")),
-        const DropdownMenuItem(value: "BOC_Colombo_Kaduwela", child: Text("Kaduwela")),
-        const DropdownMenuItem(value: "BOC_Colombo_Malabe", child: Text("Malabe")),
-        const DropdownMenuItem(value: "BOC_Colombo_Battaramulla", child: Text("Battaramulla")),
-        const DropdownMenuItem(value: "BOC_Colombo_Athurugiriya", child: Text("Athurugiriya")),
-        const DropdownMenuItem(value: "BOC_Colombo_Kottawa", child: Text("Kottawa")),
-        const DropdownMenuItem(value: "BOC_Colombo_Kohuwala", child: Text("Kohuwala")),
-        const DropdownMenuItem(value: "BOC_Colombo_Angoda", child: Text("Angoda")),
-        const DropdownMenuItem(value: "BOC_Colombo_Thalawathugoda", child: Text("Thalawathugoda")),
-        
-        // Gampaha District
-        const DropdownMenuItem(value: "BOC_Negombo_Main", child: Text("Negombo Main")),
-        const DropdownMenuItem(value: "BOC_Gampaha_Main", child: Text("Gampaha Main")),
-        const DropdownMenuItem(value: "BOC_Katunayake", child: Text("Katunayake")),
-        const DropdownMenuItem(value: "BOC_Ja_Ela", child: Text("Ja-Ela")),
-        const DropdownMenuItem(value: "BOC_Wattala", child: Text("Wattala")),
-        const DropdownMenuItem(value: "BOC_Kelaniya_2", child: Text("Kelaniya Branch 2")),
-        const DropdownMenuItem(value: "BOC_Minuwangoda", child: Text("Minuwangoda")),
-        const DropdownMenuItem(value: "BOC_Veyangoda", child: Text("Veyangoda")),
-        const DropdownMenuItem(value: "BOC_Kiribathgoda", child: Text("Kiribathgoda")),
-        const DropdownMenuItem(value: "BOC_Kandana", child: Text("Kandana")),
-        const DropdownMenuItem(value: "BOC_Divulapitiya", child: Text("Divulapitiya")),
-        const DropdownMenuItem(value: "BOC_Mirigama", child: Text("Mirigama")),
-        const DropdownMenuItem(value: "BOC_Attanagalla", child: Text("Attanagalla")),
-        const DropdownMenuItem(value: "BOC_Nittambuwa", child: Text("Nittambuwa")),
-        const DropdownMenuItem(value: "BOC_Dompe", child: Text("Dompe")),
-        const DropdownMenuItem(value: "BOC_Ragama", child: Text("Ragama")),
-        const DropdownMenuItem(value: "BOC_Biyagama", child: Text("Biyagama")),
-        const DropdownMenuItem(value: "BOC_Mahara", child: Text("Mahara")),
-        const DropdownMenuItem(value: "BOC_Seeduwa", child: Text("Seeduwa")),
-        const DropdownMenuItem(value: "BOC_Liyanagemulla", child: Text("Liyanagemulla")),
-        
-        // Kandy District
-        const DropdownMenuItem(value: "BOC_Kandy_Main", child: Text("Kandy Main")),
-        const DropdownMenuItem(value: "BOC_Kandy_Peradeniya", child: Text("Peradeniya")),
-        const DropdownMenuItem(value: "BOC_Kandy_Katugastota", child: Text("Katugastota")),
-        const DropdownMenuItem(value: "BOC_Kandy_Gampola", child: Text("Gampola")),
-        const DropdownMenuItem(value: "BOC_Kandy_Nawalapitiya", child: Text("Nawalapitiya")),
-        const DropdownMenuItem(value: "BOC_Kandy_Kadugannawa", child: Text("Kadugannawa")),
-        const DropdownMenuItem(value: "BOC_Kandy_Pilimatalawa", child: Text("Pilimatalawa")),
-        const DropdownMenuItem(value: "BOC_Kandy_Akurana", child: Text("Akurana")),
-        const DropdownMenuItem(value: "BOC_Kandy_Digana", child: Text("Digana")),
-        const DropdownMenuItem(value: "BOC_Kandy_Teldeniya", child: Text("Teldeniya")),
-        const DropdownMenuItem(value: "BOC_Kandy_Wattegama", child: Text("Wattegama")),
-        const DropdownMenuItem(value: "BOC_Kandy_Kundasale", child: Text("Kundasale")),
-        const DropdownMenuItem(value: "BOC_Kandy_Harispattuwa", child: Text("Harispattuwa")),
-        const DropdownMenuItem(value: "BOC_Kandy_Panvila", child: Text("Panvila")),
-        const DropdownMenuItem(value: "BOC_Kandy_Deltota", child: Text("Deltota")),
-        const DropdownMenuItem(value: "BOC_Kandy_Hewaheta", child: Text("Hewaheta")),
-        const DropdownMenuItem(value: "BOC_Kandy_Medadumbara", child: Text("Medadumbara")),
-        const DropdownMenuItem(value: "BOC_Kandy_Pasbage", child: Text("Pasbage")),
-        const DropdownMenuItem(value: "BOC_Kandy_Poojapitiya", child: Text("Poojapitiya")),
-        const DropdownMenuItem(value: "BOC_Kandy_Udadumbara", child: Text("Udadumbara")),
-        
-        // Galle District
-        const DropdownMenuItem(value: "BOC_Galle_Main", child: Text("Galle Main")),
-        const DropdownMenuItem(value: "BOC_Galle_Hikkaduwa", child: Text("Hikkaduwa")),
-        const DropdownMenuItem(value: "BOC_Galle_Ambalangoda", child: Text("Ambalangoda")),
-        const DropdownMenuItem(value: "BOC_Galle_Bentota", child: Text("Bentota")),
-        const DropdownMenuItem(value: "BOC_Galle_Kosgoda", child: Text("Kosgoda")),
-        const DropdownMenuItem(value: "BOC_Galle_Balapitiya", child: Text("Balapitiya")),
-        const DropdownMenuItem(value: "BOC_Galle_Elpitiya", child: Text("Elpitiya")),
-        const DropdownMenuItem(value: "BOC_Galle_Pitigala", child: Text("Pitigala")),
-        const DropdownMenuItem(value: "BOC_Galle_Tawalama", child: Text("Tawalama")),
-        const DropdownMenuItem(value: "BOC_Galle_Baddegama", child: Text("Baddegama")),
-        const DropdownMenuItem(value: "BOC_Galle_Neluwa", child: Text("Neluwa")),
-        const DropdownMenuItem(value: "BOC_Galle_Nagoda", child: Text("Nagoda")),
-        const DropdownMenuItem(value: "BOC_Galle_Batapola", child: Text("Batapola")),
-        const DropdownMenuItem(value: "BOC_Galle_Imaduwa", child: Text("Imaduwa")),
-        const DropdownMenuItem(value: "BOC_Galle_Habaraduwa", child: Text("Habaraduwa")),
-        const DropdownMenuItem(value: "BOC_Galle_Unawatuna", child: Text("Unawatuna")),
-        const DropdownMenuItem(value: "BOC_Galle_Yakkalamulla", child: Text("Yakkalamulla")),
-        
-        // Matara District
-        const DropdownMenuItem(value: "BOC_Matara_Main", child: Text("Matara Main")),
-        const DropdownMenuItem(value: "BOC_Matara_Weligama", child: Text("Weligama")),
-        const DropdownMenuItem(value: "BOC_Matara_Mirissa", child: Text("Mirissa")),
-        const DropdownMenuItem(value: "BOC_Matara_Akuressa", child: Text("Akuressa")),
-        const DropdownMenuItem(value: "BOC_Matara_Hakmana", child: Text("Hakmana")),
-        const DropdownMenuItem(value: "BOC_Matara_Kamburupitiya", child: Text("Kamburupitiya")),
-        const DropdownMenuItem(value: "BOC_Matara_Devinuwara", child: Text("Devinuwara")),
-        const DropdownMenuItem(value: "BOC_Matara_Dickwella", child: Text("Dickwella")),
-        const DropdownMenuItem(value: "BOC_Matara_Tangalle", child: Text("Tangalle")),
-        const DropdownMenuItem(value: "BOC_Matara_Beliatta", child: Text("Beliatta")),
-        const DropdownMenuItem(value: "BOC_Matara_Urubokka", child: Text("Urubokka")),
-        const DropdownMenuItem(value: "BOC_Matara_Pitabeddara", child: Text("Pitabeddara")),
-        const DropdownMenuItem(value: "BOC_Matara_Pasgoda", child: Text("Pasgoda")),
-        const DropdownMenuItem(value: "BOC_Matara_Thihagoda", child: Text("Thihagoda")),
-        const DropdownMenuItem(value: "BOC_Matara_Kotapola", child: Text("Kotapola")),
-        
-        // Kurunegala District
-        const DropdownMenuItem(value: "BOC_Kurunegala_Main", child: Text("Kurunegala Main")),
-        const DropdownMenuItem(value: "BOC_Kurunegala_Puttalam", child: Text("Puttalam")),
-        const DropdownMenuItem(value: "BOC_Kurunegala_Chilaw", child: Text("Chilaw")),
-        const DropdownMenuItem(value: "BOC_Kurunegala_Kuliyapitiya", child: Text("Kuliyapitiya")),
-        const DropdownMenuItem(value: "BOC_Kurunegala_Narammala", child: Text("Narammala")),
-        const DropdownMenuItem(value: "BOC_Kurunegala_Wariyapola", child: Text("Wariyapola")),
-        const DropdownMenuItem(value: "BOC_Kurunegala_Pannala", child: Text("Pannala")),
-        const DropdownMenuItem(value: "BOC_Kurunegala_Giriulla", child: Text("Giriulla")),
-        const DropdownMenuItem(value: "BOC_Kurunegala_Polgahawela", child: Text("Polgahawela")),
-        const DropdownMenuItem(value: "BOC_Kurunegala_Alawwa", child: Text("Alawwa")),
-        const DropdownMenuItem(value: "BOC_Kurunegala_Mawathagama", child: Text("Mawathagama")),
-        const DropdownMenuItem(value: "BOC_Kurunegala_Dankotuwa", child: Text("Dankotuwa")),
-        const DropdownMenuItem(value: "BOC_Kurunegala_Bingiriya", child: Text("Bingiriya")),
-        const DropdownMenuItem(value: "BOC_Kurunegala_Nikaweratiya", child: Text("Nikaweratiya")),
-        const DropdownMenuItem(value: "BOC_Kurunegala_Hettipola", child: Text("Hettipola")),
-        const DropdownMenuItem(value: "BOC_Kurunegala_Ibbagamuwa", child: Text("Ibbagamuwa")),
-        const DropdownMenuItem(value: "BOC_Kurunegala_Udubaddawa", child: Text("Udubaddawa")),
-        const DropdownMenuItem(value: "BOC_Kurunegala_Mahawa", child: Text("Mahawa")),
-        const DropdownMenuItem(value: "BOC_Kurunegala_Kobeigane", child: Text("Kobeigane")),
-        const DropdownMenuItem(value: "BOC_Kurunegala_Ridigama", child: Text("Ridigama")),
-        
-        // Anuradhapura District
-        const DropdownMenuItem(value: "BOC_Anuradhapura_Main", child: Text("Anuradhapura Main")),
-        const DropdownMenuItem(value: "BOC_Anuradhapura_Kekirawa", child: Text("Kekirawa")),
-        const DropdownMenuItem(value: "BOC_Anuradhapura_Eppawala", child: Text("Eppawala")),
-        const DropdownMenuItem(value: "BOC_Anuradhapura_Habarana", child: Text("Habarana")),
-        const DropdownMenuItem(value: "BOC_Anuradhapura_Mihintale", child: Text("Mihintale")),
-        const DropdownMenuItem(value: "BOC_Anuradhapura_Medawachchiya", child: Text("Medawachchiya")),
-        const DropdownMenuItem(value: "BOC_Anuradhapura_Horowpothana", child: Text("Horowpothana")),
-        const DropdownMenuItem(value: "BOC_Anuradhapura_Galenbindunuwewa", child: Text("Galenbindunuwewa")),
-        const DropdownMenuItem(value: "BOC_Anuradhapura_Thirappane", child: Text("Thirappane")),
-        const DropdownMenuItem(value: "BOC_Anuradhapura_Nochchiyagama", child: Text("Nochchiyagama")),
-        const DropdownMenuItem(value: "BOC_Anuradhapura_Rambewa", child: Text("Rambewa")),
-        const DropdownMenuItem(value: "BOC_Anuradhapura_Talawa", child: Text("Talawa")),
-        const DropdownMenuItem(value: "BOC_Anuradhapura_Palagala", child: Text("Palagala")),
-        const DropdownMenuItem(value: "BOC_Anuradhapura_Kahatagasdigiliya", child: Text("Kahatagasdigiliya")),
-        const DropdownMenuItem(value: "BOC_Anuradhapura_Galnewa", child: Text("Galnewa")),
-        const DropdownMenuItem(value: "BOC_Anuradhapura_Rajanganaya", child: Text("Rajanganaya")),
-        
-        // Polonnaruwa District
-        const DropdownMenuItem(value: "BOC_Polonnaruwa_Main", child: Text("Polonnaruwa Main")),
-        const DropdownMenuItem(value: "BOC_Polonnaruwa_Kaduruwela", child: Text("Kaduruwela")),
-        const DropdownMenuItem(value: "BOC_Polonnaruwa_Medirigiriya", child: Text("Medirigiriya")),
-        const DropdownMenuItem(value: "BOC_Polonnaruwa_Hingurakgoda", child: Text("Hingurakgoda")),
-        const DropdownMenuItem(value: "BOC_Polonnaruwa_Dimbulagala", child: Text("Dimbulagala")),
-        const DropdownMenuItem(value: "BOC_Polonnaruwa_Welikanda", child: Text("Welikanda")),
-        const DropdownMenuItem(value: "BOC_Polonnaruwa_Lankapura", child: Text("Lankapura")),
-        const DropdownMenuItem(value: "BOC_Polonnaruwa_Thamankaduwa", child: Text("Thamankaduwa")),
-        
-        // Trincomalee District
-        const DropdownMenuItem(value: "BOC_Trincomalee_Main", child: Text("Trincomalee Main")),
-        const DropdownMenuItem(value: "BOC_Trincomalee_Kinniya", child: Text("Kinniya")),
-        const DropdownMenuItem(value: "BOC_Trincomalee_Nilaveli", child: Text("Nilaveli")),
-        const DropdownMenuItem(value: "BOC_Trincomalee_Mutur", child: Text("Mutur")),
-        const DropdownMenuItem(value: "BOC_Trincomalee_Kantale", child: Text("Kantale")),
-        const DropdownMenuItem(value: "BOC_Trincomalee_Gomarankadawala", child: Text("Gomarankadawala")),
-        const DropdownMenuItem(value: "BOC_Trincomalee_Seruvila", child: Text("Seruvila")),
-        const DropdownMenuItem(value: "BOC_Trincomalee_Padavi_Sripo", child: Text("Padavi Sripo")),
-        const DropdownMenuItem(value: "BOC_Trincomalee_Verugal", child: Text("Verugal")),
-        const DropdownMenuItem(value: "BOC_Trincomalee_Thambalagamuwa", child: Text("Thambalagamuwa")),
-        
-        // Batticaloa District
-        const DropdownMenuItem(value: "BOC_Batticaloa_Main", child: Text("Batticaloa Main")),
-        const DropdownMenuItem(value: "BOC_Batticaloa_Kaluwanchikudy", child: Text("Kaluwanchikudy")),
-        const DropdownMenuItem(value: "BOC_Batticaloa_Valachchenai", child: Text("Valachchenai")),
-        const DropdownMenuItem(value: "BOC_Batticaloa_Eravur", child: Text("Eravur")),
-        const DropdownMenuItem(value: "BOC_Batticaloa_Kattankudy", child: Text("Kattankudy")),
-        const DropdownMenuItem(value: "BOC_Batticaloa_Oddamavadi", child: Text("Oddamavadi")),
-        const DropdownMenuItem(value: "BOC_Batticaloa_Chenkalady", child: Text("Chenkalady")),
-        const DropdownMenuItem(value: "BOC_Batticaloa_Pasikudah", child: Text("Pasikudah")),
-        const DropdownMenuItem(value: "BOC_Batticaloa_Koralaipattu", child: Text("Koralaipattu")),
-        const DropdownMenuItem(value: "BOC_Batticaloa_Manmunai", child: Text("Manmunai")),
-        
-        // Ampara District
-        const DropdownMenuItem(value: "BOC_Ampara_Main", child: Text("Ampara Main")),
-        const DropdownMenuItem(value: "BOC_Ampara_Kalmunai", child: Text("Kalmunai")),
-        const DropdownMenuItem(value: "BOC_Ampara_Akkaraipattu", child: Text("Akkaraipattu")),
-        const DropdownMenuItem(value: "BOC_Ampara_Sammanthurai", child: Text("Sammanthurai")),
-        const DropdownMenuItem(value: "BOC_Ampara_Pottuvil", child: Text("Pottuvil")),
-        const DropdownMenuItem(value: "BOC_Ampara_Arugam_Bay", child: Text("Arugam Bay")),
-        const DropdownMenuItem(value: "BOC_Ampara_Uhana", child: Text("Uhana")),
-        const DropdownMenuItem(value: "BOC_Ampara_Mahaoya", child: Text("Mahaoya")),
-        const DropdownMenuItem(value: "BOC_Ampara_Damana", child: Text("Damana")),
-        const DropdownMenuItem(value: "BOC_Ampara_Sainthamaruthu", child: Text("Sainthamaruthu")),
-        const DropdownMenuItem(value: "BOC_Ampara_Ninthavur", child: Text("Ninthavur")),
-        const DropdownMenuItem(value: "BOC_Ampara_Lahugala", child: Text("Lahugala")),
-        const DropdownMenuItem(value: "BOC_Ampara_Navithanveli", child: Text("Navithanveli")),
-        
-        // Jaffna District
-        const DropdownMenuItem(value: "BOC_Jaffna_Main", child: Text("Jaffna Main")),
-        const DropdownMenuItem(value: "BOC_Jaffna_Nallur", child: Text("Nallur")),
-        const DropdownMenuItem(value: "BOC_Jaffna_Chavakachcheri", child: Text("Chavakachcheri")),
-        const DropdownMenuItem(value: "BOC_Jaffna_Point_Pedro", child: Text("Point Pedro")),
-        const DropdownMenuItem(value: "BOC_Jaffna_Kayts", child: Text("Kayts")),
-        const DropdownMenuItem(value: "BOC_Jaffna_Karainagar", child: Text("Karainagar")),
-        const DropdownMenuItem(value: "BOC_Jaffna_Velanai", child: Text("Velanai")),
-        const DropdownMenuItem(value: "BOC_Jaffna_Delft", child: Text("Delft")),
-        const DropdownMenuItem(value: "BOC_Jaffna_Thellipalai", child: Text("Thellipalai")),
-        const DropdownMenuItem(value: "BOC_Jaffna_Sandilipay", child: Text("Sandilipay")),
-        const DropdownMenuItem(value: "BOC_Jaffna_Kopay", child: Text("Kopay")),
-        const DropdownMenuItem(value: "BOC_Jaffna_Manipay", child: Text("Manipay")),
-        const DropdownMenuItem(value: "BOC_Jaffna_Uduvil", child: Text("Uduvil")),
-        
-        // Vavuniya District
-        const DropdownMenuItem(value: "BOC_Vavuniya_Main", child: Text("Vavuniya Main")),
-        const DropdownMenuItem(value: "BOC_Vavuniya_Cheddikulam", child: Text("Cheddikulam")),
-        const DropdownMenuItem(value: "BOC_Vavuniya_Nedunkerni", child: Text("Nedunkerni")),
-        const DropdownMenuItem(value: "BOC_Vavuniya_Vavuniya_South", child: Text("Vavuniya South")),
-        const DropdownMenuItem(value: "BOC_Vavuniya_Omanthai", child: Text("Omanthai")),
-        
-        // Mannar District
-        const DropdownMenuItem(value: "BOC_Mannar_Main", child: Text("Mannar Main")),
-        const DropdownMenuItem(value: "BOC_Mannar_Nanattan", child: Text("Nanattan")),
-        const DropdownMenuItem(value: "BOC_Mannar_Madhu", child: Text("Madhu")),
-        const DropdownMenuItem(value: "BOC_Mannar_Musali", child: Text("Musali")),
-        
-        // Mullaitivu District
-        const DropdownMenuItem(value: "BOC_Mullaitivu_Main", child: Text("Mullaitivu Main")),
-        const DropdownMenuItem(value: "BOC_Mullaitivu_Puthukudiyiruppu", child: Text("Puthukudiyiruppu")),
-        const DropdownMenuItem(value: "BOC_Mullaitivu_Oddusuddan", child: Text("Oddusuddan")),
-        const DropdownMenuItem(value: "BOC_Mullaitivu_Kokkilai", child: Text("Kokkilai")),
-        
-        // Ratnapura District
-        const DropdownMenuItem(value: "BOC_Ratnapura_Main", child: Text("Ratnapura Main")),
-        const DropdownMenuItem(value: "BOC_Ratnapura_Embilipitiya", child: Text("Embilipitiya")),
-        const DropdownMenuItem(value: "BOC_Ratnapura_Balangoda", child: Text("Balangoda")),
-        const DropdownMenuItem(value: "BOC_Ratnapura_Pelmadulla", child: Text("Pelmadulla")),
-        const DropdownMenuItem(value: "BOC_Ratnapura_Kuruwita", child: Text("Kuruwita")),
-
-      ];
-      
-    case "PB": // People's Bank
-      return [
-        const DropdownMenuItem(value: "PB_Colombo_Main", child: Text("Colombo Main - Sir Chittampalam A. Gardiner Mw")),
-        const DropdownMenuItem(value: "PB_Colombo_Fort", child: Text("Colombo Fort")),
-        const DropdownMenuItem(value: "PB_Colombo_Pettah", child: Text("Colombo Pettah")),
-        const DropdownMenuItem(value: "PB_Colombo_Wellawatta", child: Text("Wellawatta")),
-        const DropdownMenuItem(value: "PB_Colombo_Rajagiriya", child: Text("Rajagiriya")),
-        const DropdownMenuItem(value: "PB_Negombo_Main", child: Text("Negombo Main")),
-        const DropdownMenuItem(value: "PB_Negombo_Katunayake", child: Text("Katunayake")),
-        const DropdownMenuItem(value: "PB_Gampaha_Main", child: Text("Gampaha Main")),
-        const DropdownMenuItem(value: "PB_Kandy_Main", child: Text("Kandy Main")),
-        const DropdownMenuItem(value: "PB_Galle_Main", child: Text("Galle Main")),
-        const DropdownMenuItem(value: "PB_Matara_Main", child: Text("Matara Main")),
-        const DropdownMenuItem(value: "PB_Kurunegala_Main", child: Text("Kurunegala Main")),
-        const DropdownMenuItem(value: "PB_Anuradhapura_Main", child: Text("Anuradhapura Main")),
-        const DropdownMenuItem(value: "PB_Jaffna_Main", child: Text("Jaffna Main")),
-        const DropdownMenuItem(value: "PB_Batticaloa_Main", child: Text("Batticaloa Main")),
-      ];
-      
-    case "COMB": // Commercial Bank of Ceylon
-      return [
-        const DropdownMenuItem(value: "COMB_Colombo_Main", child: Text("Colombo Main - Bristol Street")),
-        const DropdownMenuItem(value: "COMB_Colombo_Fort", child: Text("Colombo Fort")),
-        const DropdownMenuItem(value: "COMB_Colombo_Pettah", child: Text("Colombo Pettah")),
-        const DropdownMenuItem(value: "COMB_Colombo_Bambalapitiya", child: Text("Bambalapitiya")),
-        const DropdownMenuItem(value: "COMB_Colombo_Dehiwala", child: Text("Dehiwala")),
-        const DropdownMenuItem(value: "COMB_Colombo_Nugegoda", child: Text("Nugegoda")),
-        const DropdownMenuItem(value: "COMB_Colombo_Maharagama", child: Text("Maharagama")),
-        const DropdownMenuItem(value: "COMB_Negombo_Main", child: Text("Negombo Main")),
-        const DropdownMenuItem(value: "COMB_Negombo_Dankotuwa", child: Text("Dankotuwa")),
-        const DropdownMenuItem(value: "COMB_Kandy_Main", child: Text("Kandy Main")),
-        const DropdownMenuItem(value: "COMB_Galle_Main", child: Text("Galle Main")),
-        const DropdownMenuItem(value: "COMB_Matara_Main", child: Text("Matara Main")),
-        const DropdownMenuItem(value: "COMB_Kurunegala_Main", child: Text("Kurunegala Main")),
-        const DropdownMenuItem(value: "COMB_Anuradhapura_Main", child: Text("Anuradhapura Main")),
-        const DropdownMenuItem(value: "COMB_Trincomalee_Main", child: Text("Trincomalee Main")),
-        const DropdownMenuItem(value: "COMB_Batticaloa_Main", child: Text("Batticaloa Main")),
-        const DropdownMenuItem(value: "COMB_Jaffna_Main", child: Text("Jaffna Main")),
-        const DropdownMenuItem(value: "COMB_Ratnapura_Main", child: Text("Ratnapura Main")),
-        const DropdownMenuItem(value: "COMB_Badulla_Main", child: Text("Badulla Main")),
-      ];
-      
-    case "HNB": // Hatton National Bank
-      return [
-        const DropdownMenuItem(value: "HNB_Colombo_Main", child: Text("Colombo Main - HNB Towers")),
-        const DropdownMenuItem(value: "HNB_Colombo_Fort", child: Text("Colombo Fort")),
-        const DropdownMenuItem(value: "HNB_Colombo_Pettah", child: Text("Colombo Pettah")),
-        const DropdownMenuItem(value: "HNB_Colombo_Bambalapitiya", child: Text("Bambalapitiya")),
-        const DropdownMenuItem(value: "HNB_Colombo_Dehiwala", child: Text("Dehiwala")),
-        const DropdownMenuItem(value: "HNB_Colombo_Nugegoda", child: Text("Nugegoda")),
-        const DropdownMenuItem(value: "HNB_Kurunegala_Main", child: Text("Kurunegala Main")),
-        const DropdownMenuItem(value: "HNB_Kandy_Main", child: Text("Kandy Main")),
-        const DropdownMenuItem(value: "HNB_Galle_Main", child: Text("Galle Main")),
-        const DropdownMenuItem(value: "HNB_Matara_Main", child: Text("Matara Main")),
-        const DropdownMenuItem(value: "HNB_Negombo_Main", child: Text("Negombo Main")),
-        const DropdownMenuItem(value: "HNB_Anuradhapura_Main", child: Text("Anuradhapura Main")),
-        const DropdownMenuItem(value: "HNB_Trincomalee_Main", child: Text("Trincomalee Main")),
-        const DropdownMenuItem(value: "HNB_Batticaloa_Main", child: Text("Batticaloa Main")),
-        const DropdownMenuItem(value: "HNB_Jaffna_Main", child: Text("Jaffna Main")),
-        const DropdownMenuItem(value: "HNB_Ratnapura_Main", child: Text("Ratnapura Main")),
-        const DropdownMenuItem(value: "HNB_Badulla_Main", child: Text("Badulla Main")),
-      ];
-      
-    case "SB": // Seylan Bank
-      return [
-        const DropdownMenuItem(value: "SB_Colombo_Main", child: Text("Colombo Main")),
-        const DropdownMenuItem(value: "SB_Colombo_Fort", child: Text("Colombo Fort")),
-        const DropdownMenuItem(value: "SB_Colombo_Pettah", child: Text("Colombo Pettah")),
-        const DropdownMenuItem(value: "SB_Colombo_Bambalapitiya", child: Text("Bambalapitiya")),
-        const DropdownMenuItem(value: "SB_Colombo_Dehiwala", child: Text("Dehiwala")),
-        const DropdownMenuItem(value: "SB_Kandy_Main", child: Text("Kandy Main")),
-        const DropdownMenuItem(value: "SB_Galle_Main", child: Text("Galle Main")),
-        const DropdownMenuItem(value: "SB_Matara_Main", child: Text("Matara Main")),
-        const DropdownMenuItem(value: "SB_Negombo_Main", child: Text("Negombo Main")),
-        const DropdownMenuItem(value: "SB_Kurunegala_Main", child: Text("Kurunegala Main")),
-        const DropdownMenuItem(value: "SB_Anuradhapura_Main", child: Text("Anuradhapura Main")),
-        const DropdownMenuItem(value: "SB_Jaffna_Main", child: Text("Jaffna Main")),
-        const DropdownMenuItem(value: "SB_Batticaloa_Main", child: Text("Batticaloa Main")),
-        const DropdownMenuItem(value: "SB_Ratnapura_Main", child: Text("Ratnapura Main")),
-      ];
-      
-    case "SAMPATH": // Sampath Bank
-      return [
-        const DropdownMenuItem(value: "SAMPATH_Colombo_Main", child: Text("Colombo Main")),
-        const DropdownMenuItem(value: "SAMPATH_Colombo_Fort", child: Text("Colombo Fort")),
-        const DropdownMenuItem(value: "SAMPATH_Colombo_Pettah", child: Text("Colombo Pettah")),
-        const DropdownMenuItem(value: "SAMPATH_Colombo_Bambalapitiya", child: Text("Bambalapitiya")),
-        const DropdownMenuItem(value: "SAMPATH_Colombo_Dehiwala", child: Text("Dehiwala")),
-        const DropdownMenuItem(value: "SAMPATH_Colombo_Nugegoda", child: Text("Nugegoda")),
-        const DropdownMenuItem(value: "SAMPATH_Kandy_Main", child: Text("Kandy Main")),
-        const DropdownMenuItem(value: "SAMPATH_Galle_Main", child: Text("Galle Main")),
-        const DropdownMenuItem(value: "SAMPATH_Matara_Main", child: Text("Matara Main")),
-        const DropdownMenuItem(value: "SAMPATH_Negombo_Main", child: Text("Negombo Main")),
-        const DropdownMenuItem(value: "SAMPATH_Kurunegala_Main", child: Text("Kurunegala Main")),
-        const DropdownMenuItem(value: "SAMPATH_Anuradhapura_Main", child: Text("Anuradhapura Main")),
-        const DropdownMenuItem(value: "SAMPATH_Jaffna_Main", child: Text("Jaffna Main")),
-        const DropdownMenuItem(value: "SAMPATH_Batticaloa_Main", child: Text("Batticaloa Main")),
-        const DropdownMenuItem(value: "SAMPATH_Ratnapura_Main", child: Text("Ratnapura Main")),
-      ];
-      
-    case "DFCC": // DFCC Bank
-      return [
-        const DropdownMenuItem(value: "DFCC_Colombo_Main", child: Text("Colombo Main - Galle Road")),
-        const DropdownMenuItem(value: "DFCC_Colombo_Fort", child: Text("Colombo Fort")),
-        const DropdownMenuItem(value: "DFCC_Colombo_Bambalapitiya", child: Text("Bambalapitiya")),
-        const DropdownMenuItem(value: "DFCC_Colombo_Dehiwala", child: Text("Dehiwala")),
-        const DropdownMenuItem(value: "DFCC_Kandy_Main", child: Text("Kandy Main")),
-        const DropdownMenuItem(value: "DFCC_Galle_Main", child: Text("Galle Main")),
-        const DropdownMenuItem(value: "DFCC_Matara_Main", child: Text("Matara Main")),
-        const DropdownMenuItem(value: "DFCC_Negombo_Main", child: Text("Negombo Main")),
-        const DropdownMenuItem(value: "DFCC_Kurunegala_Main", child: Text("Kurunegala Main")),
-        const DropdownMenuItem(value: "DFCC_Anuradhapura_Main", child: Text("Anuradhapura Main")),
-        const DropdownMenuItem(value: "DFCC_Jaffna_Main", child: Text("Jaffna Main")),
-      ];
-      
-    case "NDB": // National Development Bank
-      return [
-        const DropdownMenuItem(value: "NDB_Colombo_Main", child: Text("Colombo Main")),
-        const DropdownMenuItem(value: "NDB_Colombo_Fort", child: Text("Colombo Fort")),
-        const DropdownMenuItem(value: "NDB_Colombo_Pettah", child: Text("Colombo Pettah")),
-        const DropdownMenuItem(value: "NDB_Colombo_Bambalapitiya", child: Text("Bambalapitiya")),
-        const DropdownMenuItem(value: "NDB_Kandy_Main", child: Text("Kandy Main")),
-        const DropdownMenuItem(value: "NDB_Galle_Main", child: Text("Galle Main")),
-        const DropdownMenuItem(value: "NDB_Matara_Main", child: Text("Matara Main")),
-        const DropdownMenuItem(value: "NDB_Negombo_Main", child: Text("Negombo Main")),
-        const DropdownMenuItem(value: "NDB_Kurunegala_Main", child: Text("Kurunegala Main")),
-        const DropdownMenuItem(value: "NDB_Anuradhapura_Main", child: Text("Anuradhapura Main")),
-        const DropdownMenuItem(value: "NDB_Jaffna_Main", child: Text("Jaffna Main")),
-        const DropdownMenuItem(value: "NDB_Batticaloa_Main", child: Text("Batticaloa Main")),
-      ];
-      
-    case "AMANA": // Amana Bank
-      return [
-        const DropdownMenuItem(value: "AMANA_Colombo_Main", child: Text("Colombo Main")),
-        const DropdownMenuItem(value: "AMANA_Colombo_Fort", child: Text("Colombo Fort")),
-        const DropdownMenuItem(value: "AMANA_Negombo_Main", child: Text("Negombo Main")),
-        const DropdownMenuItem(value: "AMANA_Kandy_Main", child: Text("Kandy Main")),
-        const DropdownMenuItem(value: "AMANA_Galle_Main", child: Text("Galle Main")),
-        const DropdownMenuItem(value: "AMANA_Matara_Main", child: Text("Matara Main")),
-        const DropdownMenuItem(value: "AMANA_Matale_Main", child: Text("Matale Main")),
-        const DropdownMenuItem(value: "AMANA_Mawanella_Main", child: Text("Mawanella Main")),
-        const DropdownMenuItem(value: "AMANA_Kurunegala_Main", child: Text("Kurunegala Main")),
-        const DropdownMenuItem(value: "AMANA_Anuradhapura_Main", child: Text("Anuradhapura Main")),
-        const DropdownMenuItem(value: "AMANA_Jaffna_Main", child: Text("Jaffna Main")),
-        const DropdownMenuItem(value: "AMANA_Batticaloa_Main", child: Text("Batticaloa Main")),
-      ];
-      
-    case "CARGILLS": // Cargills Bank
-      return [
-        const DropdownMenuItem(value: "CARGILLS_Colombo_Main", child: Text("Colombo Main")),
-        const DropdownMenuItem(value: "CARGILLS_Colombo_Fort", child: Text("Colombo Fort")),
-        const DropdownMenuItem(value: "CARGILLS_Colombo_Pettah", child: Text("Colombo Pettah")),
-        const DropdownMenuItem(value: "CARGILLS_Kandy_Main", child: Text("Kandy Main")),
-        const DropdownMenuItem(value: "CARGILLS_Galle_Main", child: Text("Galle Main")),
-        const DropdownMenuItem(value: "CARGILLS_Matara_Main", child: Text("Matara Main")),
-        const DropdownMenuItem(value: "CARGILLS_Negombo_Main", child: Text("Negombo Main")),
-        const DropdownMenuItem(value: "CARGILLS_Kurunegala_Main", child: Text("Kurunegala Main")),
-        const DropdownMenuItem(value: "CARGILLS_Anuradhapura_Main", child: Text("Anuradhapura Main")),
-        const DropdownMenuItem(value: "CARGILLS_Jaffna_Main", child: Text("Jaffna Main")),
-      ];
-      
-    case "NTB": // Nations Trust Bank
-      return [
-        const DropdownMenuItem(value: "NTB_Colombo_Main", child: Text("Colombo Main")),
-        const DropdownMenuItem(value: "NTB_Colombo_Fort", child: Text("Colombo Fort")),
-        const DropdownMenuItem(value: "NTB_Colombo_Bambalapitiya", child: Text("Bambalapitiya")),
-        const DropdownMenuItem(value: "NTB_Colombo_Dehiwala", child: Text("Dehiwala")),
-        const DropdownMenuItem(value: "NTB_Kandy_Main", child: Text("Kandy Main")),
-        const DropdownMenuItem(value: "NTB_Galle_Main", child: Text("Galle Main")),
-        const DropdownMenuItem(value: "NTB_Matara_Main", child: Text("Matara Main")),
-        const DropdownMenuItem(value: "NTB_Negombo_Main", child: Text("Negombo Main")),
-        const DropdownMenuItem(value: "NTB_Kurunegala_Main", child: Text("Kurunegala Main")),
-        const DropdownMenuItem(value: "NTB_Anuradhapura_Main", child: Text("Anuradhapura Main")),
-        const DropdownMenuItem(value: "NTB_Jaffna_Main", child: Text("Jaffna Main")),
-      ];
-      
-    case "UNION": // Union Bank
-      return [
-        const DropdownMenuItem(value: "UNION_Colombo_Main", child: Text("Colombo Main")),
-        const DropdownMenuItem(value: "UNION_Colombo_Fort", child: Text("Colombo Fort")),
-        const DropdownMenuItem(value: "UNION_Kandy_Main", child: Text("Kandy Main")),
-        const DropdownMenuItem(value: "UNION_Galle_Main", child: Text("Galle Main")),
-        const DropdownMenuItem(value: "UNION_Matara_Main", child: Text("Matara Main")),
-        const DropdownMenuItem(value: "UNION_Negombo_Main", child: Text("Negombo Main")),
-        const DropdownMenuItem(value: "UNION_Kurunegala_Main", child: Text("Kurunegala Main")),
-        const DropdownMenuItem(value: "UNION_Anuradhapura_Main", child: Text("Anuradhapura Main")),
-        const DropdownMenuItem(value: "UNION_Jaffna_Main", child: Text("Jaffna Main")),
-      ];
-      
-    case "PAN_ASIA": // Pan Asia Bank
-      return [
-        const DropdownMenuItem(value: "PAN_ASIA_Colombo_Main", child: Text("Colombo Main")),
-        const DropdownMenuItem(value: "PAN_ASIA_Colombo_Fort", child: Text("Colombo Fort")),
-        const DropdownMenuItem(value: "PAN_ASIA_Kandy_Main", child: Text("Kandy Main")),
-        const DropdownMenuItem(value: "PAN_ASIA_Galle_Main", child: Text("Galle Main")),
-        const DropdownMenuItem(value: "PAN_ASIA_Matara_Main", child: Text("Matara Main")),
-        const DropdownMenuItem(value: "PAN_ASIA_Negombo_Main", child: Text("Negombo Main")),
-        const DropdownMenuItem(value: "PAN_ASIA_Kurunegala_Main", child: Text("Kurunegala Main")),
-        const DropdownMenuItem(value: "PAN_ASIA_Anuradhapura_Main", child: Text("Anuradhapura Main")),
-        const DropdownMenuItem(value: "PAN_ASIA_Jaffna_Main", child: Text("Jaffna Main")),
-      ];
-      
-    case "HABIB": // Habib Bank Limited
-      return [
-        const DropdownMenuItem(value: "HABIB_Colombo_Main", child: Text("Colombo Main - 2nd Cross Street")),
-        const DropdownMenuItem(value: "HABIB_Colombo_Fort", child: Text("Colombo Fort")),
-        const DropdownMenuItem(value: "HABIB_Kandy_Main", child: Text("Kandy Main")),
-        const DropdownMenuItem(value: "HABIB_Galle_Main", child: Text("Galle Main")),
-        const DropdownMenuItem(value: "HABIB_Negombo_Main", child: Text("Negombo Main")),
-      ];
-      
-    case "DEUTSCHE": // Deutsche Bank
-      return [
-        const DropdownMenuItem(value: "DEUTSCHE_Colombo_Main", child: Text("Colombo Main - Galle Road")),
-        const DropdownMenuItem(value: "DEUTSCHE_Colombo_Fort", child: Text("Colombo Fort")),
-      ];
-      
-    case "CITIBANK": // Citibank
-      return [
-        const DropdownMenuItem(value: "CITIBANK_Colombo_Main", child: Text("Colombo Main")),
-        const DropdownMenuItem(value: "CITIBANK_Colombo_Fort", child: Text("Colombo Fort")),
-      ];
-      
-    case "STANDARD_CHARTERED": // Standard Chartered Bank
-      return [
-        const DropdownMenuItem(value: "SC_Colombo_Main", child: Text("Colombo Main")),
-        const DropdownMenuItem(value: "SC_Colombo_Fort", child: Text("Colombo Fort")),
-        const DropdownMenuItem(value: "SC_Kandy_Main", child: Text("Kandy Main")),
-        const DropdownMenuItem(value: "SC_Galle_Main", child: Text("Galle Main")),
-        const DropdownMenuItem(value: "SC_Negombo_Main", child: Text("Negombo Main")),
-      ];
-      
-    case "HSBC": // HSBC Bank
-      return [
-        const DropdownMenuItem(value: "HSBC_Colombo_Main", child: Text("Colombo Main")),
-        const DropdownMenuItem(value: "HSBC_Colombo_Fort", child: Text("Colombo Fort")),
-      ];
-      
-    default:
-      return [];
+    if (_selectedBank == null) return [];
+    
+    switch (_selectedBank) {
+      case "BOC": // Bank of Ceylon
+        return [
+          // ... all branch options commented out
+        ];
+      // ... other bank cases commented out
+      default:
+        return [];
+    }
   }
-}
+  */
 
   Widget _progressStep({required bool isActive}) {
     return Container(
@@ -1778,11 +1337,10 @@ if (result['success'] == true) {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-         padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 14),
         backgroundColor: isUploaded ? Colors.green : const Color(0xFF4A0072),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         elevation: 4,
-        //padding: const EdgeInsets.symmetric(vertical: 12),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1808,7 +1366,7 @@ if (result['success'] == true) {
             const SizedBox(height: 20),
             const Center(
               child: Text(
-                "Contact Information - Step 2 of 4",
+                "Contact Information - Step 2 of 3", // Updated step count
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -1840,99 +1398,54 @@ if (result['success'] == true) {
               validator: (value) => _validateRequired(value, "owner password"),
               textAlign: TextAlign.center,
             ),
-            // _buildFieldLabel("Manager Name *"),
-            // TextFormField(
-            //   controller: _managerNameController,
-            //   decoration: _inputDecoration("Manager Name", icon: Icons.person),
-            //   validator: (value) => _validateRequired(value, "manager name"),
-            //   textAlign: TextAlign.center,
-            // ),
-            // _buildFieldLabel("Manager Email *"),
-            // TextFormField(
-            //   controller: _managerEmailController,
-            //   decoration: _inputDecoration("Manager Email", icon: Icons.email),
-            //   keyboardType: TextInputType.emailAddress,
-            //   validator: _validateEmail,
-            //   textAlign: TextAlign.center,
-            // ),
-            // _buildFieldLabel("Manager Password *"),
-            // TextFormField(
-            //   controller: _managerPasswordController,
-            //   decoration: _inputDecoration(
-            //     "Manager Password",
-            //     icon: Icons.lock,
-            //   ),
-            //   obscureText: true,
-            //   validator: (value) => _validateRequired(value, "manager password"),
-            //   textAlign: TextAlign.center,
-            // ),
-            // _buildFieldLabel("Manager Phone Number *"),
-            // Container(
-            //   decoration: _fieldDecoration(),
-            //   padding: const EdgeInsets.symmetric(horizontal: 12),
-            //   child: IntlPhoneField(
-            //     decoration: const InputDecoration(
-            //       hintText: 'Manager Phone Number',
-            //       border: InputBorder.none,
-            //       errorBorder: InputBorder.none,
-            //       filled: true,
-            //       fillColor: Color(0xFFF3E5F5),
-            //     ),
-            //     initialCountryCode: 'LK',
-            //     onChanged: (phone) => _managerPhoneNumber = phone.completeNumber,
-            //     validator: (p) => _validatePhoneNumber(p?.number),
-                
-            //   ),
-            // ),
             const SizedBox(height: 30),
             Container(
-            decoration: _fieldDecoration(),
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    decoration: const InputDecoration(
-                      hintText: 'Set opening hours and date',
-                      hintStyle: TextStyle(fontWeight: FontWeight.bold,
-                      color: Colors.black,
+              decoration: _fieldDecoration(),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      decoration: const InputDecoration(
+                        hintText: 'Set opening hours and date',
+                        hintStyle: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                        border: InputBorder.none,
+                        filled: true,
+                        fillColor: Color(00000000),
                       ),
-                      border: InputBorder.none,
-                      filled: true,
-                      fillColor: Color(00000000),
-                      
+                      enabled: false,
+                      textAlign: TextAlign.center,
                     ),
-                    enabled: false,
-                    textAlign: TextAlign.center,
                   ),
-                ),
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: const Color(0xFF6A1B9A), width: 1.5),
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  child: Container(
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: const Color(0xFF6A1B9A), width: 1.5),
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: Container(
                       decoration: BoxDecoration(
                         color: Colors.black, // Set black background
                         borderRadius: BorderRadius.circular(5),
                       ),
-                  child: IconButton(
-                    icon: const Icon(Icons.edit, color: Colors.white, size: 20),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const SaloonOpeningHoursScreen(openingHours: {},),
-                        ),
-                      );
-                    },
+                      child: IconButton(
+                        icon: const Icon(Icons.edit, color: Colors.white, size: 20),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const SaloonOpeningHoursScreen(openingHours: {}),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
                   ),
-                ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-            
             const SizedBox(height: 20),
             Center(
               child: _isSubmitting
@@ -1973,7 +1486,7 @@ if (result['success'] == true) {
           const SizedBox(height: 20),
           const Center(
             child: Text(
-              "Business Information - Step 3 of 4",
+              "Business Information - Step 3 of 3", // Updated step count
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -1982,27 +1495,26 @@ if (result['success'] == true) {
             ),
           ),
           const SizedBox(height: 20),
-GestureDetector(
-  onTap: _showTermsAndConditions,
-  child: Row(
-    mainAxisAlignment: MainAxisAlignment.start,
-    children:  [
-      Text(
-        "View agreement Template",
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-      SizedBox(width: 6),
-      Icon(Icons.remove_red_eye,
-      color: _hasAgreed ? Colors.green : Colors.black,
-      ),
-    ],
-  ),
-),
-
-
+          GestureDetector(
+            onTap: _showTermsAndConditions,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Text(
+                  "View agreement Template",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                SizedBox(width: 6),
+                Icon(
+                  Icons.remove_red_eye,
+                  color: _hasAgreed ? Colors.green : Colors.black,
+                ),
+              ],
+            ),
+          ),
           const SizedBox(height: 10),
           Center(child: _buildFieldLabel("Business Registration *")),
           Center(
@@ -2037,57 +1549,57 @@ GestureDetector(
             ),
           ),
           Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Center(
-                    child: Text(
-                      'Tax Registered',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Center(
+                  child: Text(
+                    'Tax Registered',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Column(
-                        children: [
-                          const Text("Yes"),
-                          Checkbox(
-                            value: _isTaxRegisteredYes,
-                            onChanged: (value) {
-                              setState(() {
-                                _isTaxRegisteredYes = true;
-                                _isTaxRegisteredNo = false;
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-                      const SizedBox(width: 20),
-                      Column(
-                        children: [
-                          const Text("No"),
-                          Checkbox(
-                            value: _isTaxRegisteredNo,
-                            onChanged: (value) {
-                              setState(() {
-                                _isTaxRegisteredYes = false;
-                                _isTaxRegisteredNo = true;
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ), 
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Column(
+                      children: [
+                        const Text("Yes"),
+                        Checkbox(
+                          value: _isTaxRegisteredYes,
+                          onChanged: (value) {
+                            setState(() {
+                              _isTaxRegisteredYes = true;
+                              _isTaxRegisteredNo = false;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: 20),
+                    Column(
+                      children: [
+                        const Text("No"),
+                        Checkbox(
+                          value: _isTaxRegisteredNo,
+                          onChanged: (value) {
+                            setState(() {
+                              _isTaxRegisteredYes = false;
+                              _isTaxRegisteredNo = true;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
           Center(child: _buildFieldLabel("Outlet Logo*")),
           Center(
             child: _purpleUploadButton(
@@ -2133,78 +1645,77 @@ GestureDetector(
           ),
           Center(child: _buildFieldLabel("NIC Front Image *")),
           Center(
-  child: _purpleUploadButton(
-    "Upload",
-    isUploaded: _nicFrontUploaded,
-    onPressed: () async {
-      final url = await uploadFileToFirebase(
-        fileType: "nic_front",
-        userId: _emailController.text.trim(),
-        validateNIC: true,  // Enable NIC validation
-        isNICFront: true,   // Specify this is front side
-      );
-      if (url != null) {
-        setState(() {
-          _nicFrontUploaded = true;
-          _nicFrontImageUrl = url;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("NIC front image uploaded successfully!"),
-            backgroundColor: Colors.green,
+            child: _purpleUploadButton(
+              "Upload",
+              isUploaded: _nicFrontUploaded,
+              onPressed: () async {
+                final url = await uploadFileToFirebase(
+                  fileType: "nic_front",
+                  userId: _emailController.text.trim(),
+                  validateNIC: true,  // Enable NIC validation
+                  isNICFront: true,   // Specify this is front side
+                );
+                if (url != null) {
+                  setState(() {
+                    _nicFrontUploaded = true;
+                    _nicFrontImageUrl = url;
+                  });
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("NIC front image uploaded successfully!"),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              },
+            ),
           ),
-        );
-      }
-    },
-  ),
-),
           Center(child: _buildFieldLabel("NIC Back Image *")),
           Center(
-  child: _purpleUploadButton(
-    "Upload",
-    isUploaded: _nicBackUploaded,
-    onPressed: () async {
-      final url = await uploadFileToFirebase(
-        fileType: "nic_back",
-        userId: _emailController.text.trim(),
-        validateNIC: true,  // Enable NIC validation
-        isNICFront: false,  // Specify this is back side
-      );
-      if (url != null) {
-        setState(() {
-          _nicBackUploaded = true;
-          _nicBackImageUrl = url;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("NIC back image uploaded successfully!"),
-            backgroundColor: Colors.green,
+            child: _purpleUploadButton(
+              "Upload",
+              isUploaded: _nicBackUploaded,
+              onPressed: () async {
+                final url = await uploadFileToFirebase(
+                  fileType: "nic_back",
+                  userId: _emailController.text.trim(),
+                  validateNIC: true,  // Enable NIC validation
+                  isNICFront: false,  // Specify this is back side
+                );
+                if (url != null) {
+                  setState(() {
+                    _nicBackUploaded = true;
+                    _nicBackImageUrl = url;
+                  });
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("NIC back image uploaded successfully!"),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              },
+            ),
           ),
-        );
-      }
-    },
-  ),
-),
-          
           const SizedBox(height: 20),
+          // MOVED: Finish button from bank info step to business info step
           Center(
             child: _isSubmitting
                 ? const CircularProgressIndicator(color: Color(0xFF6A1B9A))
                 : ElevatedButton(
                     onPressed: () {
-                        if (!_hasAgreed) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('You must accept the Terms and Conditions to continue.'),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                          return;
-                        }
-
-                       next();
-                      },
-
+                      if (!_hasAgreed) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('You must accept the Terms and Conditions to continue.'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        return;
+                      }
+                      // Call submit form instead of next
+                      _submitForm();
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF6A1B9A),
                       shape: RoundedRectangleBorder(
@@ -2212,12 +1723,12 @@ GestureDetector(
                       ),
                       elevation: 5,
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 60,
+                        horizontal: 80, // Wider button for "Finish"
                         vertical: 14,
                       ),
                     ),
                     child: const Text(
-                      "Continue",
+                      "Finish", // Changed from "Continue" to "Finish"
                       style: TextStyle(color: Colors.white),
                     ),
                   ),
@@ -2228,6 +1739,8 @@ GestureDetector(
     );
   }
 
+  // COMMENTED OUT: Bank info step completely
+  /*
   Widget _buildBankInfoStep() {
     return Form(
       key: _bankInfoFormKey,
@@ -2292,8 +1805,6 @@ GestureDetector(
                 DropdownMenuItem(value: "CITIBANK", child: Text("Citi Bank")),
                 DropdownMenuItem(value: "STANDARD_CHARTERED", child: Text("Standard Chartered Bank")),
                 DropdownMenuItem(value: "HSBC", child: Text("HSBC Bank")),
-
-
               ],
               onChanged: (value) {
                 setState(() {
@@ -2310,7 +1821,6 @@ GestureDetector(
                   alignment: Alignment.center, // Center the selected item
                   itemHeight: 50, // Optional: Adjust item height for better appearance
                   dropdownColor: const Color(0xFFF3E5F5), // Match your theme
-
             ),
             
             _buildFieldLabel("Bank Branch *"),
@@ -2332,29 +1842,9 @@ GestureDetector(
                   alignment: Alignment.center, // Center the selected item
                   itemHeight: 50, // Optional: Adjust item height for better appearance
                   dropdownColor: const Color(0xFFF3E5F5), // Match your theme
-
             ),
-            // _buildFieldLabel("Bank Phone Number *"),
-            // Container(
-            //   decoration: _fieldDecoration(),
-            //   padding: const EdgeInsets.symmetric(horizontal: 12),
-            //   child: IntlPhoneField(
-            //     decoration: const InputDecoration(
-            //       hintText: 'Bank Phone Number',
-            //       border: InputBorder.none,
-            //       errorBorder: InputBorder.none,
-            //       filled: true,
-            //       fillColor: Color(0xFFF3E5F5),
-            //     ),
-            //     initialCountryCode: 'LK',
-            //     onChanged: (phone) => _bankPhoneNumber = phone.completeNumber,
-            //     validator: (p) => _validatePhoneNumber(p?.number),
-            //   ),
-            // ),
             const SizedBox(height: 20),
-            Center(child: _buildFieldLabel("Soft Copy of the Bank Statement Or\n Passbook *",
-            
-            )),
+            Center(child: _buildFieldLabel("Soft Copy of the Bank Statement Or\n Passbook *")),
             Center(
               child: _purpleUploadButton(
                 "Upload",
@@ -2386,35 +1876,36 @@ GestureDetector(
                 },
               ),
             ),
-const SizedBox(height: 30),
-Center(
-            child: _isSubmitting
-                ? const CircularProgressIndicator(
-                    color: Color(0xFF6A1B9A),
-                  )
-                : ElevatedButton(
-                    onPressed: _submitForm,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF6A1B9A),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
+            const SizedBox(height: 30),
+            Center(
+                        child: _isSubmitting
+                            ? const CircularProgressIndicator(
+                                color: Color(0xFF6A1B9A),
+                              )
+                            : ElevatedButton(
+                                onPressed: _submitForm,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF6A1B9A),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  elevation: 5,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 80,
+                                    vertical: 14,
+                                  ),
+                                ),
+                                child: const Text(
+                                  "Finish",
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
                       ),
-                      elevation: 5,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 80,
-                        vertical: 14,
-                      ),
-                    ),
-                    child: const Text(
-                      "Finish",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-          ),
             const SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
+  */
 }

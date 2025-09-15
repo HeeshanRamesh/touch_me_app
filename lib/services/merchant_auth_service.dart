@@ -29,11 +29,11 @@ class MerchantAuthService {
     // required String managerEmail,
     // required String managerPhone,
     // required String managerPassword,
-    required String beneficiaryName,
-    required String accountNumber,
+    //required String beneficiaryName,
+    // required String accountNumber,
     //required String bankPhone,
-    required String bankName,
-    required String bankBranch,
+    //required String bankName,
+    //required String bankBranch,
     required String businessRegImage,
     required String logoImage,
     required String nicFrontImage,
@@ -66,13 +66,13 @@ class MerchantAuthService {
         "logo": logoImage,
         "nic": {"frontImage": nicFrontImage, "backImage": nicBackImage},
       },
-      "bankDetails": {
-        "beneficiaryName": beneficiaryName,
-        "accountNumber": accountNumber,
-        //"phone": bankPhone,
-        "bankName": bankName,
-        "bankBranch": bankBranch,
-      },
+      // "bankDetails": {
+      //   "beneficiaryName": beneficiaryName,
+      //   "accountNumber": accountNumber,
+      //   //"phone": bankPhone,
+      //   "bankName": bankName,
+      //   "bankBranch": bankBranch,
+      // },
     };
 
     try {
