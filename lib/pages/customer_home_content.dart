@@ -381,6 +381,7 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
       {'name': 'Haircut & Styling - Ladies ', 'image': 'assets/services/haircut_la.png'},
       {'name': 'Haircut & Styling - Gents', 'image': 'assets/services/haircut_ge.png'},
       {'name': 'Haircut & Styling - Kids', 'image': 'assets/services/kid.png'},
+      
       {'name': 'Haircut & Styling - Adults', 'image': 'assets/services/old.png'},
       {'name': 'Massage', 'image': 'assets/services/massage.png'},
       {'name': 'Bridal', 'image': 'assets/services/bridals.png'},
