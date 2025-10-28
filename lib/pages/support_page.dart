@@ -102,8 +102,8 @@ class _SupportPageState extends State<SupportPage> {
                               icon: Icons.email,
                               iconColor: Colors.blue,
                               label: 'Email: ',
-                              value: 'touchme.bookings@outlook.com',
-                              onTap: () => _launchEmail('touchme.bookings@outlook.com'),
+                              value: 'support@touchmeapp.com',
+                              onTap: () => _launchEmail('support@touchmeapp.com'),
                             ),
                             const SizedBox(height: 16),
                             

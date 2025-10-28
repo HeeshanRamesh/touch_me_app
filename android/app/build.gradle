@@ -10,7 +10,7 @@ def keystorePropertiesFile = rootProject.file("key.properties")
 keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 
 android {
-    namespace 'com.example.touch_me'
+    namespace 'com.touchmeapp.app'
     compileSdk flutter.compileSdkVersion
     ndkVersion flutter.ndkVersion
 
@@ -24,11 +24,11 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.example.touch_me"
+        applicationId "com.touchmeapp.app"
         minSdk flutter.minSdkVersion
         targetSdk flutter.targetSdkVersion
-        versionCode flutter.versionCode
-        versionName flutter.versionName
+        versionCode 6
+        versionName "1.0.3"
     }
 
     signingConfigs {

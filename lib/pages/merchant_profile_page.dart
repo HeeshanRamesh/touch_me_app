@@ -284,7 +284,7 @@ class _MerchantProfilePageState extends State<MerchantProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Merchant Profile'),
+        title: const Text('Merchant Profile', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: const Color(0xFF6A1B9A),
       ),
       body: _isLoading
@@ -376,11 +376,11 @@ class _MerchantProfilePageState extends State<MerchantProfilePage> {
                     label: 'Account Number',
                     keyboardType: TextInputType.number,
                   ),
-                  _buildTextField(
-                    controller: _bankPhoneController,
-                    label: 'Bank Phone',
-                    keyboardType: TextInputType.phone,
-                  ),
+                  // _buildTextField(
+                  //   controller: _bankPhoneController,
+                  //   label: 'Bank Phone',
+                  //   keyboardType: TextInputType.phone,
+                  // ),
                   _buildTextField(
                     controller: _bankNameController,
                     label: 'Bank Name',

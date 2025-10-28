@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:touch_me/pages/customer_home_content.dart';
 import 'package:touch_me/pages/customer_home_scaffold.dart';
+import 'package:touch_me/pages/forgot_password_page.dart';
 import 'package:touch_me/pages/signup_page.dart';
 import 'package:touch_me/services/auth_service.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -55,21 +56,21 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _validateUsername() {
-    final username = _usernameController.text.trim();
-    if (username.isEmpty) {
-      setState(() {
-        _usernameError = 'Email is required';
-      });
-    } else if (!RegExp(r'^[a-zA-Z0-9._%+-]+@gmail\.com$').hasMatch(username)) {
-      setState(() {
-        _usernameError = 'Enter a valid Gmail address (e.g., example@gmail.com)';
-      });
-    } else {
-      setState(() {
-        _usernameError = null;
-      });
-    }
+  final username = _usernameController.text.trim();
+  if (username.isEmpty) {
+    setState(() {
+      _usernameError = 'Email is required';
+    });
+  } else if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(username)) {
+    setState(() {
+      _usernameError = 'Enter a valid email address';
+    });
+  } else {
+    setState(() {
+      _usernameError = null;
+    });
   }
+}
 
   void _validatePassword() {
     final password = _passwordController.text.trim();
@@ -309,7 +310,14 @@ class _LoginPageState extends State<LoginPage> {
               Align(
                 alignment: Alignment.centerRight,
                 child: GestureDetector(
-                  onTap: () {}, // TODO: Implement forgot password navigation
+                  onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ForgotPasswordPage(),
+                        ),
+                      );
+                    }, // TODO: Implement forgot password navigation
                   child: const Text(
                     'Forgot Password?',
                     style: TextStyle(

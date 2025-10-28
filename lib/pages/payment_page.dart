@@ -31,7 +31,7 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
   // Order item prices
   double get order1Price => widget.serviceAmount ?? 0;
   final double order2Price = 0;
-  final double taxRate = 0.10; // 10% tax
+  final double taxRate = 0.05; // 10% tax
 
   // Calculate subtotal
   double get subtotal => order1Price + order2Price;
@@ -130,7 +130,7 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
                               'Rs. ${subtotal.toStringAsFixed(2)}',
                             ),
                             _buildSubtotalItem(
-                              'Tax (${(taxRate * 100).toInt()}%)',
+                              'App cost (${(taxRate * 100).toInt()}%)',
                               'Rs. ${tax.toStringAsFixed(2)}',
                             ),
                           ],

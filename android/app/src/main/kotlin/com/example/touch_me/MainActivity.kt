@@ -1,4 +1,4 @@
-package com.example.touch_me
+package com.touchmeapp.app
 
 import io.flutter.embedding.android.FlutterActivity
 

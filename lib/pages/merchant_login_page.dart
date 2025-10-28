@@ -36,22 +36,22 @@ class _MerchantLoginPageState extends State<MerchantLoginPage> {
     _passwordController.addListener(_validatePassword);
   }
 
-  void _validateUsername() {
-    final username = _usernameController.text.trim();
-    if (username.isEmpty) {
-      setState(() {
-        _usernameError = 'Email is required';
-      });
-    } else if (!RegExp(r'^[a-zA-Z0-9]+@gmail\.com$').hasMatch(username)) {
-      setState(() {
-        _usernameError = 'Enter a valid Gmail address (e.g., example@gmail.com)';
-      });
-    } else {
-      setState(() {
-        _usernameError = null;
-      });
-    }
+ void _validateUsername() {
+  final username = _usernameController.text.trim();
+  if (username.isEmpty) {
+    setState(() {
+      _usernameError = 'Email is required';
+    });
+  } else if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(username)) {
+    setState(() {
+      _usernameError = 'Enter a valid email address';
+    });
+  } else {
+    setState(() {
+      _usernameError = null;
+    });
   }
+}
 
   void _validatePassword() {
     final password = _passwordController.text.trim();

@@ -25,15 +25,10 @@ class MerchantAuthService {
     required String ownerEmail,
     required String ownerPhone,
     required String ownerPassword,
-    // required String managerName,
-    // required String managerEmail,
-    // required String managerPhone,
-    // required String managerPassword,
-    //required String beneficiaryName,
-    // required String accountNumber,
-    //required String bankPhone,
-    //required String bankName,
-    //required String bankBranch,
+    required String beneficiaryName,
+    required String accountNumber,
+    required String bankName,
+    required String bankBranch,
     required String businessRegImage,
     required String logoImage,
     required String nicFrontImage,
@@ -47,12 +42,6 @@ class MerchantAuthService {
         "password": ownerPassword,
         "phone": ownerPhone,
       },
-      // "manager": {
-      //   "name": managerName,
-      //   "email": managerEmail,
-      //   "phone": managerPhone,
-      //   "password": managerPassword,
-      // },
       "outlet": {
         "name": outletName,
         "email": outletEmail,
@@ -66,13 +55,12 @@ class MerchantAuthService {
         "logo": logoImage,
         "nic": {"frontImage": nicFrontImage, "backImage": nicBackImage},
       },
-      // "bankDetails": {
-      //   "beneficiaryName": beneficiaryName,
-      //   "accountNumber": accountNumber,
-      //   //"phone": bankPhone,
-      //   "bankName": bankName,
-      //   "bankBranch": bankBranch,
-      // },
+      "bankDetails": {
+        "beneficiaryName": beneficiaryName,
+        "accountNumber": accountNumber,
+        "bankName": bankName,
+        "bankBranch": bankBranch,
+      },
     };
 
     try {
@@ -172,8 +160,7 @@ class MerchantAuthService {
           'message': 'Login successful',
           'token': _token,
           'role': responseData['role'] ?? 'Merchant',
-          'merchant':
-              responseData['merchant'], // Changed from 'user' to 'merchant'
+          'merchant': responseData['merchant'],
         };
       } else if (response.statusCode == 401) {
         return {
@@ -207,15 +194,13 @@ class MerchantAuthService {
 
   Future<Map<String, dynamic>> getMerchantProfile(String merchantId) async {
     try {
-      final token = await storage.read(
-        key: "token",
-      ); // Changed from "authToken" to "token"
+      final token = await storage.read(key: "token");
       if (token == null) {
         return {'success': false, 'message': 'No authentication token found'};
       }
 
       final response = await http.get(
-        Uri.parse('$baseUrl$merchantId'), // Changed from profileUrl to baseUrl
+        Uri.parse('$baseUrl$merchantId'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -233,7 +218,7 @@ class MerchantAuthService {
         return {
           'success': true,
           'message': 'Profile retrieved successfully',
-          'merchant': responseData, // Changed from 'user' to 'merchant'
+          'merchant': responseData,
         };
       } else if (response.statusCode == 404) {
         return {
@@ -259,15 +244,13 @@ class MerchantAuthService {
     Map<String, dynamic> updatedData,
   ) async {
     try {
-      final token = await storage.read(
-        key: "token",
-      ); // Changed from "authToken" to "token"
+      final token = await storage.read(key: "token");
       if (token == null) {
         return {'success': false, 'message': 'No authentication token found'};
       }
 
       final response = await http.put(
-        Uri.parse('$baseUrl$merchantId'), // Changed from profileUrl to baseUrl
+        Uri.parse('$baseUrl$merchantId'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -286,7 +269,7 @@ class MerchantAuthService {
         return {
           'success': true,
           'message': 'Profile updated successfully',
-          'merchant': responseData, // Changed from 'user' to 'merchant'
+          'merchant': responseData,
         };
       } else if (response.statusCode == 400) {
         return {
@@ -307,8 +290,8 @@ class MerchantAuthService {
       return {'success': false, 'message': 'Network error: ${e.toString()}'};
     }
   }
-  // Add this method to your MerchantAuthService class
 
+  // Forgot Password - Send OTP
   Future<Map<String, dynamic>> forgotPassword(String email) async {
     const String forgotPasswordUrl =
         'http://api.touchmeapp.com/api/merchants/forgot-password';
@@ -332,25 +315,26 @@ class MerchantAuthService {
         return {
           'success': true,
           'message':
-              responseData['message'] ??
-              'Password reset email sent successfully',
+              responseData['message'] ?? 'OTP sent to your email successfully',
         };
       } else if (response.statusCode == 404) {
         return {
           'success': false,
-          'message': responseData['message'] ?? 'Email address not found',
+          'message':
+              responseData['error']?['message'] ?? 'Email address not found',
         };
       } else if (response.statusCode == 400) {
         return {
           'success': false,
-          'message': responseData['message'] ?? 'Invalid email address',
+          'message':
+              responseData['error']?['message'] ?? 'Invalid email address',
         };
       } else {
         return {
           'success': false,
           'message':
-              responseData['message'] ??
-              'Failed to send reset email: ${response.statusCode}',
+              responseData['error']?['message'] ??
+              'Failed to send OTP: ${response.statusCode}',
         };
       }
     } catch (e) {
@@ -358,63 +342,110 @@ class MerchantAuthService {
       return {'success': false, 'message': 'Network error: ${e.toString()}'};
     }
   }
+
+  // Verify OTP
+  Future<Map<String, dynamic>> verifyOTP(String email, String otp) async {
+    const String verifyOTPUrl =
+        'http://api.touchmeapp.com/api/merchants/verify-otp';
+
+    try {
+      print('Verify OTP Request for email: $email, otp: $otp');
+
+      final response = await http.post(
+        Uri.parse(verifyOTPUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email, 'otp': otp}),
+      );
+
+      print(
+        'Verify OTP Response: Status=${response.statusCode}, Body=${response.body}',
+      );
+
+      final responseData =
+          response.body.isNotEmpty ? jsonDecode(response.body) : {};
+
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'message': responseData['message'] ?? 'OTP verified successfully',
+          'tempToken': responseData['tempToken'],
+        };
+      } else if (response.statusCode == 400) {
+        return {
+          'success': false,
+          'message':
+              responseData['error']?['message'] ?? 'Invalid or expired OTP',
+        };
+      } else {
+        return {
+          'success': false,
+          'message':
+              responseData['error']?['message'] ??
+              'Failed to verify OTP: ${response.statusCode}',
+        };
+      }
+    } catch (e) {
+      print('Verify OTP Error: $e');
+      return {'success': false, 'message': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  // Reset Password
+  Future<Map<String, dynamic>> resetPassword(
+    String tempToken,
+    String newPassword,
+  ) async {
+    const String resetPasswordUrl =
+        'http://api.touchmeapp.com/api/merchants/reset-password';
+
+    try {
+      print('Reset Password Request with tempToken');
+
+      final response = await http.post(
+        Uri.parse(resetPasswordUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'tempToken': tempToken, 'newPassword': newPassword}),
+      );
+
+      print(
+        'Reset Password Response: Status=${response.statusCode}, Body=${response.body}',
+      );
+
+      final responseData =
+          response.body.isNotEmpty ? jsonDecode(response.body) : {};
+
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'message': responseData['message'] ?? 'Password reset successful',
+        };
+      } else if (response.statusCode == 404) {
+        return {
+          'success': false,
+          'message': responseData['error']?['message'] ?? 'Merchant not found',
+        };
+      } else if (response.statusCode == 400) {
+        return {
+          'success': false,
+          'message':
+              responseData['error']?['message'] ?? 'Invalid or expired token',
+        };
+      } else if (response.statusCode == 403) {
+        return {
+          'success': false,
+          'message': responseData['error']?['message'] ?? 'Invalid token type',
+        };
+      } else {
+        return {
+          'success': false,
+          'message':
+              responseData['error']?['message'] ??
+              'Failed to reset password: ${response.statusCode}',
+        };
+      }
+    } catch (e) {
+      print('Reset Password Error: $e');
+      return {'success': false, 'message': 'Network error: ${e.toString()}'};
+    }
+  }
 }
-// Add this method to your existing MerchantAuthService class
-
-//   Future<Map<String, dynamic>> resetPassword(
-//     String email,
-//     String otp,
-//     String newPassword,
-//   ) async {
-//     const String resetPasswordUrl =
-//         'http://api.touchmeapp.com:1000/api/merchants/reset-password';
-
-//     try {
-//       print('Reset Password Request for email: $email, otp: $otp');
-
-//       final response = await http.post(
-//         Uri.parse(resetPasswordUrl),
-//         headers: {'Content-Type': 'application/json'},
-//         body: jsonEncode({
-//           'email': email,
-//           'otp': otp,
-//           'newPassword': newPassword,
-//         }),
-//       );
-
-//       print(
-//         'Reset Password Response: Status=${response.statusCode}, Body=${response.body}',
-//       );
-
-//       final responseData =
-//           response.body.isNotEmpty ? jsonDecode(response.body) : {};
-
-//       if (response.statusCode == 200) {
-//         return {
-//           'success': true,
-//           'message': responseData['message'] ?? 'Password reset successful',
-//         };
-//       } else if (response.statusCode == 404) {
-//         return {
-//           'success': false,
-//           'message': responseData['message'] ?? 'Merchant not found',
-//         };
-//       } else if (response.statusCode == 400) {
-//         return {
-//           'success': false,
-//           'message': responseData['message'] ?? 'Invalid or expired OTP',
-//         };
-//       } else {
-//         return {
-//           'success': false,
-//           'message':
-//               responseData['message'] ??
-//               'Failed to reset password: ${response.statusCode}',
-//         };
-//       }
-//     } catch (e) {
-//       print('Reset Password Error: $e');
-//       return {'success': false, 'message': 'Network error: ${e.toString()}'};
-//     }
-//   }
-// }

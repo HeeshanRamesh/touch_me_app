@@ -389,6 +389,27 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
                                       ),
                                     ),
                                     const SizedBox(height: 4),
+                                    // Add this section for phone number
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.phone,
+                                          size: 16,
+                                          color: Colors.grey[600],
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          booking.customerPhone.isEmpty
+                                              ? 'N/A'
+                                              : booking.customerPhone,
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.grey[700],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 4),
                                     Text(
                                       'Booking ID: ${booking.id}',
                                       style: TextStyle(

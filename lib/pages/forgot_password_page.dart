@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:touch_me/pages/merchant_otp_verify.dart';
-import 'package:touch_me/services/merchant_auth_service.dart';
+import 'package:touch_me/pages/otp_verification_page.dart';
+import 'package:touch_me/services/auth_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class MerchantForgetPasswordPage extends StatefulWidget {
-  const MerchantForgetPasswordPage({super.key});
+class ForgotPasswordPage extends StatefulWidget {
+  const ForgotPasswordPage({super.key});
 
   @override
-  _MerchantForgetPasswordPageState createState() => _MerchantForgetPasswordPageState();
+  _ForgotPasswordPageState createState() => _ForgotPasswordPageState();
 }
 
-class _MerchantForgetPasswordPageState extends State<MerchantForgetPasswordPage> {
+class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   bool _isLoading = false;
   final TextEditingController _emailController = TextEditingController();
   String? _emailError;
+  final AuthService _authService = AuthService();
   final _emailFocus = FocusNode();
 
   @override
@@ -28,7 +29,8 @@ class _MerchantForgetPasswordPageState extends State<MerchantForgetPasswordPage>
       setState(() {
         _emailError = 'Email is required';
       });
-    } else if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(email)) {
+    } else if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+        .hasMatch(email)) {
       setState(() {
         _emailError = 'Enter a valid email address';
       });
@@ -51,7 +53,7 @@ class _MerchantForgetPasswordPageState extends State<MerchantForgetPasswordPage>
     }
   }
 
-  Future<void> _sendResetEmail() async {
+  Future<void> _sendResetLink() async {
     _validateEmail();
 
     if (_emailError != null) {
@@ -65,74 +67,65 @@ class _MerchantForgetPasswordPageState extends State<MerchantForgetPasswordPage>
     });
 
     try {
-      final response = await MerchantAuthService().forgotPassword(email);
-
-      setState(() {
-        _isLoading = false;
-      });
+      final response = await _authService.forgotPassword(email);
 
       if (!mounted) return;
 
       if (response['success']) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('OTP sent to your email successfully!'),
+            content: Text(
+              response['message'] ?? 'OTP sent to your email!',
+            ),
             backgroundColor: Colors.green.shade700,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
-            duration: const Duration(seconds: 2),
           ),
         );
-        
+
+        await Future.delayed(const Duration(milliseconds: 500));
+        if (!mounted) return;
+
         // Navigate to OTP verification page
-        Future.delayed(const Duration(seconds: 2), () {
-          if (mounted) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => MerchantVerifyOTPPage(
-                  email: email,
-                ),
-              ),
-            );
-          }
-        });
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => OTPVerificationPage(email: email),
+          ),
+        );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              response['message'] ?? 'Failed to send OTP. Please try again.',
+              response['message'] ?? 'Failed to send reset link. Please try again.',
             ),
             backgroundColor: Colors.red.shade700,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
-            duration: const Duration(seconds: 4),
           ),
         );
       }
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-
       if (!mounted) return;
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Network error: ${e.toString()}'),
+          content: const Text('Network error. Please check your connection.'),
           backgroundColor: Colors.red.shade700,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
-          duration: const Duration(seconds: 4),
         ),
       );
     }
+
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   @override
@@ -145,74 +138,66 @@ class _MerchantForgetPasswordPageState extends State<MerchantForgetPasswordPage>
           icon: const Icon(Icons.arrow_back, color: Color(0xFF6A1B9A)),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Reset Password',
-          style: TextStyle(
-            color: Color(0xFF6A1B9A),
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 20),
-              
               // App Icon
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.grey.shade300),
-                ),
-                child: Image.asset(
-                  'assets/app_icon.png',
-                  height: 80,
+              Center(
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                  child: Image.asset(
+                    'assets/app_icon.png',
+                    height: 80,
+                  ),
                 ),
               ),
-              
               const SizedBox(height: 30),
-              
               // Title
-              const Text(
-                'Forgot Password?',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Color.fromARGB(255, 127, 9, 143),
+              const Center(
+                child: Text(
+                  'Forgot Password?',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF6A1B9A),
+                  ),
                 ),
               ),
-              
               const SizedBox(height: 15),
-              
-              // Subtitle
-              const Text(
-                'Enter your email address and we\'ll send you an OTP to reset your password.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                  height: 1.5,
+              // Description
+              Center(
+                child: Text(
+                  'Enter your registered email address and we\'ll send you a link to reset your password.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey.shade600,
+                    height: 1.5,
+                  ),
                 ),
               ),
-              
               const SizedBox(height: 40),
-              
-              // Email Input Field
+              // Email TextField
               TextField(
                 controller: _emailController,
                 focusNode: _emailFocus,
-                keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
                   prefixIcon: const Icon(Icons.email, color: Colors.grey),
-                  hintText: 'Enter your email',
+                  hintText: 'Email Address',
                   errorText: _emailError,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
+                    borderSide: const BorderSide(color: Colors.grey),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
@@ -231,30 +216,32 @@ class _MerchantForgetPasswordPageState extends State<MerchantForgetPasswordPage>
                     borderSide: const BorderSide(color: Colors.red),
                   ),
                 ),
+                keyboardType: TextInputType.emailAddress,
                 onSubmitted: (_) {
                   if (_emailError == null) {
-                    _sendResetEmail();
+                    _sendResetLink();
                   }
                 },
               ),
-              
               const SizedBox(height: 30),
-              
-              // Send OTP Button
+              // Send Reset Link Button
               ElevatedButton(
-                onPressed: _isLoading || _emailError != null ? null : _sendResetEmail,
+                onPressed: _isLoading || _emailError != null ? null : _sendResetLink,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF6A1B9A),
                   minimumSize: const Size(double.infinity, 50),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(25),
                   ),
-                  elevation: 2,
+                  disabledBackgroundColor: Colors.grey.shade300,
                 ),
                 child: _isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
+                    ? const CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2.5,
+                      )
                     : const Text(
-                        'Send OTP',
+                        'Send Reset Link',
                         style: TextStyle(
                           fontSize: 18,
                           color: Colors.white,
@@ -262,91 +249,53 @@ class _MerchantForgetPasswordPageState extends State<MerchantForgetPasswordPage>
                         ),
                       ),
               ),
-              
-              const SizedBox(height: 30),
-              
-              // Info Box
-              Container(
-                padding: const EdgeInsets.all(15),
-                decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
-                  borderRadius: BorderRadius.circular(15),
-                  border: Border.all(color: Colors.blue.shade200),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.info_outline,
-                      color: Colors.blue.shade600,
-                      size: 24,
-                    ),
-                    const SizedBox(width: 10),
-                    const Expanded(
-                      child: Text(
-                        'You will receive a 6-digit OTP code to reset your password.',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              
-              const SizedBox(height: 30),
-              
-              // Back to Login Button
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.arrow_back,
-                      color: Color(0xFF6A1B9A),
-                      size: 20,
-                    ),
-                    const SizedBox(width: 5),
-                    const Text(
-                      'Back to Login',
-                      style: TextStyle(
-                        color: Color(0xFF6A1B9A),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              
               const SizedBox(height: 20),
-              
+              // Back to Login
+              Center(
+                child: TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    'Back to Login',
+                    style: TextStyle(
+                      color: Color(0xFF6A1B9A),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
               // Support Text
-              const Text(
-                'Need help? Contact our support team',
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 14,
+              Center(
+                child: const Text(
+                  'Need help? Contact our support team',
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 14,
+                  ),
                 ),
               ),
               const SizedBox(height: 10),
-              const Text(
-                '📧 Email:',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.black54,
+              Center(
+                child: const Text(
+                  '📧 Email:',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.black54,
+                  ),
                 ),
               ),
               const SizedBox(height: 4),
-              GestureDetector(
-                onTap: () => _launchEmail('touchme.bookings@outlook.com'),
-                child: const Text(
-                  'touchme.bookings@outlook.com',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.blue,
-                    decoration: TextDecoration.underline,
+              Center(
+                child: GestureDetector(
+                  onTap: () => _launchEmail('support@touchmeapp.com'),
+                  child: const Text(
+                    'support@touchmeapp.com',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.blue,
+                      //decoration: TextDecoration.underline,
+                    ),
                   ),
                 ),
               ),

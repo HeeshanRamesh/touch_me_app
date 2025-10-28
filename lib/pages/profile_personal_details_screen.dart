@@ -16,7 +16,7 @@ class _ProfilePersonalDetailsScreenState
   bool _isLoading = true;
   final _storage = const FlutterSecureStorage();
   final AuthService _authService = AuthService();
-  
+
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
@@ -42,7 +42,7 @@ class _ProfilePersonalDetailsScreenState
       if (_userId != null && _token != null) {
         // Fetch user profile from API
         final response = await _authService.getUserProfile(_userId!, _token!);
-        
+
         if (response['success']) {
           _userData = response['user'];
           _populateFields();
@@ -67,14 +67,14 @@ class _ProfilePersonalDetailsScreenState
       final firstName = _userData!['first_name'] ?? '';
       final lastName = _userData!['last_name'] ?? '';
       final fullName = '$firstName $lastName'.trim();
-      
+
       _nameController.text = fullName.isNotEmpty ? fullName : 'N/A';
       _emailController.text = _userData!['email'] ?? 'N/A';
       _phoneController.text = _userData!['phone_number'] ?? 'N/A';
       _roleController.text = _userData!['role'] ?? 'N/A';
-      
+
       // You can set a default location or add it to your backend
-     // _locationController.text = _userData!['location'] ?? 'Not specified';
+      // _locationController.text = _userData!['location'] ?? 'Not specified';
     }
   }
 
@@ -84,9 +84,7 @@ class _ProfilePersonalDetailsScreenState
         content: Text(message),
         backgroundColor: Colors.red.shade700,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }
@@ -132,11 +130,11 @@ class _ProfilePersonalDetailsScreenState
       if (response['success']) {
         _userData = response['user'];
         _populateFields();
-        
+
         setState(() {
           _isEditing = false;
         });
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Profile updated successfully'),
@@ -169,7 +167,11 @@ class _ProfilePersonalDetailsScreenState
     super.dispose();
   }
 
-  Widget _buildField(String label, TextEditingController controller, {bool readOnly = false}) {
+  Widget _buildField(
+    String label,
+    TextEditingController controller, {
+    bool readOnly = false,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -189,25 +191,20 @@ class _ProfilePersonalDetailsScreenState
             color: const Color(0xFFF8E8EE),
             borderRadius: BorderRadius.circular(8.0),
           ),
-          child: _isEditing && !readOnly
-              ? TextField(
-                  controller: controller,
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.zero,
+          child:
+              _isEditing && !readOnly
+                  ? TextField(
+                    controller: controller,
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                    style: const TextStyle(fontSize: 16, color: Colors.black),
+                  )
+                  : Text(
+                    controller.text,
+                    style: const TextStyle(fontSize: 16, color: Colors.black),
                   ),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.black,
-                  ),
-                )
-              : Text(
-                  controller.text,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.black,
-                  ),
-                ),
         ),
       ],
     );
@@ -236,131 +233,139 @@ class _ProfilePersonalDetailsScreenState
                 _isEditing ? Icons.close : Icons.edit,
                 color: Colors.black,
               ),
-              onPressed: _isEditing ? () {
-                setState(() {
-                  _isEditing = false;
-                  _populateFields(); // Reset fields
-                });
-              } : _toggleEditMode,
+              onPressed:
+                  _isEditing
+                      ? () {
+                        setState(() {
+                          _isEditing = false;
+                          _populateFields(); // Reset fields
+                        });
+                      }
+                      : _toggleEditMode,
             ),
         ],
       ),
-      body: _isLoading
-          ? const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6A1B9A)),
-                  ),
-                  SizedBox(height: 16),
-                  Text(
-                    'Loading profile...',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
-                    ),
-                  ),
-                ],
-              ),
-            )
-          : SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+      body:
+          _isLoading
+              ? const Center(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Profile Picture
-                    Center(
-                      child: Stack(
-                        children: [
-                          CircleAvatar(
-                            radius: 50,
-                            backgroundColor: const Color(0xFF6A1B9A),
-                            child: Text(
-                              _getInitials(),
-                              style: const TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                          if (_isEditing)
-                            Positioned(
-                              bottom: 0,
-                              right: 0,
-                              child: Container(
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFF6A1B9A),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: IconButton(
-                                  icon: const Icon(
-                                    Icons.camera_alt,
-                                    color: Colors.white,
-                                    size: 18,
-                                  ),
-                                  onPressed: () {
-                                    // TODO: Implement image picker
-                                  },
-                                ),
-                              ),
-                            ),
-                        ],
+                    CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Color(0xFF6A1B9A),
                       ),
                     ),
-                    const SizedBox(height: 30),
-                    
-                    // Name Field
-                    _buildField('Full Name', _nameController),
-                    const SizedBox(height: 20),
-                    
-                    // Email Field
-                    _buildField('Email', _emailController),
-                    const SizedBox(height: 20),
-                    
-                    // Phone Field
-                    _buildField('Phone Number', _phoneController),
-                    const SizedBox(height: 20),
-                    
-                    // // Location Field
-                    // _buildField('Location', _locationController),
-                    // const SizedBox(height: 20),
-                    
-                    // Role Field (Read-only)
-                    _buildField('Role', _roleController, readOnly: true),
-                    const SizedBox(height: 40),
-                    
-                    // Save/Edit Button
-                    Center(
-                      child: ElevatedButton(
-                        onPressed: _isEditing ? _saveChanges : _toggleEditMode,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF6A1B9A),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 40,
-                            vertical: 15,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                          ),
-                        ),
-                        child: Text(
-                          _isEditing ? 'Save Changes' : 'Edit Profile',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
+                    SizedBox(height: 16),
+                    Text(
+                      'Loading profile...',
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
                     ),
-                    const SizedBox(height: 20),
                   ],
                 ),
+              )
+              : SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 20.0,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Profile Picture
+                      Center(
+                        child: Stack(
+                          children: [
+                            CircleAvatar(
+                              radius: 50,
+                              backgroundColor: const Color(0xFF6A1B9A),
+                              child: Text(
+                                _getInitials(),
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                            if (_isEditing)
+                              Positioned(
+                                bottom: 0,
+                                right: 0,
+                                child: Container(
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFF6A1B9A),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: IconButton(
+                                    icon: const Icon(
+                                      Icons.camera_alt,
+                                      color: Colors.white,
+                                      size: 18,
+                                    ),
+                                    onPressed: () {
+                                      // TODO: Implement image picker
+                                    },
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+
+                      // Name Field
+                      _buildField('Full Name', _nameController),
+                      const SizedBox(height: 20),
+
+                      // Email Field
+                      _buildField('Email', _emailController),
+                      const SizedBox(height: 20),
+
+                      // Phone Field
+                      _buildField('Phone Number', _phoneController),
+                      const SizedBox(height: 20),
+
+                      // // Location Field
+                      // _buildField('Location', _locationController),
+                      // const SizedBox(height: 20),
+
+                      // Role Field (Read-only)
+                      _buildField('Role', _roleController, readOnly: true),
+                      const SizedBox(height: 40),
+
+                      // Save/Edit Button
+                      // Save Button (only show when editing)
+                      if (_isEditing)
+                        Center(
+                          child: ElevatedButton(
+                            onPressed: _saveChanges,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF6A1B9A),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 40,
+                                vertical: 15,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                            ),
+                            child: const Text(
+                              'Save Changes',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
+                ),
               ),
-            ),
     );
   }
 
@@ -368,11 +373,11 @@ class _ProfilePersonalDetailsScreenState
     if (_userData != null) {
       final firstName = _userData!['first_name'] ?? '';
       final lastName = _userData!['last_name'] ?? '';
-      
+
       String initials = '';
       if (firstName.isNotEmpty) initials += firstName[0].toUpperCase();
       if (lastName.isNotEmpty) initials += lastName[0].toUpperCase();
-      
+
       return initials.isNotEmpty ? initials : 'U';
     }
     return 'U';

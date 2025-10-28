@@ -90,11 +90,11 @@ class _SelectCategoryPageState extends State<SelectCategoryPage> {
                   ),
                   title: Text(
                     'Register your Saloon | SPA',
-                    style: TextStyle(fontSize: screenHeight * 0.02),
+                    style: TextStyle(fontSize: screenHeight * 0.022),
                   ),
                   subtitle: Text(
                     'Saloon and Spa Owners',
-                    style: TextStyle(fontSize: screenHeight * 0.016),
+                    style: TextStyle(fontSize: screenHeight * 0.018),
                   ),
                   value: 'Saloon Owners',
                   groupValue: _selectedCategory,
@@ -103,12 +103,12 @@ class _SelectCategoryPageState extends State<SelectCategoryPage> {
                       _selectedCategory = value;
                     });
                   },
-                  activeColor: const Color(0xFF6A1B9A),
-                  secondary: Image.asset(
-                    'assets/saloon_icon.png',
-                    height: screenHeight * 0.025,
-                    width: screenHeight * 0.025,
-                  ),
+                  // activeColor: const Color(0xFF6A1B9A),
+                  // secondary: Image.asset(
+                  //   'assets/saloon_icon.png',
+                  //   height: screenHeight * 0.025,
+                  //   width: screenHeight * 0.025,
+                  // ),
                 ),
               ),
               SizedBox(height: screenHeight * 0.005),
@@ -172,11 +172,11 @@ class _SelectCategoryPageState extends State<SelectCategoryPage> {
                   ),
                   title: Text(
                     'Customer',
-                    style: TextStyle(fontSize: screenHeight * 0.02),
+                    style: TextStyle(fontSize: screenHeight * 0.022 , ),
                   ),
                   subtitle: Text(
                     'Those who need Service',
-                    style: TextStyle(fontSize: screenHeight * 0.016),
+                    style: TextStyle(fontSize: screenHeight * 0.018),
                   ),
                   value: 'Customer',
                   groupValue: _selectedCategory,
@@ -185,12 +185,12 @@ class _SelectCategoryPageState extends State<SelectCategoryPage> {
                       _selectedCategory = value;
                     });
                   },
-                  activeColor: const Color(0xFF6A1B9A),
-                  secondary: Image.asset(
-                    'assets/customer_icon.png',
-                    height: screenHeight * 0.025,
-                    width: screenHeight * 0.025,
-                  ),
+                  // activeColor: const Color(0xFF6A1B9A),
+                  // secondary: Image.asset(
+                  //   'assets/customer_icon.png',
+                  //   height: screenHeight * 0.025,
+                  //   width: screenHeight * 0.025,
+                  // ),
                 ),
               ),
               SizedBox(height: screenHeight * 0.02),

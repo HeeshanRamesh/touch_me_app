@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 // AuthService class to handle authentication-related operations
 class AuthService {
   static const String baseUrl = 'http://api.touchmeapp.com/api/users';
+  static const String authUrl = 'http://api.touchmeapp.com/api/auth';
 
   // Method to register a new user
   Future<Map<String, dynamic>> register({
@@ -54,7 +55,7 @@ class AuthService {
   Future<Map<String, dynamic>> login(String email, String password) async {
     try {
       final response = await http.post(
-        Uri.parse('http://api.touchmeapp.com/api/auth/login'),
+        Uri.parse('$authUrl/login'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'email': email, 'password': password}),
       );
@@ -66,7 +67,7 @@ class AuthService {
           'success': true,
           'message': data['message'] ?? 'Login successful',
           'token': token,
-          'user': data['user'], // Include the user map
+          'user': data['user'],
         };
       } else {
         try {
@@ -89,6 +90,139 @@ class AuthService {
     }
   }
 
+  // Method to handle forgot password
+  Future<Map<String, dynamic>> forgotPassword(String email) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$authUrl/forgot-password'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'email': email}),
+      );
+
+      print('Forgot Password Response status: ${response.statusCode}');
+      print('Forgot Password Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return {
+          'success': true,
+          'message': data['message'] ?? 'Password reset OTP sent to your email',
+        };
+      } else {
+        try {
+          final errorData = json.decode(response.body);
+          return {
+            'success': false,
+            'message': errorData['message'] ?? 'Email not found in our records',
+          };
+        } catch (_) {
+          return {
+            'success': false,
+            'message': 'Failed to send reset link. Please try again.',
+          };
+        }
+      }
+    } catch (e) {
+      throw Exception('Network error: $e');
+    }
+  }
+
+  // Method to verify OTP - NOW RETURNS TOKEN
+  Future<Map<String, dynamic>> verifyOTP(String email, String otp) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$authUrl/verify-otp'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'email': email, 'otp': otp}),
+      );
+
+      print('Verify OTP Response status: ${response.statusCode}');
+      print('Verify OTP Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        print(
+          'Token from verifyOTP: ${data['tempToken']}',
+        ); // Debug log - changed to tempToken
+        return {
+          'success': true,
+          'message': data['message'] ?? 'OTP verified successfully',
+          'token':
+              data['tempToken'] ??
+              '', // Backend returns 'tempToken', not 'token'
+        };
+      } else {
+        try {
+          final errorData = json.decode(response.body);
+          return {
+            'success': false,
+            'message': errorData['message'] ?? 'Invalid or expired OTP',
+            'token': '',
+          };
+        } catch (_) {
+          return {
+            'success': false,
+            'message': 'Invalid or expired OTP',
+            'token': '',
+          };
+        }
+      }
+    } catch (e) {
+      throw Exception('Network error: $e');
+    }
+  }
+
+  // Method to reset password - Token goes in BODY, not header
+  Future<Map<String, dynamic>> resetPassword(
+    String email,
+    String otp,
+    String newPassword,
+    String token, // This is the tempToken from verifyOTP
+  ) async {
+    try {
+      print('Attempting to reset password with token: $token'); // Debug log
+
+      final response = await http.post(
+        Uri.parse('$authUrl/reset-password'),
+        headers: {
+          'Content-Type': 'application/json',
+          // NO Authorization header - backend expects tempToken in body
+        },
+        body: json.encode({
+          'tempToken': token, // Backend expects 'tempToken' in body
+          'newPassword': newPassword,
+          // email and otp are NOT needed - token contains email
+        }),
+      );
+
+      print('Reset Password Response status: ${response.statusCode}');
+      print('Reset Password Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return {
+          'success': true,
+          'message': data['message'] ?? 'Password reset successfully',
+        };
+      } else {
+        try {
+          final errorData = json.decode(response.body);
+          return {
+            'success': false,
+            'message': errorData['message'] ?? 'Failed to reset password',
+          };
+        } catch (_) {
+          return {
+            'success': false,
+            'message': 'Failed to reset password. Please try again.',
+          };
+        }
+      }
+    } catch (e) {
+      throw Exception('Network error: $e');
+    }
+  }
+
   // Method to get user profile
   Future<Map<String, dynamic>> getUserProfile(
     String userId,
@@ -96,7 +230,7 @@ class AuthService {
   ) async {
     try {
       final response = await http.get(
-        Uri.parse('http://api.touchmeapp.com/api/users/profile/$userId'),
+        Uri.parse('$baseUrl/profile/$userId'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',

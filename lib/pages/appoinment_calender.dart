@@ -474,6 +474,12 @@ class _AppointmentBookingPageState extends State<AppointmentBookingPage> {
                       style: TextStyle(color: Colors.grey[600], fontSize: 14),
                     ),
                     SizedBox(height: 8),
+                    // Added phone number display
+                    Text(
+                      'Customer Phone: ${booking.customerPhone}',
+                      style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                    ),
+                    SizedBox(height: 8),
                     Text(
                       'Date: ${booking.date}',
                       style: TextStyle(color: Colors.grey[600], fontSize: 14),
@@ -531,6 +537,7 @@ class _AppointmentBookingPageState extends State<AppointmentBookingPage> {
                                 : 'N/A',
                           ),
                           _buildDetailRow('Customer:', booking.customerName),
+                          _buildDetailRow('Phone:', booking.customerPhone),
                           _buildDetailRow('Date:', booking.date),
                           _buildDetailRow('Time:', booking.time),
                           _buildDetailRow('Status:', booking.status),
@@ -738,16 +745,25 @@ class _AppointmentBookingPageState extends State<AppointmentBookingPage> {
                               }),
                             );
                             if (response.statusCode == 201) {
+                              final responseData = jsonDecode(response.body);
                               final newBooking = Booking(
-                                id: jsonDecode(response.body)['id'],
+                                id: responseData['id'],
                                 serviceName: selectedService!,
                                 customerName: customerController.text,
+                                customerPhone:
+                                    responseData['customerPhone'] ?? 'N/A',
                                 date: DateFormat(
                                   'yyyy-MM-dd',
                                 ).format(selectedDate),
                                 time: selectedTime.format(context),
                                 status: 'Upcoming',
-                                price: 'N/A', // Default price for new bookings
+                                price:
+                                    responseData['price']?.toString() ?? 'N/A',
+                                saloonName: salonController.text,
+                                outletPhone:
+                                    responseData['outletPhone'] ?? 'N/A',
+                                outletAddress:
+                                    responseData['outletAddress'] ?? 'N/A',
                               );
                               setState(() {
                                 bookings.add(newBooking);

@@ -95,43 +95,37 @@ class CustomerHomeHeader extends StatelessWidget {
           ),
           const SizedBox(height: 30),
           Container(
-            height: 60,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(28),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 8,
-                  offset: Offset(0, 2),
-                ),
-              ],
-            ),
-            child: TextField(
-              readOnly: false,
-              decoration: const InputDecoration(
-                hintText: "Search Your Service",
-                hintStyle: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                ),
-                border: InputBorder.none,
-                prefixIcon: Icon(
-                  Icons.search,
-                  color: Colors.black,
-                  size: 24,
-                ),
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 16,
-                ),
+          height: 40,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 8,
+                offset: Offset(0, 2),
               ),
-              onTap: () {
-                // Open search screen if needed
-              },
+            ],
+          ),
+          child: TextField(
+            textAlignVertical: TextAlignVertical.bottom, // 👈 moves hint text down
+            decoration: const InputDecoration(
+              hintText: "Search Your Service",
+              hintStyle: TextStyle(
+                color: Colors.grey,
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+              ),
+              border: InputBorder.none,
+              prefixIcon: Icon(
+                Icons.search,
+                color: Colors.black,
+                size: 22,
+              ),
+              contentPadding: EdgeInsets.only(left: 10, bottom: 10), // 👈 fine-tune
             ),
           ),
+        ),
         ],
       ),
     );
@@ -384,19 +378,19 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
     final scaleFactor = screenWidth / 375.0;
 
     final List<Map<String, String>> services = [
-      {'name': 'Haircut & Styling - Ladies ', 'image': 'assets/services/haircut_image.png'},
-      {'name': 'Haircut & Styling - Gents', 'image': 'assets/services/Ellipse 325.png'},
+      {'name': 'Haircut & Styling - Ladies ', 'image': 'assets/services/haircut_la.png'},
+      {'name': 'Haircut & Styling - Gents', 'image': 'assets/services/haircut_ge.png'},
       {'name': 'Haircut & Styling - Kids', 'image': 'assets/services/kid.png'},
       {'name': 'Haircut & Styling - Adults', 'image': 'assets/services/old.png'},
-      {'name': 'Massage', 'image': 'assets/services/massage_image.png'},
-      {'name': 'Bridal', 'image': 'assets/services/bridal.png'},
-      {'name': 'Tattoo & Piercing', 'image': 'assets/services/tattoo_image.png'},
-      {'name': 'Facials & Skincare', 'image': 'assets/services/Ellipse 328.png'},
-      {'name': 'Hair Removal', 'image': 'assets/services/hair_removal_image.png'},
-      {'name': 'Nails', 'image': 'assets/services/nail_salon_image.png'},
-      {'name': 'Eyebrow & EyeLashes', 'image': 'assets/services/brows_lashes_image.png'},
-      {'name': 'Injectable & Fillers', 'image': 'assets/services/piercing_image.png'},
-      {'name': 'Makeup', 'image': 'assets/services/makeup_image.png'},
+      {'name': 'Massage', 'image': 'assets/services/massage.png'},
+      {'name': 'Bridal', 'image': 'assets/services/bridals.png'},
+      {'name': 'Tattoo & Piercing', 'image': 'assets/services/tattoo.png'},
+      {'name': 'Facials & Skincare', 'image': 'assets/services/facials.png'},
+      {'name': 'Hair Removal', 'image': 'assets/services/hair_remove.png'},
+      {'name': 'Nails', 'image': 'assets/services/nails.png'},
+      {'name': 'Eyebrow & EyeLashes', 'image': 'assets/services/eyes.png'},
+      {'name': 'Injectable & Fillers', 'image': 'assets/services/injectable.png'},
+      {'name': 'Makeup', 'image': 'assets/services/makeups.png'},
       {'name': 'Dressing', 'image': 'assets/services/dress.png'},
       {'name': 'Pedicure & Manicure', 'image': 'assets/services/image.png'},
       {'name': 'Door Step Service', 'image': 'assets/services/home.png'},
@@ -448,71 +442,78 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
                   ),
                   SizedBox(height: 10 * scaleFactor),
                   SizedBox(
-                    height: 130 * scaleFactor,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: services.length,
-                      itemBuilder: (context, index) {
-                        final service = services[index];
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => MerchantListScreen(
-                                  serviceName: service['name']!,
-                                  token: widget.token,
-                                  customerId: widget.customerId,
-                                ),
-                              ),
-                            );
-                          },
-                          child: Container(
-                            width: 90 * scaleFactor,
-                            margin: EdgeInsets.only(right: 12 * scaleFactor),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                Container(
-                                  width: 65 * scaleFactor,
-                                  height: 65 * scaleFactor,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    image: DecorationImage(
-                                      image: AssetImage(service['image']!),
-                                      fit: BoxFit.cover,
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black12,
-                                        blurRadius: 4,
-                                        offset: Offset(0, 2),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                SizedBox(height: 8 * scaleFactor),
-                                Expanded(
-                                  child: Text(
-                                    service['name']!,
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 11 * scaleFactor,
-                                      fontWeight: FontWeight.w500,
-                                      height: 1.2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    maxLines: 3,
-                                    overflow: TextOverflow.visible,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+  height: 150 * scaleFactor, // 👈 overall card list height
+  child: ListView.builder(
+    scrollDirection: Axis.horizontal,
+    itemCount: services.length,
+    itemBuilder: (context, index) {
+      final service = services[index];
+      return GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => MerchantListScreen(
+                serviceName: service['name']!,
+                token: widget.token,
+                customerId: widget.customerId,
+              ),
+            ),
+          );
+        },
+        child: Container(
+          width: 110 * scaleFactor, // 👈 card width
+          margin: EdgeInsets.only(right: 12 * scaleFactor),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                height: 90 * scaleFactor, // 👈 image height
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
                   ),
+                  image: DecorationImage(
+                    image: AssetImage(service['image']!),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(6.0),
+                child: Text(
+                  service['name']!,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 11 * scaleFactor,
+                    fontWeight: FontWeight.w600,
+                    height: 1.3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  maxLines: 3,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  ),
+),
+
                   Text(
                     "Recommended",
                     style: TextStyle(
