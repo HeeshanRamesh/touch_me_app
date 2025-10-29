@@ -163,94 +163,110 @@ class _ServicesScreenState extends State<ServicesScreen> {
   }
 
   void _showServiceTypeDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(
-            'Select Service Type',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.purple[700],
-            ),
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text(
+          'Select Service Type',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.purple[700],
           ),
-          content: Container(
-            width: double.maxFinite,
-            height: 400, // Set a fixed height to limit dialog size
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Choose the type of service you\'re looking for:',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 14,
-                  ),
+        ),
+        content: Container(
+          width: double.maxFinite,
+          height: 400,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Choose the type of service you\'re looking for:',
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 14,
                 ),
-                SizedBox(height: 16),
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: serviceTypes.map((value) {
-                        return Container(
-                          margin: EdgeInsets.only(bottom: 8),
-                          child: ListTile(
-                            title: Text(value),
-                            leading: Radio<String>(
-                              value: value,
-                              groupValue: serviceType.isEmpty ? "Everyone" : serviceType,
-                              onChanged: (String? newValue) {
-                                setState(() {
-                                  serviceType = newValue ?? '';
-                                });
-                                Navigator.of(context).pop();
-                              },
-                              activeColor: Colors.purple[600],
-                            ),
-                            onTap: () {
-                              setState(() {
-                                serviceType = value;
-                              });
-                              Navigator.of(context).pop();
-                            },
-                            shape: RoundedRectangleBorder(
+              ),
+              SizedBox(height: 16),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: serviceTypes.map((value) {
+                      return Container(
+                        margin: EdgeInsets.only(bottom: 8),
+                        child: InkWell(
+                          onTap: () {
+                            setState(() {
+                              serviceType = value;
+                            });
+                            Navigator.of(context).pop();
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                            decoration: BoxDecoration(
+                              color: serviceType == value ? Colors.purple[50] : null,
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            tileColor: serviceType == value ? Colors.purple[50] : null,
+                            child: Row(
+                              children: [
+                                Radio<String>(
+                                  value: value,
+                                  groupValue: serviceType.isEmpty ? "Everyone" : serviceType,
+                                  onChanged: (String? newValue) {
+                                    setState(() {
+                                      serviceType = newValue ?? '';
+                                    });
+                                    Navigator.of(context).pop();
+                                  },
+                                  activeColor: Colors.purple[600],
+                                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  visualDensity: VisualDensity.compact,
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    value,
+                                    style: TextStyle(fontSize: 14),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.visible,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        );
-                      }).toList(),
-                    ),
+                        ),
+                      );
+                    }).toList(),
                   ),
                 ),
-              ],
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: Colors.grey[600]),
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text(
-                'Cancel',
-                style: TextStyle(color: Colors.grey[600]),
-              ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.purple[600],
+              foregroundColor: Colors.white,
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.purple[600],
-                foregroundColor: Colors.white,
-              ),
-              child: Text('Apply'),
-            ),
-          ],
-        );
-      },
-    );
-  }
+            child: Text('Apply'),
+          ),
+        ],
+      );
+    },
+  );
+}
 
   void _showSortDialog() {
     showDialog(

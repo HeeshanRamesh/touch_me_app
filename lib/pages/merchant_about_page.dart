@@ -181,9 +181,9 @@ class MerchantAboutScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         GestureDetector(
-                          onTap: () => _launchEmail('touchme.bookings@outlook.com'),
+                          onTap: () => _launchEmail('support@touchmeapp.com'),
                           child: const Text(
-                            'touchme.bookings@outlook.com',
+                            'support@touchmeapp.com',
                             style: TextStyle(
                               fontSize: 16,
                               color: Colors.blue,
