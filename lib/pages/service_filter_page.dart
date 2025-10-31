@@ -269,170 +269,219 @@ class _ServicesScreenState extends State<ServicesScreen> {
 }
 
   void _showSortDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(
-            'Select Sort Option',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.purple[700],
-            ),
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text(
+          'Select Sort Option',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.purple[700],
           ),
-          content: Container(
-            width: double.maxFinite,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Choose how to sort services:',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 14,
+        ),
+        content: Container(
+          width: double.maxFinite,
+          height: 300,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Choose how to sort services:',
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 14,
+                ),
+              ),
+              SizedBox(height: 16),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: sortOptions.map((value) {
+                      return Container(
+                        margin: EdgeInsets.only(bottom: 8),
+                        child: InkWell(
+                          onTap: () {
+                            setState(() {
+                              sortBy = value;
+                            });
+                            Navigator.of(context).pop();
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            padding: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                            decoration: BoxDecoration(
+                              color: sortBy == value ? Colors.purple[50] : null,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              children: [
+                                Radio<String>(
+                                  value: value,
+                                  groupValue: sortBy.isEmpty ? "Popular" : sortBy,
+                                  onChanged: (String? newValue) {
+                                    setState(() {
+                                      sortBy = newValue ?? '';
+                                    });
+                                    Navigator.of(context).pop();
+                                  },
+                                  activeColor: Colors.purple[600],
+                                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  visualDensity: VisualDensity.compact,
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    value,
+                                    style: TextStyle(fontSize: 14),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.visible,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
                   ),
                 ),
-                SizedBox(height: 16),
-                ...sortOptions.map((value) {
-                  return Container(
-                    margin: EdgeInsets.only(bottom: 8),
-                    child: ListTile(
-                      title: Text(value),
-                      leading: Radio<String>(
-                        value: value,
-                        groupValue: sortBy.isEmpty ? "Popular" : sortBy,
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            sortBy = newValue ?? '';
-                          });
-                          Navigator.of(context).pop();
-                        },
-                        activeColor: Colors.purple[600],
-                      ),
-                      onTap: () {
-                        setState(() {
-                          sortBy = value;
-                        });
-                        Navigator.of(context).pop();
-                      },
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      tileColor: sortBy == value ? Colors.purple[50] : null,
-                    ),
-                  );
-                }).toList(),
-              ],
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: Colors.grey[600]),
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text(
-                'Cancel',
-                style: TextStyle(color: Colors.grey[600]),
-              ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.purple[600],
+              foregroundColor: Colors.white,
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.purple[600],
-                foregroundColor: Colors.white,
-              ),
-              child: Text('Apply'),
-            ),
-          ],
-        );
-      },
-    );
-  }
+            child: Text('Apply'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
 
   void _showPriceDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(
-            'Select Price Range',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.purple[700],
-            ),
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text(
+          'Select Price Range',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.purple[700],
           ),
-          content: Container(
-            width: double.maxFinite,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Choose your price range:',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 14,
+        ),
+        content: Container(
+          width: double.maxFinite,
+          height: 300,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Choose your preferred price range:',
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 14,
+                ),
+              ),
+              SizedBox(height: 16),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: priceRanges.map((range) {
+                      return Container(
+                        margin: EdgeInsets.only(bottom: 8),
+                        child: InkWell(
+                          onTap: () {
+                            setState(() {
+                              priceRange = range['value']!;
+                            });
+                            Navigator.of(context).pop();
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                            decoration: BoxDecoration(
+                              color: priceRange == range['value'] ? Colors.purple[50] : null,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              children: [
+                                Radio<String>(
+                                  value: range['value']!,
+                                  groupValue: priceRange.isEmpty ? "" : priceRange,
+                                  onChanged: (String? newValue) {
+                                    setState(() {
+                                      priceRange = newValue ?? '';
+                                    });
+                                    Navigator.of(context).pop();
+                                  },
+                                  activeColor: Colors.purple[600],
+                                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  visualDensity: VisualDensity.compact,
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    range['label']!,
+                                    style: TextStyle(fontSize: 14),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.visible,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
                   ),
                 ),
-                SizedBox(height: 16),
-                ...priceRanges.map((range) {
-                  return Container(
-                    margin: EdgeInsets.only(bottom: 8),
-                    child: ListTile(
-                      title: Text(range['label']!),
-                      leading: Radio<String>(
-                        value: range['value']!,
-                        groupValue: priceRange.isEmpty ? "" : priceRange,
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            priceRange = newValue ?? '';
-                          });
-                          Navigator.of(context).pop();
-                        },
-                        activeColor: Colors.purple[600],
-                      ),
-                      onTap: () {
-                        setState(() {
-                          priceRange = range['value']!;
-                        });
-                        Navigator.of(context).pop();
-                      },
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      tileColor: priceRange == range['value'] ? Colors.purple[50] : null,
-                    ),
-                  );
-                }).toList(),
-              ],
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: Colors.grey[600]),
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text(
-                'Cancel',
-                style: TextStyle(color: Colors.grey[600]),
-              ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.purple[600],
+              foregroundColor: Colors.white,
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.purple[600],
-                foregroundColor: Colors.white,
-              ),
-              child: Text('Apply'),
-            ),
-          ],
-        );
-      },
-    );
-  }
+            child: Text('Apply'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
 
   @override
   Widget build(BuildContext context) {

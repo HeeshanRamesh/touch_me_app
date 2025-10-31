@@ -1,5 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:touch_me/services/auth_service.dart';
 
 class ProfilePersonalDetailsScreen extends StatefulWidget {
@@ -14,8 +17,10 @@ class _ProfilePersonalDetailsScreenState
     extends State<ProfilePersonalDetailsScreen> {
   bool _isEditing = false;
   bool _isLoading = true;
+  bool _isUploadingImage = false;
   final _storage = const FlutterSecureStorage();
   final AuthService _authService = AuthService();
+  final ImagePicker _imagePicker = ImagePicker();
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
@@ -26,6 +31,8 @@ class _ProfilePersonalDetailsScreenState
   String? _userId;
   String? _token;
   Map<String, dynamic>? _userData;
+  String? _profileImageUrl;
+  File? _selectedImage;
 
   @override
   void initState() {
@@ -45,6 +52,7 @@ class _ProfilePersonalDetailsScreenState
 
         if (response['success']) {
           _userData = response['user'];
+          _profileImageUrl = _userData!['profileImage'];
           _populateFields();
         } else {
           _showError(response['message'] ?? 'Failed to load profile');
@@ -72,9 +80,6 @@ class _ProfilePersonalDetailsScreenState
       _emailController.text = _userData!['email'] ?? 'N/A';
       _phoneController.text = _userData!['phone_number'] ?? 'N/A';
       _roleController.text = _userData!['role'] ?? 'N/A';
-
-      // You can set a default location or add it to your backend
-      // _locationController.text = _userData!['location'] ?? 'Not specified';
     }
   }
 
@@ -92,7 +97,64 @@ class _ProfilePersonalDetailsScreenState
   void _toggleEditMode() {
     setState(() {
       _isEditing = !_isEditing;
+      if (!_isEditing) {
+        _selectedImage = null; // Clear selected image if canceling
+      }
     });
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      final XFile? pickedFile = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
+
+      if (pickedFile != null) {
+        setState(() {
+          _selectedImage = File(pickedFile.path);
+        });
+      }
+    } catch (e) {
+      _showError('Failed to pick image: $e');
+    }
+  }
+
+  Future<String?> _uploadImageToFirebase(File imageFile) async {
+    try {
+      setState(() {
+        _isUploadingImage = true;
+      });
+
+      // Create a unique filename
+      final String fileName = 'profile_${_userId}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      
+      // Reference to Firebase Storage
+      final Reference storageRef = FirebaseStorage.instance
+          .ref()
+          .child('profile_images')
+          .child(fileName);
+
+      // Upload the file
+      final UploadTask uploadTask = storageRef.putFile(imageFile);
+      
+      // Wait for upload to complete
+      final TaskSnapshot snapshot = await uploadTask;
+      
+      // Get download URL
+      final String downloadUrl = await snapshot.ref.getDownloadURL();
+      
+      return downloadUrl;
+    } catch (e) {
+      _showError('Failed to upload image: $e');
+      return null;
+    } finally {
+      setState(() {
+        _isUploadingImage = false;
+      });
+    }
   }
 
   Future<void> _saveChanges() async {
@@ -106,6 +168,19 @@ class _ProfilePersonalDetailsScreenState
     });
 
     try {
+      String? uploadedImageUrl;
+
+      // Upload image to Firebase if a new image was selected
+      if (_selectedImage != null) {
+        uploadedImageUrl = await _uploadImageToFirebase(_selectedImage!);
+        if (uploadedImageUrl == null) {
+          setState(() {
+            _isLoading = false;
+          });
+          return; // Stop if image upload failed
+        }
+      }
+
       // Split the full name back to first and last name
       final fullName = _nameController.text.trim();
       final nameParts = fullName.split(' ');
@@ -118,7 +193,8 @@ class _ProfilePersonalDetailsScreenState
         'email': _emailController.text.trim(),
         'phone_number': _phoneController.text.trim(),
         'location': _locationController.text.trim(),
-        // Note: role typically shouldn't be editable by users
+        // Include the Firebase image URL if uploaded
+        if (uploadedImageUrl != null) 'profileImage': uploadedImageUrl,
       };
 
       final response = await _authService.updateUserProfile(
@@ -129,10 +205,12 @@ class _ProfilePersonalDetailsScreenState
 
       if (response['success']) {
         _userData = response['user'];
+        _profileImageUrl = _userData!['profileImage'];
         _populateFields();
 
         setState(() {
           _isEditing = false;
+          _selectedImage = null;
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -191,21 +269,96 @@ class _ProfilePersonalDetailsScreenState
             color: const Color(0xFFF8E8EE),
             borderRadius: BorderRadius.circular(8.0),
           ),
-          child:
-              _isEditing && !readOnly
-                  ? TextField(
-                    controller: controller,
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                    style: const TextStyle(fontSize: 16, color: Colors.black),
-                  )
-                  : Text(
-                    controller.text,
-                    style: const TextStyle(fontSize: 16, color: Colors.black),
+          child: _isEditing && !readOnly
+              ? TextField(
+                  controller: controller,
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.zero,
                   ),
+                  style: const TextStyle(fontSize: 16, color: Colors.black),
+                )
+              : Text(
+                  controller.text,
+                  style: const TextStyle(fontSize: 16, color: Colors.black),
+                ),
         ),
+      ],
+    );
+  }
+
+  Widget _buildProfileImage() {
+    ImageProvider? imageProvider;
+
+    if (_selectedImage != null) {
+      // Show newly selected image
+      imageProvider = FileImage(_selectedImage!);
+    } else if (_profileImageUrl != null && _profileImageUrl!.isNotEmpty) {
+      // Show existing profile image from Firebase
+      imageProvider = NetworkImage(_profileImageUrl!);
+    }
+
+    return Stack(
+      children: [
+        Container(
+          width: 100,
+          height: 100,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: const Color(0xFF6A1B9A),
+            image: imageProvider != null
+                ? DecorationImage(
+                    image: imageProvider,
+                    fit: BoxFit.cover,
+                  )
+                : null,
+          ),
+          child: imageProvider == null
+              ? Center(
+                  child: Text(
+                    _getInitials(),
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                )
+              : null,
+        ),
+        if (_isEditing)
+          Positioned(
+            bottom: 0,
+            right: 0,
+            child: Container(
+              decoration: const BoxDecoration(
+                color: Color(0xFF6A1B9A),
+                shape: BoxShape.circle,
+              ),
+              child: IconButton(
+                icon: const Icon(
+                  Icons.camera_alt,
+                  color: Colors.white,
+                  size: 18,
+                ),
+                onPressed: _isUploadingImage ? null : _pickImage,
+              ),
+            ),
+          ),
+        if (_isUploadingImage)
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.5),
+                shape: BoxShape.circle,
+              ),
+              child: const Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -233,139 +386,95 @@ class _ProfilePersonalDetailsScreenState
                 _isEditing ? Icons.close : Icons.edit,
                 color: Colors.black,
               ),
-              onPressed:
-                  _isEditing
-                      ? () {
-                        setState(() {
-                          _isEditing = false;
-                          _populateFields(); // Reset fields
-                        });
-                      }
-                      : _toggleEditMode,
+              onPressed: _isEditing
+                  ? () {
+                      setState(() {
+                        _isEditing = false;
+                        _selectedImage = null;
+                        _populateFields(); // Reset fields
+                      });
+                    }
+                  : _toggleEditMode,
             ),
         ],
       ),
-      body:
-          _isLoading
-              ? const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        Color(0xFF6A1B9A),
-                      ),
+      body: _isLoading
+          ? const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Color(0xFF6A1B9A),
                     ),
-                    SizedBox(height: 16),
-                    Text(
-                      'Loading profile...',
-                      style: TextStyle(fontSize: 16, color: Colors.grey),
-                    ),
-                  ],
-                ),
-              )
-              : SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16.0,
-                    vertical: 20.0,
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Profile Picture
+                  SizedBox(height: 16),
+                  Text(
+                    'Loading profile...',
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                  ),
+                ],
+              ),
+            )
+          : SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 20.0,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Profile Picture
+                    Center(child: _buildProfileImage()),
+                    const SizedBox(height: 30),
+
+                    // Name Field
+                    _buildField('Full Name', _nameController),
+                    const SizedBox(height: 20),
+
+                    // Email Field
+                    _buildField('Email', _emailController),
+                    const SizedBox(height: 20),
+
+                    // Phone Field
+                    _buildField('Phone Number', _phoneController),
+                    const SizedBox(height: 20),
+
+                    // Role Field (Read-only)
+                    _buildField('Role', _roleController, readOnly: true),
+                    const SizedBox(height: 40),
+
+                    // Save Button (only show when editing)
+                    if (_isEditing)
                       Center(
-                        child: Stack(
-                          children: [
-                            CircleAvatar(
-                              radius: 50,
-                              backgroundColor: const Color(0xFF6A1B9A),
-                              child: Text(
-                                _getInitials(),
-                                style: const TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
+                        child: ElevatedButton(
+                          onPressed: _isUploadingImage ? null : _saveChanges,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF6A1B9A),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 40,
+                              vertical: 15,
                             ),
-                            if (_isEditing)
-                              Positioned(
-                                bottom: 0,
-                                right: 0,
-                                child: Container(
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFF6A1B9A),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: IconButton(
-                                    icon: const Icon(
-                                      Icons.camera_alt,
-                                      color: Colors.white,
-                                      size: 18,
-                                    ),
-                                    onPressed: () {
-                                      // TODO: Implement image picker
-                                    },
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 30),
-
-                      // Name Field
-                      _buildField('Full Name', _nameController),
-                      const SizedBox(height: 20),
-
-                      // Email Field
-                      _buildField('Email', _emailController),
-                      const SizedBox(height: 20),
-
-                      // Phone Field
-                      _buildField('Phone Number', _phoneController),
-                      const SizedBox(height: 20),
-
-                      // // Location Field
-                      // _buildField('Location', _locationController),
-                      // const SizedBox(height: 20),
-
-                      // Role Field (Read-only)
-                      _buildField('Role', _roleController, readOnly: true),
-                      const SizedBox(height: 40),
-
-                      // Save/Edit Button
-                      // Save Button (only show when editing)
-                      if (_isEditing)
-                        Center(
-                          child: ElevatedButton(
-                            onPressed: _saveChanges,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF6A1B9A),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 40,
-                                vertical: 15,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8.0),
-                              ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
                             ),
-                            child: const Text(
-                              'Save Changes',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
+                          ),
+                          child: const Text(
+                            'Save Changes',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
-                      const SizedBox(height: 20),
-                    ],
-                  ),
+                      ),
+                    const SizedBox(height: 20),
+                  ],
                 ),
               ),
+            ),
     );
   }
 
