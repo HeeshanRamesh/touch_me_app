@@ -6,7 +6,7 @@ import 'package:touch_me/pages/forgot_password_page.dart';
 import 'package:touch_me/pages/signup_page.dart';
 import 'package:touch_me/services/auth_service.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'dart:convert'; // Added for json.encode
+import 'dart:convert';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -18,6 +18,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   bool _obscurePassword = true;
   bool _isLoading = false;
+  bool _isGoogleLoading = false; // Add this for Google button loading state
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   String? _usernameError;
@@ -56,21 +57,21 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _validateUsername() {
-  final username = _usernameController.text.trim();
-  if (username.isEmpty) {
-    setState(() {
-      _usernameError = 'Email is required';
-    });
-  } else if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(username)) {
-    setState(() {
-      _usernameError = 'Enter a valid email address';
-    });
-  } else {
-    setState(() {
-      _usernameError = null;
-    });
+    final username = _usernameController.text.trim();
+    if (username.isEmpty) {
+      setState(() {
+        _usernameError = 'Email is required';
+      });
+    } else if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(username)) {
+      setState(() {
+        _usernameError = 'Enter a valid email address';
+      });
+    } else {
+      setState(() {
+        _usernameError = null;
+      });
+    }
   }
-}
 
   void _validatePassword() {
     final password = _passwordController.text.trim();
@@ -138,25 +139,42 @@ class _LoginPageState extends State<LoginPage> {
       print('=== END DEBUG ===');
 
       if (response['success']) {
-        final userId = response['user']?['id']?.toString() ?? '';
-        final firstName = response['user']?['first_name']?.toString() ?? '';
-        final lastName = response['user']?['last_name']?.toString() ?? '';
-        final userName = '$firstName $lastName';
+        await _handleSuccessfulLogin(response);
+      } else {
+        _showErrorSnackBar(
+          response['message'] ?? 'Authentication failed. Please try again.',
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      _showErrorSnackBar('Network error. Please check your connection.');
+    }
 
-        await _storage.write(key: 'auth_token', value: response['token']);
-        await _storage.write(key: 'user_id', value: userId);
-        await _storage.write(key: 'user_name', value: userName);  
-        // Added: Store user role and user data
-        await _storage.write(key: 'user_role', value: 'customer');
-        await _storage.write(key: 'user_data', value: json.encode(response['user'] ?? {}));
+    setState(() {
+      _isLoading = false;
+    });
+  }
 
-        // 🔍 Print user ID in debug
-        debugPrint('User ID stored securely: $userId');
-        // 🔍 Print user Name in debug
-        debugPrint('User Name stored securely: $userName');
+  // New Google Sign-In method
+  Future<void> _signInWithGoogle() async {
+    setState(() {
+      _isGoogleLoading = true;
+    });
+
+    try {
+      final response = await _authService.signInWithGoogle();
+
+      if (!mounted) return;
+
+      if (response['success']) {
+        // Show appropriate message based on whether it's a new user
+        final message = response['isNewUser'] == true
+            ? 'Account created successfully! Welcome to TouchMe!'
+            : 'Login successful! Welcome back!';
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Login successful! Redirecting...'),
+            content: Text(message),
             backgroundColor: Colors.green.shade700,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -165,50 +183,65 @@ class _LoginPageState extends State<LoginPage> {
           ),
         );
 
-        await Future.delayed(const Duration(milliseconds: 1500));
-        if (!mounted) return;
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => CustomerHomeScaffold(
-              token: response['token'],
-              customerId: response['user']?['id'] ?? '',
-              user: response['user'] ?? {},
-            ),
-          ),
-        );
+        await _handleSuccessfulLogin(response);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              response['message'] ?? 'Authentication failed. Please try again.',
-            ),
-            backgroundColor: Colors.red.shade700,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
+        _showErrorSnackBar(
+          response['message'] ?? 'Google Sign-In failed. Please try again.',
         );
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Network error. Please check your connection.'),
-          backgroundColor: Colors.red.shade700,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-      );
+      _showErrorSnackBar('An error occurred during Google Sign-In.');
     }
 
     setState(() {
-      _isLoading = false;
+      _isGoogleLoading = false;
     });
+  }
+
+  // Extracted common login success handler
+  Future<void> _handleSuccessfulLogin(Map<String, dynamic> response) async {
+    final userId = response['user']?['id']?.toString() ?? '';
+    final firstName = response['user']?['first_name']?.toString() ?? '';
+    final lastName = response['user']?['last_name']?.toString() ?? '';
+    final userName = '$firstName $lastName';
+
+    await _storage.write(key: 'auth_token', value: response['token']);
+    await _storage.write(key: 'user_id', value: userId);
+    await _storage.write(key: 'user_name', value: userName);
+    await _storage.write(key: 'user_role', value: 'customer');
+    await _storage.write(key: 'user_data', value: json.encode(response['user'] ?? {}));
+
+    debugPrint('User ID stored securely: $userId');
+    debugPrint('User Name stored securely: $userName');
+
+    await Future.delayed(const Duration(milliseconds: 1500));
+    if (!mounted) return;
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CustomerHomeScaffold(
+          token: response['token'],
+          customerId: response['user']?['id'] ?? '',
+          user: response['user'] ?? {},
+        ),
+      ),
+    );
+  }
+
+  // Extracted error snackbar method
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red.shade700,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+    );
   }
 
   @override
@@ -311,13 +344,13 @@ class _LoginPageState extends State<LoginPage> {
                 alignment: Alignment.centerRight,
                 child: GestureDetector(
                   onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ForgotPasswordPage(),
-                        ),
-                      );
-                    }, // TODO: Implement forgot password navigation
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ForgotPasswordPage(),
+                      ),
+                    );
+                  },
                   child: const Text(
                     'Forgot Password?',
                     style: TextStyle(
@@ -366,7 +399,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 20),
               OutlinedButton(
-                onPressed: () {}, // TODO: Implement Google sign-in
+                onPressed: _isGoogleLoading ? null : _signInWithGoogle, // Updated
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 50),
                   shape: RoundedRectangleBorder(
@@ -374,21 +407,30 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   side: const BorderSide(color: Colors.grey),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const FaIcon(
-                      FontAwesomeIcons.google,
-                      color: Colors.red,
-                      size: 24,
-                    ),
-                    const SizedBox(width: 10),
-                    const Text(
-                      'With Google',
-                      style: TextStyle(fontSize: 16, color: Colors.black),
-                    ),
-                  ],
-                ),
+                child: _isGoogleLoading
+                    ? const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
+                        ),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          FaIcon(
+                            FontAwesomeIcons.google,
+                            color: Colors.red,
+                            size: 24,
+                          ),
+                          SizedBox(width: 10),
+                          Text(
+                            'With Google',
+                            style: TextStyle(fontSize: 16, color: Colors.black),
+                          ),
+                        ],
+                      ),
               ),
               const SizedBox(height: 20),
               Row(

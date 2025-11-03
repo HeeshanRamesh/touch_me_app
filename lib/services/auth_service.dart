@@ -1,11 +1,15 @@
 // Importing necessary libraries for HTTP requests and JSON handling
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:google_sign_in/google_sign_in.dart';
 
 // AuthService class to handle authentication-related operations
 class AuthService {
   static const String baseUrl = 'http://api.touchmeapp.com/api/users';
   static const String authUrl = 'http://api.touchmeapp.com/api/auth';
+
+  // Initialize Google Sign-In for version 6.x
+  final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: <String>['email']);
 
   // Method to register a new user
   Future<Map<String, dynamic>> register({
@@ -87,6 +91,86 @@ class AuthService {
       }
     } catch (e) {
       throw Exception('Network error: $e');
+    }
+  }
+
+  // NEW: Google Sign-In method for version 6.x
+  Future<Map<String, dynamic>> signInWithGoogle() async {
+    try {
+      // Sign out first to ensure account picker shows
+      await _googleSignIn.signOut();
+
+      // Trigger Google Sign-In flow
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+
+      if (googleUser == null) {
+        // User canceled the sign-in
+        return {'success': false, 'message': 'Google Sign-In was cancelled'};
+      }
+
+      // Get authentication details
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+      final String? idToken = googleAuth.idToken;
+
+      if (idToken == null) {
+        return {'success': false, 'message': 'Failed to get Google ID token'};
+      }
+
+      print('Google ID Token obtained: ${idToken.substring(0, 20)}...');
+
+      // Send the ID token to your backend
+      final response = await http.post(
+        Uri.parse('$authUrl/google'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'token': idToken}),
+      );
+
+      print('Google auth response status: ${response.statusCode}');
+      print('Google auth response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return {
+          'success': true,
+          'token': data['token'],
+          'user': data['user'],
+          'role': data['role'],
+          'isNewUser': data['isNewUser'] ?? false,
+          'message':
+              data['isNewUser'] == true
+                  ? 'Account created successfully!'
+                  : 'Login successful!',
+        };
+      } else {
+        try {
+          final errorData = json.decode(response.body);
+          return {
+            'success': false,
+            'message':
+                errorData['error']?['message'] ??
+                'Google authentication failed',
+          };
+        } catch (_) {
+          return {'success': false, 'message': 'Google authentication failed'};
+        }
+      }
+    } catch (e) {
+      print('Google Sign-In Error: $e');
+      return {
+        'success': false,
+        'message': 'An error occurred during Google Sign-In: ${e.toString()}',
+      };
+    }
+  }
+
+  // NEW: Sign out from Google
+  Future<void> signOutGoogle() async {
+    try {
+      await _googleSignIn.signOut();
+      print('Signed out from Google');
+    } catch (e) {
+      print('Error signing out from Google: $e');
     }
   }
 
