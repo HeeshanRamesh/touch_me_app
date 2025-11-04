@@ -349,32 +349,32 @@ class _MerchantLoginPageState extends State<MerchantLoginPage> {
                   Expanded(child: Divider(color: Colors.grey.shade400)),
                 ],
               ),
-              const SizedBox(height: 20),
-              OutlinedButton(
-                onPressed: () {}, // TODO: Implement Google sign-in
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                  side: const BorderSide(color: Colors.grey),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const FaIcon(
-                      FontAwesomeIcons.google,
-                      color: Colors.red,
-                      size: 24,
-                    ),
-                    const SizedBox(width: 10),
-                    const Text(
-                      'With Google',
-                      style: TextStyle(fontSize: 16, color: Colors.black),
-                    ),
-                  ],
-                ),
-              ),
+              // const SizedBox(height: 20),
+              // OutlinedButton(
+              //   onPressed: () {}, // TODO: Implement Google sign-in
+              //   style: OutlinedButton.styleFrom(
+              //     minimumSize: const Size(double.infinity, 50),
+              //     shape: RoundedRectangleBorder(
+              //       borderRadius: BorderRadius.circular(25),
+              //     ),
+              //     side: const BorderSide(color: Colors.grey),
+              //   ),
+              //   child: Row(
+              //     mainAxisAlignment: MainAxisAlignment.center,
+              //     children: [
+              //       const FaIcon(
+              //         FontAwesomeIcons.google,
+              //         color: Colors.red,
+              //         size: 24,
+              //       ),
+              //       const SizedBox(width: 10),
+              //       const Text(
+              //         'With Google',
+              //         style: TextStyle(fontSize: 16, color: Colors.black),
+              //       ),
+              //     ],
+              //   ),
+              // ),
               const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
