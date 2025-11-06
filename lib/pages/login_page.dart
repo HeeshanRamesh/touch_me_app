@@ -397,41 +397,41 @@ class _LoginPageState extends State<LoginPage> {
                   Expanded(child: Divider(color: Colors.grey.shade400)),
                 ],
               ),
-              const SizedBox(height: 20),
-              OutlinedButton(
-                onPressed: _isGoogleLoading ? null : _signInWithGoogle, // Updated
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                  side: const BorderSide(color: Colors.grey),
-                ),
-                child: _isGoogleLoading
-                    ? const SizedBox(
-                        height: 24,
-                        width: 24,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
-                        ),
-                      )
-                    : Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          FaIcon(
-                            FontAwesomeIcons.google,
-                            color: Colors.red,
-                            size: 24,
-                          ),
-                          SizedBox(width: 10),
-                          Text(
-                            'With Google',
-                            style: TextStyle(fontSize: 16, color: Colors.black),
-                          ),
-                        ],
-                      ),
-              ),
+              // const SizedBox(height: 20),
+              // OutlinedButton(
+              //   onPressed: _isGoogleLoading ? null : _signInWithGoogle, // Updated
+              //   style: OutlinedButton.styleFrom(
+              //     minimumSize: const Size(double.infinity, 50),
+              //     shape: RoundedRectangleBorder(
+              //       borderRadius: BorderRadius.circular(25),
+              //     ),
+              //     side: const BorderSide(color: Colors.grey),
+              //   ),
+              //   child: _isGoogleLoading
+              //       ? const SizedBox(
+              //           height: 24,
+              //           width: 24,
+              //           child: CircularProgressIndicator(
+              //             strokeWidth: 2,
+              //             valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
+              //           ),
+              //         )
+              //       : Row(
+              //           mainAxisAlignment: MainAxisAlignment.center,
+              //           children: const [
+              //             FaIcon(
+              //               FontAwesomeIcons.google,
+              //               color: Colors.red,
+              //               size: 24,
+              //             ),
+              //             SizedBox(width: 10),
+              //             Text(
+              //               'With Google',
+              //               style: TextStyle(fontSize: 16, color: Colors.black),
+              //             ),
+              //           ],
+              //         ),
+              // ),
               const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
