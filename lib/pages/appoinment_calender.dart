@@ -748,6 +748,13 @@ class _AppointmentBookingPageState extends State<AppointmentBookingPage> {
                               final responseData = jsonDecode(response.body);
                               final newBooking = Booking(
                                 id: responseData['id'],
+
+                                // ===================================
+                                // ✅ ADD THIS LINE
+                                // ===================================
+                                bookingCode:
+                                    responseData['bookingCode'] ?? 'N/A',
+
                                 serviceName: selectedService!,
                                 customerName: customerController.text,
                                 customerPhone:

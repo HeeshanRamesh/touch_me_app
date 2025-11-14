@@ -1,5 +1,6 @@
 class Booking {
-  final String id;
+  final String id; // The long MongoDB ID (e.g., 60b...)
+  final String bookingCode; // <-- NEW: The short ID (e.g., BK-1001)
   final String customerName;
   final String customerPhone;
   final String serviceName;
@@ -13,6 +14,7 @@ class Booking {
 
   Booking({
     required this.id,
+    required this.bookingCode, // <-- NEW: Added to constructor
     required this.customerName,
     required this.customerPhone,
     required this.serviceName,
@@ -49,8 +51,8 @@ class Booking {
     final merchant = json['saloonServiceId']?['merchant'];
     if (merchant != null) {
       saloonName = merchant['outlet']?['name'] ?? // Primary: outlet name
-                   merchant['businessName'] ??    // Fallback: business name
-                   '${merchant['first_name'] ?? ''} ${merchant['last_name'] ?? ''}'.trim(); // Last fallback: merchant full name
+              merchant['businessName'] ??     // Fallback: business name
+              '${merchant['first_name'] ?? ''} ${merchant['last_name'] ?? ''}'.trim(); // Last fallback: merchant full name
       
       // New: Extract outlet phone and address
       outletPhone = merchant['outlet']?['phone'] ?? 'N/A';
@@ -59,6 +61,7 @@ class Booking {
 
     return Booking(
       id: json['_id'] ?? json['id'] ?? '',
+      bookingCode: json['bookingCode'] ?? '', // <-- NEW: Read the short ID
       customerName: customerName,
       customerPhone: customerPhone,
       serviceName: serviceName,

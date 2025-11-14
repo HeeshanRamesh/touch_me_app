@@ -44,7 +44,6 @@ class StaffMember {
       // ===================================
       imageUrl:
           json['picture'], // <-- FIX: Changed from 'imageUrl' to 'picture'
-
       // ===================================
     );
   }
@@ -1104,27 +1103,36 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
                                     context,
                                   ); // Close the booking dialog
 
-                                  // Extract booking ID from the nested booking object
-                                  String bookingId = 'N/A';
+                                  // <-- MODIFIED: EXTRACT BOTH IDs -->
+                                  String displayBookingId = 'N/A'; // Short ID
+                                  String mongoBookingId = 'N/A'; // Long ID
+
                                   if (bookingResponse.containsKey('booking') &&
-                                      bookingResponse['booking'] != null &&
-                                      bookingResponse['booking'].containsKey(
-                                        'id',
-                                      )) {
-                                    bookingId =
-                                        bookingResponse['booking']['id']
+                                      bookingResponse['booking'] != null) {
+                                    var bookingData =
+                                        bookingResponse['booking'];
+
+                                    // Get the new SHORT code for display
+                                    displayBookingId =
+                                        bookingData['bookingCode']
                                             ?.toString() ??
+                                        'N/A';
+
+                                    // Get the LONG ID for API calls (use 'id' or '_id')
+                                    mongoBookingId =
+                                        bookingData['id']?.toString() ??
+                                        bookingData['_id']?.toString() ??
                                         'N/A';
                                   }
 
                                   print(
-                                    'DEBUG: Booking successful! ID: $bookingId',
+                                    'DEBUG: Booking successful! Short ID: $displayBookingId, Long ID: $mongoBookingId',
                                   );
-
-                                  // Show success popup before navigating
+                                  // <-- MODIFIED: PASS BOTH IDs -->
                                   await _showBookingSuccessPopup(
                                     context,
-                                    bookingId,
+                                    displayBookingId, // Pass SHORT ID
+                                    mongoBookingId, // Pass LONG ID
                                     service,
                                     formattedDate,
                                     formattedTime,
@@ -1183,15 +1191,16 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
     );
   }
 
-  // New method to show booking success popup
+  // <-- MODIFIED: NEW SIGNATURE ACCEPTS 2 IDs -->
   Future<void> _showBookingSuccessPopup(
     BuildContext context,
-    String bookingId,
+    String displayId, // <-- The short ID (e.g., BK-1001)
+    String bookingId, // <-- The long MongoDB ID
     Service service,
     String date,
     String time,
   ) async {
-    print('DEBUG: Showing booking success popup');
+    print('DEBUG: Showing booking success popup for $displayId');
 
     await showDialog(
       context: context,
@@ -1237,8 +1246,9 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
                 ),
                 const SizedBox(height: 8),
 
+                // <-- MODIFIED: USE THE SHORT 'displayId' HERE -->
                 Text(
-                  'Booking ID: $bookingId',
+                  'Booking ID: $displayId',
                   style: const TextStyle(
                     fontSize: 16,
                     color: Colors.purple,
@@ -1304,7 +1314,10 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      print('DEBUG: Navigating to booking confirmation page');
+                      // <-- MODIFIED: USE THE LONG 'bookingId' FOR NAVIGATION -->
+                      print(
+                        'DEBUG: Navigating to booking confirmation page with ID: $bookingId',
+                      );
                       Navigator.pop(context); // Close popup
 
                       // Navigate to booking confirmation page
@@ -1313,7 +1326,7 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
                         MaterialPageRoute(
                           builder:
                               (context) => BookingConfirmationPage(
-                                bookingId: bookingId,
+                                bookingId: bookingId, // <-- Use LONG ID here
                                 serviceName: service.serviceName,
                                 serviceDescription:
                                     'Professional ${service.serviceName.toLowerCase()} service',

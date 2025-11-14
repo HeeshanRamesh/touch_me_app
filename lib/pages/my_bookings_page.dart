@@ -1,8 +1,10 @@
+// MyBookingsPage.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:touch_me/models/booking.dart';
+import 'package:touch_me/models/booking.dart'; // Make sure this path is correct
 
 class MyBookingsPage extends StatefulWidget {
   const MyBookingsPage({super.key});
@@ -410,13 +412,20 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
                                       ],
                                     ),
                                     const SizedBox(height: 4),
+
+                                    // ===================================
+                                    // ✅ MODIFIED LINE IS HERE
+                                    // ===================================
                                     Text(
-                                      'Booking ID: ${booking.id}',
+                                      // Show short code, fallback to long ID
+                                      'Booking ID: ${booking.bookingCode.isNotEmpty ? booking.bookingCode : booking.id}',
                                       style: TextStyle(
                                         fontSize: 14,
                                         color: Colors.grey[700],
                                       ),
                                     ),
+
+                                    // ===================================
                                     const SizedBox(height: 4),
                                     Text(
                                       '${booking.date} | ${booking.time}',
@@ -476,6 +485,7 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
                                                 if (newStatus != null &&
                                                     newStatus !=
                                                         booking.status) {
+                                                  // NOTE: We use booking.id (the long ID) for the API call
                                                   _updateBookingStatus(
                                                     booking.id,
                                                     newStatus,
@@ -490,6 +500,7 @@ class _MyBookingsPageState extends State<MyBookingsPage> {
                                                 size: 24,
                                               ),
                                               onPressed:
+                                                  // NOTE: We use booking.id (the long ID) for the API call
                                                   () =>
                                                       _showDeleteConfirmationDialog(
                                                         booking.id,
