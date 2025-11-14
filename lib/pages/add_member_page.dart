@@ -6,6 +6,10 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 
+// 1. ADD FIREBASE IMPORTS
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart'; // For debugPrint
+
 class AddMemberScreen extends StatefulWidget {
   const AddMemberScreen({super.key});
 
@@ -23,6 +27,9 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
   File? _profileImage;
   final storage = const FlutterSecureStorage();
 
+  // 2. ADD LOADING STATE
+  bool _isUploading = false;
+
   @override
   void dispose() {
     _firstNameController.dispose();
@@ -32,7 +39,46 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
     super.dispose();
   }
 
-  // Function to send POST request to add a member
+  // 3. ADD FIREBASE UPLOAD HELPER FUNCTION
+  Future<String?> _uploadImageToFirebase(
+    File imageFile,
+    String merchantId,
+    String email,
+  ) async {
+    try {
+      // Create a unique filename
+      final String fileName =
+          'merchant_${merchantId}_member_${email}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+
+      // Reference to Firebase Storage
+      final Reference storageRef = FirebaseStorage.instance
+          .ref()
+          .child('member_profile_images') // Folder for member images
+          .child(fileName);
+
+      // Upload the file
+      final UploadTask uploadTask = storageRef.putFile(imageFile);
+
+      // Wait for upload to complete
+      final TaskSnapshot snapshot = await uploadTask;
+
+      // Get download URL
+      final String downloadUrl = await snapshot.ref.getDownloadURL();
+
+      return downloadUrl;
+    } catch (e) {
+      debugPrint('Failed to upload image: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to upload image: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return null;
+    }
+  }
+
+  // 4. UPDATED _addMember FUNCTION
   Future<void> _addMember() async {
     // Validate required fields
     if (_firstNameController.text.isEmpty ||
@@ -74,6 +120,9 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
     }
 
     // Show loading indicator
+    setState(() {
+      _isUploading = true;
+    });
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -82,22 +131,55 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
       },
     );
 
-    // Use only the first name since last name field is not active
-    final String name = _firstNameController.text.trim();
-
-    // Prepare the API payload
-    final Map<String, dynamic> payload = {
-      'name': name,
-      'email': _emailController.text.trim(),
-      'phone': _phoneController.text.trim(),
-      'role': _jobTitleController.text.trim(),
-    };
-
-    // Replace with your actual API base URL
-    const String baseUrl = 'https://api.touchmeapp.com';
-    final String apiUrl = '$baseUrl/api/merchants/$merchantId/members';
+    String? imageUrl; // To store the Firebase URL
 
     try {
+      // ---- START: Image Upload Logic ----
+      if (_profileImage != null) {
+        final String email = _emailController.text.trim();
+        imageUrl = await _uploadImageToFirebase(
+          _profileImage!,
+          merchantId,
+          email,
+        );
+
+        if (imageUrl == null) {
+          // Upload failed, stop the process
+          Navigator.pop(context); // Hide loading dialog
+          setState(() {
+            _isUploading = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Image upload failed. Please try again.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return; // Stop execution
+        }
+      }
+      // ---- END: Image Upload Logic ----
+
+      // Use only the first name since last name field is not active
+      final String name = _firstNameController.text.trim();
+
+      // Prepare the API payload
+      final Map<String, dynamic> payload = {
+        'name': name,
+        'email': _emailController.text.trim(),
+        'phone': _phoneController.text.trim(),
+        'role': _jobTitleController.text.trim(),
+      };
+
+      // ADD THE IMAGE URL TO THE PAYLOAD (if it exists)
+      if (imageUrl != null) {
+        payload['picture'] = imageUrl;
+      }
+
+      // Replace with your actual API base URL
+      const String baseUrl = 'http://api.touchmeapp.com';
+      final String apiUrl = '$baseUrl/api/merchants/$merchantId/members';
+
       // Get authentication token if needed
       String? authToken = await storage.read(key: "authToken");
 
@@ -118,9 +200,6 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
       Navigator.pop(context);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        // Parse response to get member data if needed
-        final responseData = jsonDecode(response.body);
-
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Member added successfully!'),
@@ -144,7 +223,8 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
         String errorMessage = 'Failed to add member';
         try {
           final errorData = jsonDecode(response.body);
-          errorMessage = errorData['message'] ?? errorMessage;
+          // Use 'error' key based on your backend's JSON response
+          errorMessage = errorData['error'] ?? errorMessage;
         } catch (e) {
           // If JSON parsing fails, use default message
         }
@@ -167,6 +247,13 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
           backgroundColor: Colors.red,
         ),
       );
+    } finally {
+      // Ensure loading state is reset
+      if (mounted) {
+        setState(() {
+          _isUploading = false;
+        });
+      }
     }
   }
 
@@ -302,19 +389,22 @@ class _AddMemberScreenState extends State<AddMemberScreen> {
                 ),
                 elevation: 2,
               ),
-              onPressed: _addMember,
-              child: const Text(
-                'Add Team Member',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
+              // 5. UPDATE BUTTON ONPRESSED AND CHILD
+              onPressed: _isUploading ? null : _addMember,
+              child:
+                  _isUploading
+                      ? const CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      )
+                      : const Text(
+                        'Add Team Member',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
             ),
             const SizedBox(height: 16),
-
-            // Required fields note
-            // const Text(
-            //   '* Required fields',
-            //   style: TextStyle(color: Colors.grey, fontSize: 12),
-            // ),
           ],
         ),
       ),

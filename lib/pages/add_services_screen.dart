@@ -61,6 +61,7 @@ class _AddServiceScreenState extends State<AddServiceScreen> {
     'Dressing',
     'Pedicure & Manicure',
     'Door Step Service',
+    'Mehendi Services',
     'Custom Service',
   ];
 

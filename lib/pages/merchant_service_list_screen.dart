@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:touch_me/pages/booking_confirm_page.dart';
 import 'package:touch_me/pages/reviews_tab.dart';
@@ -6,14 +7,104 @@ import 'dart:convert';
 import '../models/service.dart';
 import '../models/review.dart';
 import '../models/booking.dart';
-import '../models/gift.dart';
+// import '../models/gift.dart'; // Removed
 import '../models/merchant.dart';
 import '../services/services.dart';
 import '../services/bookings.dart';
 import '../services/reviews.dart';
-import '../services/gift_cards.dart';
+// import '../services/gift_cards.dart'; // Removed
 import '../services/merchant_service.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
+// --- New Staff Model (Corrected) ---
+class StaffMember {
+  final String id;
+  final String name;
+  final String position;
+  final String? phone; // <-- Added
+  final String? imageUrl;
+
+  StaffMember({
+    required this.id,
+    required this.name,
+    required this.position,
+    this.phone, // <-- Added
+    this.imageUrl,
+  });
+
+  factory StaffMember.fromJson(Map<String, dynamic> json) {
+    return StaffMember(
+      // Use email as a unique ID since _id is missing
+      id: json['email'] ?? 'temp-id-${DateTime.now().millisecondsSinceEpoch}',
+      name: json['name'] ?? 'No Name',
+      // FIX: Read from "role" in the JSON and assign it to our "position" variable
+      position: json['role'] ?? 'No Position',
+      phone: json['phone'] ?? 'No Phone', // <-- Added
+      // ===================================
+      // ✅ UPDATED LINE IS HERE
+      // ===================================
+      imageUrl:
+          json['picture'], // <-- FIX: Changed from 'imageUrl' to 'picture'
+
+      // ===================================
+    );
+  }
+}
+
+// --- New Staff Service Function (Corrected) ---
+Future<List<StaffMember>> fetchStaffByMerchant(
+  String merchantId,
+  String token,
+) async {
+  // Using your project's IP address
+  final url = Uri.parse(
+    'http://api.touchmeapp.com/api/merchants/$merchantId/members',
+  );
+  print('DEBUG: Fetching staff from $url');
+
+  try {
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    print('DEBUG: Fetch staff response: ${response.statusCode}');
+
+    if (response.statusCode == 200) {
+      // The API returns a map, not a list
+      // 1. Decode the response as a Map
+      final Map<String, dynamic> responseData = jsonDecode(response.body);
+
+      // 2. Check if the 'members' key exists and is a List
+      if (responseData.containsKey('members') &&
+          responseData['members'] is List) {
+        // 3. Extract the list from the 'members' key
+        final List<dynamic> data = responseData['members'] as List<dynamic>;
+
+        final List<StaffMember> staff =
+            data
+                .map(
+                  (item) => StaffMember.fromJson(item as Map<String, dynamic>),
+                )
+                .toList();
+        print('DEBUG: Fetched ${staff.length} staff members');
+        return staff;
+      } else {
+        // This handles if the API returns a map but the 'members' key is missing
+        print('DEBUG: API response did not contain a "members" list.');
+        throw Exception('Failed to parse staff: Unexpected API format');
+      }
+    } else {
+      print('DEBUG: Failed to load staff: ${response.statusCode}');
+      throw Exception('Failed to load staff members: ${response.body}');
+    }
+  } catch (e) {
+    print('DEBUG: Error fetching staff: $e');
+    throw Exception('Error fetching staff members: $e');
+  }
+}
 
 class MerchantServiceListScreen extends StatefulWidget {
   final String merchantId;
@@ -41,6 +132,7 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
   late Future<List<Review>> _futureReviews;
   late Future<List<Booking>> _futureBookings;
   late Future<Merchant?> _futureMerchant;
+  late Future<List<StaffMember>> _futureStaff; // Added for Staff
   int _selectedIndex = 1; // Default to Service tab
   bool _isFavorite = false;
   bool _isLoadingFavorite = false;
@@ -57,6 +149,10 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
     _futureReviews = fetchReviewsByMerchant(widget.merchantId, widget.token);
     _futureBookings = fetchCustomerBookings(widget.token);
     _futureMerchant = _fetchMerchantDetails();
+    _futureStaff = fetchStaffByMerchant(
+      widget.merchantId,
+      widget.token,
+    ); // Added for Staff
     //_initializeUserData();
     _initializeUserData().then((_) {
       // Ensure _checkFavoriteStatus is called after _userId is set
@@ -338,10 +434,7 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
                   futureReviews: _futureReviews,
                 ),
                 _buildContactTab(),
-                GiftCardsTab(
-                  merchantId: widget.merchantId,
-                  token: widget.token,
-                ),
+                _buildStaffTab(), // Replaced GiftCardsTab
               ],
             ),
           ),
@@ -488,7 +581,7 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
       {'icon': Icons.cut, 'label': 'Service'},
       {'icon': Icons.chat_bubble_outline, 'label': 'Review'},
       {'icon': Icons.call, 'label': 'Contact'},
-      {'icon': Icons.card_giftcard, 'label': 'Gift Cards'},
+      {'icon': Icons.people_outline, 'label': 'Staff'}, // Replaced Gift Cards
     ];
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
@@ -772,6 +865,98 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
               ),
             ],
           ),
+        );
+      },
+    );
+  }
+
+  // --- New Staff Tab Widget (Corrected) ---
+  Widget _buildStaffTab() {
+    return FutureBuilder<List<StaffMember>>(
+      future: _futureStaff,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Failed to load staff: ${snapshot.error}'));
+        }
+
+        final staff = snapshot.data ?? [];
+        if (staff.isEmpty) {
+          return const Center(
+            child: Text(
+              'No staff members found for this merchant.',
+              style: TextStyle(fontSize: 16, color: Colors.grey),
+            ),
+          );
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(8.0),
+          itemCount: staff.length,
+          itemBuilder: (context, index) {
+            final member = staff[index];
+
+            // ⬇️ This widget logic is now correct because the 'imageUrl'
+            // field is being populated correctly from the 'picture' JSON key.
+            final hasImage =
+                member.imageUrl != null && member.imageUrl!.isNotEmpty;
+            final placeholderImageUrl =
+                'https://www.gravatar.com/avatar/?d=mp'; // Default placeholder
+
+            return Card(
+              elevation: 3,
+              margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: ListTile(
+                leading: CircleAvatar(
+                  radius: 28,
+                  backgroundImage: NetworkImage(
+                    hasImage ? member.imageUrl! : placeholderImageUrl,
+                  ),
+                  onBackgroundImageError:
+                      hasImage
+                          ? (_, __) {}
+                          : null, // Handle error only for real images
+                  backgroundColor: Colors.grey[200],
+                ),
+                title: Text(
+                  member.name,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+
+                // --- MODIFIED SUBTITLE ---
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      member.position,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.black54,
+                      ),
+                    ),
+                    if (member.phone != null && member.phone != 'No Phone') ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        member.phone!,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Colors.purple,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                // --- END OF MODIFICATION ---
+              ),
+            );
+          },
         );
       },
     );
@@ -1249,166 +1434,5 @@ class _MerchantServiceListScreenState extends State<MerchantServiceListScreen> {
       print('DEBUG: Payment exception: $e');
       return {'status': 'failure', 'message': e.toString()};
     }
-  }
-}
-
-class GiftCardsTab extends StatelessWidget {
-  final String merchantId;
-  final String token;
-
-  const GiftCardsTab({
-    super.key,
-    required this.merchantId,
-    required this.token,
-  });
-
-  Future<void> _buyGiftCard(BuildContext context, GiftCard gc) async {
-    print('DEBUG: Attempting to buy gift card: ${gc.giftCardName}');
-
-    final url = Uri.parse(
-      'http://api.touchmeapp.com/api/purchased-gift-cards/buy',
-    );
-    try {
-      final response = await http.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode({'giftCardId': gc.id, 'merchantId': merchantId}),
-      );
-
-      print(
-        'DEBUG: Gift card purchase response status: ${response.statusCode}',
-      );
-      print('DEBUG: Gift card purchase response: ${response.body}');
-
-      final data = jsonDecode(response.body);
-      if (response.statusCode == 200 && data['success'] == true) {
-        print('DEBUG: Gift card purchased successfully');
-        showDialog(
-          context: context,
-          builder:
-              (_) => AlertDialog(
-                title: const Text('Gift Card Purchased!'),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      'Gift Card Code:',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      data['code'] ?? 'N/A',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        color: Colors.purple,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Expiry Date: ${data['expiryDate'] != null ? data['expiryDate'].substring(0, 10) : 'N/A'}',
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Value: Rs ${data['value']?.toStringAsFixed(2) ?? 'N/A'}',
-                    ),
-                    const SizedBox(height: 8),
-                    Text('Status: ${data['status'] ?? 'N/A'}'),
-                  ],
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('OK'),
-                  ),
-                ],
-              ),
-        );
-      } else {
-        print('DEBUG: Gift card purchase failed: ${data['message']}');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(data['message'] ?? 'Failed to buy gift card'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } catch (e) {
-      print('DEBUG: Gift card purchase exception: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<List<GiftCard>>(
-      future: fetchGiftCardsByMerchant(merchantId, token),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          print('DEBUG: Error loading gift cards: ${snapshot.error}');
-          return Center(
-            child: Text('Failed to load gift cards: ${snapshot.error}'),
-          );
-        }
-        final giftCards = snapshot.data ?? [];
-        print('DEBUG: Loaded ${giftCards.length} gift cards');
-
-        if (giftCards.isEmpty) {
-          return const Center(child: Text('No gift cards for this merchant.'));
-        }
-        return ListView.builder(
-          itemCount: giftCards.length,
-          itemBuilder: (context, i) {
-            final gc = giftCards[i];
-            return Card(
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: ListTile(
-                title: Text(
-                  gc.giftCardName,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: Text(
-                  gc.giftCardDescription ?? 'No description available',
-                ),
-                trailing: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Rs ${gc.price.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.purple,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    ElevatedButton(
-                      onPressed: () => _buyGiftCard(context, gc),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.purple,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        minimumSize: const Size(80, 36),
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                      ),
-                      child: const Text(
-                        'Buy Now',
-                        style: TextStyle(color: Colors.white, fontSize: 13),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
   }
 }

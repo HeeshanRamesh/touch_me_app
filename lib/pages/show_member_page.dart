@@ -117,6 +117,10 @@ class _GetMembersScreenState extends State<GetMembersScreen> {
       text: member['role'] ?? '',
     );
 
+    // NOTE: This dialog does not include an option to change the picture.
+    // That would require adding an ImagePicker and Firebase upload flow
+    // similar to the AddMemberScreen.
+
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -201,6 +205,7 @@ class _GetMembersScreenState extends State<GetMembersScreen> {
                   'email': emailController.text.trim(),
                   'phone': phoneController.text.trim(),
                   'role': roleController.text.trim(),
+                  // 'picture' field is not updated here
                 });
               },
               style: ElevatedButton.styleFrom(
@@ -514,6 +519,12 @@ class _GetMembersScreenState extends State<GetMembersScreen> {
                   itemCount: _members.length,
                   itemBuilder: (context, index) {
                     final member = _members[index];
+
+                    // ⬇️ UPDATED LOGIC TO CHECK 'picture'
+                    final String? imageUrl = member['picture'];
+                    final bool hasImage =
+                        imageUrl != null && imageUrl.isNotEmpty;
+
                     return Card(
                       margin: const EdgeInsets.only(bottom: 12),
                       elevation: 2,
@@ -522,15 +533,17 @@ class _GetMembersScreenState extends State<GetMembersScreen> {
                       ),
                       child: ListTile(
                         contentPadding: const EdgeInsets.all(16),
+
+                        // ===================================
+                        // ✅ UPDATED WIDGET IS HERE
+                        // ===================================
                         leading: CircleAvatar(
                           radius: 30,
                           backgroundColor: const Color(0xFF6A1B9A),
                           backgroundImage:
-                              member['profile_image'] != null
-                                  ? NetworkImage(member['profile_image'])
-                                  : null,
+                              hasImage ? NetworkImage(imageUrl!) : null,
                           child:
-                              member['profile_image'] == null
+                              !hasImage
                                   ? Text(
                                     (member['name'] ?? 'N/A')
                                         .split(' ')
@@ -545,6 +558,10 @@ class _GetMembersScreenState extends State<GetMembersScreen> {
                                   )
                                   : null,
                         ),
+
+                        // ===================================
+                        // END OF UPDATED WIDGET
+                        // ===================================
                         title: Text(
                           member['name'] ?? 'No Name',
                           style: const TextStyle(
@@ -649,6 +666,23 @@ class _GetMembersScreenState extends State<GetMembersScreen> {
                   },
                 ),
               ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          // Navigate to AddMemberScreen and wait for a result
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AddMemberScreen()),
+          );
+
+          // If AddMemberScreen returned true, refresh the list
+          if (result == true) {
+            _getMembers();
+          }
+        },
+        backgroundColor: const Color(0xFF6A1B9A),
+        foregroundColor: Colors.white,
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }

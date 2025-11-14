@@ -395,6 +395,8 @@ class _CustomerHomeContentState extends State<CustomerHomeContent> {
       {'name': 'Dressing', 'image': 'assets/services/dress.png'},
       {'name': 'Pedicure & Manicure', 'image': 'assets/services/image.png'},
       {'name': 'Door Step Service', 'image': 'assets/services/home.png'},
+      {'name': 'Mehendi Services', 'image': 'assets/services/mehendi.png'},
+
     ];
 
     return Column(
